@@ -68,6 +68,30 @@ BorrowBase lets users:
 
 ---
 
+## Core User Stories (v0.1)
+
+### Authentication
+- As a user, I can sign up/log in.
+
+### Household Management
+- As a user, I can create a household and become its owner.
+- As a user, I can join an existing household via invite code/link.
+
+### Item Management
+- As a household member, I can add items to that household's inventory.
+
+### Borrowing Workflows
+- As a member, I can mark an item as borrowed by someone and see all current borrowings.
+- As a member, I can mark a borrowed item as returned.
+
+### Views & Visibility
+- As a member, I can see:
+  - Items I own
+  - Items I'm borrowing
+  - Items my friends have borrowed from me
+
+---
+
 ## Data Model (MVP)
 
 ### User
