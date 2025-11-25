@@ -73,12 +73,12 @@ BorrowBase lets users:
 ### Authentication
 - As a user, I can sign up/log in.
 
-### Household Management
-- As a user, I can create a household and become its owner.
-- As a user, I can join an existing household via invite code/link.
+### Group Management
+- As a user, I can create a group and become its owner.
+- As a user, I can join an existing group via invite code/link.
 
 ### Item Management
-- As a household member, I can add items to that household's inventory.
+- As a group member, I can add items to that group's inventory.
 
 ### Borrowing Workflows
 - As a member, I can mark an item as borrowed by someone and see all current borrowings.
@@ -98,25 +98,26 @@ BorrowBase lets users:
 - `id` (uuid, primary key)
 - `name` (string, required)
 - `email` (string, unique, required)
+- `phone` (string, optional)
 - `created_at` (timestamp)
 
-### Household
+### Group
 - `id` (uuid, primary key)
 - `name` (string, required)
 - `description` (string, optional)
 - `created_by` (uuid, foreign key → User.id)
 - `created_at` (timestamp)
 
-### HouseholdMembership
+### GroupMembership
 - `id` (uuid, primary key)
 - `user_id` (uuid, foreign key → User.id)
-- `household_id` (uuid, foreign key → Household.id)
+- `group_id` (uuid, foreign key → Group.id)
 - `role` (enum: "owner" | "member")
 - `created_at` (timestamp)
 
 ### Item
 - `id` (uuid, primary key)
-- `household_id` (uuid, foreign key → Household.id)
+- `group_id` (uuid, foreign key → Group.id)
 - `name` (string, required)
 - `description` (string, optional)
 - `category` (string, optional)
@@ -124,12 +125,13 @@ BorrowBase lets users:
   - Note: nullable to support items owned by people outside the app, but MVP assumes member ownership
 - `visibility` (enum: "shared" | "personal")
 - `status` (enum: "available" | "unavailable")
+- `price_usd` (float, optional)
 - `created_at` (timestamp)
 
 ### BorrowRecord
 - `id` (uuid, primary key)
 - `item_id` (uuid, foreign key → Item.id)
-- `household_id` (uuid, foreign key → Household.id)
+- `group_id` (uuid, foreign key → Group.id)
 - `lender_user_id` (uuid, foreign key → User.id)
 - `borrower_user_id` (uuid, nullable, foreign key → User.id)
   - Note: nullable if borrower is external to the app
