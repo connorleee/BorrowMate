@@ -96,6 +96,7 @@ BorrowBase lets users:
 
 ### User
 - `id` (uuid, primary key)
+- `name` (string, required)
 - `email` (string, unique, required)
 - `created_at` (timestamp)
 
