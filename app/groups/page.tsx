@@ -1,22 +1,42 @@
-export default function GroupsPage() {
+import { getUserGroups } from './actions'
+import CreateGroupForm from './create-group-form'
+import Link from 'next/link'
+
+export default async function GroupsPage() {
+    const groups = await getUserGroups()
+
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-8 w-full max-w-4xl">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold">My Households</h1>
-                <button className="bg-foreground text-background px-4 py-2 rounded text-sm">
-                    Create New
-                </button>
+                <h1 className="text-3xl font-bold">My Groups</h1>
+                <CreateGroupForm />
             </div>
-            <div className="grid gap-4">
-                <div className="p-4 border rounded shadow-sm">
-                    <h3 className="font-semibold">Roommates 2025</h3>
-                    <p className="text-sm text-gray-500">4 members</p>
+
+            {groups.length === 0 ? (
+                <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                    <p className="text-gray-500 mb-4">You haven't joined any groups yet.</p>
+                    <p className="text-sm text-gray-400">Create one above or ask a friend for an invite link.</p>
                 </div>
-                <div className="p-4 border rounded shadow-sm">
-                    <h3 className="font-semibold">Family Home</h3>
-                    <p className="text-sm text-gray-500">3 members</p>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {groups.map((group: any) => (
+                        <Link
+                            key={group.id}
+                            href={`/groups/${group.id}`}
+                            className="block p-6 bg-white border rounded-lg hover:shadow-md transition-shadow"
+                        >
+                            <h2 className="text-xl font-bold mb-2">{group.name}</h2>
+                            {group.description && (
+                                <p className="text-gray-600 text-sm mb-4 line-clamp-2">{group.description}</p>
+                            )}
+                            <div className="flex justify-between items-center text-xs text-gray-400">
+                                <span>{group.role === 'owner' ? 'Owner' : 'Member'}</span>
+                                <span>{new Date(group.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </Link>
+                    ))}
                 </div>
-            </div>
+            )}
         </div>
     )
 }

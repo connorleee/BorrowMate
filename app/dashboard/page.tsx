@@ -1,65 +1,68 @@
-import Link from "next/link";
+import { getActiveBorrows, returnItem } from '@/app/borrow/actions'
+import Link from 'next/link'
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+    const { borrowed, lent } = await getActiveBorrows()
+
     return (
-        <div className="flex flex-col gap-8 w-full">
-            {/* Header Section */}
-            <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                <p className="text-gray-500">Welcome back! Here's what's happening.</p>
-            </div>
+        <div className="flex flex-col gap-12 w-full">
+            <h1 className="text-3xl font-bold">Dashboard</h1>
 
-            {/* Stats Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-6 rounded-xl border bg-card text-card-foreground shadow-sm">
-                    <div className="text-sm font-medium text-gray-500">Active Borrows</div>
-                    <div className="text-2xl font-bold mt-2">0</div>
-                    <div className="text-xs text-gray-400 mt-1">Items you have</div>
-                </div>
-                <div className="p-6 rounded-xl border bg-card text-card-foreground shadow-sm">
-                    <div className="text-sm font-medium text-gray-500">Items Lent</div>
-                    <div className="text-2xl font-bold mt-2">0</div>
-                    <div className="text-xs text-gray-400 mt-1">Items with others</div>
-                </div>
-                <div className="p-6 rounded-xl border bg-card text-card-foreground shadow-sm">
-                    <div className="text-sm font-medium text-gray-500">Total Savings</div>
-                    <div className="text-2xl font-bold mt-2">$0</div>
-                    <div className="text-xs text-gray-400 mt-1">Estimated value saved</div>
-                </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Link
-                    href="/borrow"
-                    className="flex items-center justify-center p-4 rounded-lg bg-foreground text-background font-medium hover:opacity-90 transition-opacity"
-                >
-                    Borrow an Item
-                </Link>
-                <Link
-                    href="/items"
-                    className="flex items-center justify-center p-4 rounded-lg border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
-                >
-                    Add New Item
-                </Link>
-            </div>
-
-            {/* Recent Activity */}
-            <div className="flex flex-col gap-4">
-                <h2 className="text-xl font-semibold">Recent Activity</h2>
-                <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
-                    <div className="p-6 flex flex-col gap-6">
-                        {/* Empty State for now */}
-                        <div className="flex flex-col items-center justify-center py-8 text-center text-gray-500">
-                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                                <span className="text-xl">📋</span>
+            {/* Items I am borrowing */}
+            <section>
+                <h2 className="text-xl font-bold mb-4">Items I'm Borrowing</h2>
+                {borrowed.length === 0 ? (
+                    <p className="text-gray-500">You aren't borrowing anything right now.</p>
+                ) : (
+                    <div className="grid gap-4">
+                        {borrowed.map((record: any) => (
+                            <div key={record.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
+                                <div>
+                                    <h3 className="font-bold">{record.items.name}</h3>
+                                    <p className="text-sm text-gray-600">From: {record.lender?.name}</p>
+                                    <p className="text-xs text-gray-400">Due: {record.due_date ? new Date(record.due_date).toLocaleDateString() : 'No due date'}</p>
+                                </div>
+                                <form action={async () => {
+                                    'use server'
+                                    await returnItem(record.id, record.item_id, record.group_id)
+                                }}>
+                                    <button className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200">
+                                        Mark Returned
+                                    </button>
+                                </form>
                             </div>
-                            <p className="font-medium">No recent activity</p>
-                            <p className="text-sm">When you borrow or lend items, they'll show up here.</p>
-                        </div>
+                        ))}
                     </div>
-                </div>
-            </div>
+                )}
+            </section>
+
+            {/* Items I lent out */}
+            <section>
+                <h2 className="text-xl font-bold mb-4">Items I've Lent Out</h2>
+                {lent.length === 0 ? (
+                    <p className="text-gray-500">You haven't lent anything out.</p>
+                ) : (
+                    <div className="grid gap-4">
+                        {lent.map((record: any) => (
+                            <div key={record.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
+                                <div>
+                                    <h3 className="font-bold">{record.items.name}</h3>
+                                    <p className="text-sm text-gray-600">To: {record.borrower_name || record.borrower?.name || 'Unknown'}</p>
+                                    <p className="text-xs text-gray-400">Due: {record.due_date ? new Date(record.due_date).toLocaleDateString() : 'No due date'}</p>
+                                </div>
+                                <form action={async () => {
+                                    'use server'
+                                    await returnItem(record.id, record.item_id, record.group_id)
+                                }}>
+                                    <button className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200">
+                                        Mark Returned
+                                    </button>
+                                </form>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </section>
         </div>
-    );
+    )
 }
