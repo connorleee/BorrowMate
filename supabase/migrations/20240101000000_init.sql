@@ -1,5 +1,7 @@
--- Enable UUID extension
-create extension if not exists "uuid-ossp";
+-- Enable UUID extension (not strictly needed for gen_random_uuid in PG13+, but good practice to keep if other things need it, 
+-- though here we will comment it out to avoid "already exists" noise if that was the only issue, 
+-- but actually the error was function not found. We will just remove the dependency on it.)
+-- create extension if not exists "uuid-ossp";
 
 -- USERS (Profiles)
 -- Note: This table mirrors auth.users for public access and additional fields
@@ -27,7 +29,7 @@ create policy "Users can update own profile."
 
 -- GROUPS
 create table public.groups (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   name text not null,
   description text,
   created_by uuid references public.users(id) not null,
@@ -35,6 +37,22 @@ create table public.groups (
 );
 
 alter table public.groups enable row level security;
+
+
+
+-- GROUP MEMBERSHIPS
+create type public.membership_role as enum ('owner', 'member');
+
+create table public.group_memberships (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references public.users(id) not null,
+  group_id uuid references public.groups(id) not null,
+  role public.membership_role default 'member'::public.membership_role not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  unique(user_id, group_id)
+);
+
+alter table public.group_memberships enable row level security;
 
 create policy "Groups are viewable by members."
   on public.groups for select
@@ -49,20 +67,6 @@ create policy "Groups are viewable by members."
 create policy "Users can create groups."
   on public.groups for insert
   with check ( auth.uid() = created_by );
-
--- GROUP MEMBERSHIPS
-create type public.membership_role as enum ('owner', 'member');
-
-create table public.group_memberships (
-  id uuid default uuid_generate_v4() primary key,
-  user_id uuid references public.users(id) not null,
-  group_id uuid references public.groups(id) not null,
-  role public.membership_role default 'member'::public.membership_role not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  unique(user_id, group_id)
-);
-
-alter table public.group_memberships enable row level security;
 
 create policy "Memberships are viewable by group members."
   on public.group_memberships for select
@@ -87,7 +91,7 @@ create type public.item_visibility as enum ('shared', 'personal');
 create type public.item_status as enum ('available', 'unavailable');
 
 create table public.items (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   group_id uuid references public.groups(id) not null,
   name text not null,
   description text,
@@ -129,7 +133,7 @@ create policy "Owners can update their items."
 create type public.borrow_status as enum ('borrowed', 'returned', 'overdue');
 
 create table public.borrow_records (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   item_id uuid references public.items(id) not null,
   group_id uuid references public.groups(id) not null,
   lender_user_id uuid references public.users(id) not null,
