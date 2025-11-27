@@ -47,6 +47,8 @@ export interface Database {
                     description: string | null
                     created_by: string
                     created_at: string
+                    invite_code: string
+                    privacy: "private" | "public"
                 }
                 Insert: {
                     id?: string
@@ -54,6 +56,8 @@ export interface Database {
                     description?: string | null
                     created_by: string
                     created_at?: string
+                    invite_code?: string
+                    privacy?: "private" | "public"
                 }
                 Update: {
                     id?: string
@@ -61,6 +65,8 @@ export interface Database {
                     description?: string | null
                     created_by?: string
                     created_at?: string
+                    invite_code?: string
+                    privacy?: "private" | "public"
                 }
                 Relationships: [
                     {
@@ -117,6 +123,7 @@ export interface Database {
                     category: string | null
                     owner_user_id: string | null
                     visibility: "shared" | "personal"
+                    privacy: "private" | "public"
                     status: "available" | "unavailable"
                     price_usd: number | null
                     created_at: string
@@ -129,6 +136,7 @@ export interface Database {
                     category?: string | null
                     owner_user_id?: string | null
                     visibility?: "shared" | "personal"
+                    privacy?: "private" | "public"
                     status?: "available" | "unavailable"
                     price_usd?: number | null
                     created_at?: string
@@ -141,6 +149,7 @@ export interface Database {
                     category?: string | null
                     owner_user_id?: string | null
                     visibility?: "shared" | "personal"
+                    privacy?: "private" | "public"
                     status?: "available" | "unavailable"
                     price_usd?: number | null
                     created_at?: string
@@ -227,6 +236,40 @@ export interface Database {
                     }
                 ]
             }
+            user_follows: {
+                Row: {
+                    id: string
+                    follower_id: string
+                    following_id: string
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    follower_id: string
+                    following_id: string
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    follower_id?: string
+                    following_id?: string
+                    created_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "user_follows_follower_id_fkey"
+                        columns: ["follower_id"]
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "user_follows_following_id_fkey"
+                        columns: ["following_id"]
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
         }
         Views: {
             [_ in never]: never
@@ -238,6 +281,7 @@ export interface Database {
             membership_role: "owner" | "member"
             item_visibility: "shared" | "personal"
             item_status: "available" | "unavailable"
+            item_privacy: "private" | "public"
             borrow_status: "borrowed" | "returned" | "overdue"
         }
         CompositeTypes: {

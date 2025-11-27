@@ -1,19 +1,106 @@
-export default function ItemsPage() {
+import { getUserItems, getBorrowedItems } from './actions'
+import AddItemForm from '@/components/add-item-form'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/utils/supabase/server'
+
+export default async function ItemsPage() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        redirect('/auth')
+    }
+
+    const [userItems, borrowedItems] = await Promise.all([
+        getUserItems(),
+        getBorrowedItems()
+    ])
+
     return (
-        <div className="flex flex-col gap-6">
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Household Items</h1>
-                <button className="bg-foreground text-background px-4 py-2 rounded text-sm">
-                    Add Item
-                </button>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {/* Placeholders */}
-                {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="aspect-square border rounded flex items-center justify-center bg-gray-50">
-                        <span className="text-gray-400">Item {i}</span>
+        <div className="max-w-4xl mx-auto p-6 space-y-8">
+            <h1 className="text-3xl font-bold text-gray-900">My Items</h1>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Main Content Area */}
+                <div className="md:col-span-2 space-y-8">
+
+                    {/* Borrowed Items Section */}
+                    <section>
+                        <h2 className="text-2xl font-semibold mb-4 text-gray-800">Borrowed Items</h2>
+                        {borrowedItems.length === 0 ? (
+                            <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
+                                You are not currently borrowing any items.
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {borrowedItems.map((record: any) => (
+                                    <div key={record.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center">
+                                        <div>
+                                            <h3 className="font-medium text-lg">{record.item.name}</h3>
+                                            <p className="text-sm text-gray-500">
+                                                Borrowed from <span className="font-medium text-gray-700">{record.item.owner.name}</span>
+                                            </p>
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                Since {new Date(record.start_date).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                        {/* Future: Add Return Button here */}
+                                        <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                                            Borrowed
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </section>
+
+                    {/* My Inventory Section */}
+                    <section>
+                        <h2 className="text-2xl font-semibold mb-4 text-gray-800">My Inventory</h2>
+                        {userItems.length === 0 ? (
+                            <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
+                                You haven't added any items yet.
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {userItems.map((item: any) => (
+                                    <div key={item.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h3 className="font-medium text-lg">{item.name}</h3>
+                                                <p className="text-sm text-gray-500 mb-2">{item.description || 'No description'}</p>
+                                                <div className="flex gap-2 text-xs">
+                                                    {item.groups ? (
+                                                        <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                                            {item.groups.name}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="bg-yellow-50 text-yellow-700 px-2 py-1 rounded border border-yellow-200">
+                                                            Unassigned
+                                                        </span>
+                                                    )}
+                                                    <span className={`px-2 py-1 rounded ${item.visibility === 'shared'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-gray-100 text-gray-800'
+                                                        }`}>
+                                                        {item.visibility === 'shared' ? 'Shared' : 'Personal'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </section>
+                </div>
+
+                {/* Sidebar / Add Item Form */}
+                <div className="md:col-span-1">
+                    <div className="sticky top-6">
+                        <AddItemForm />
                     </div>
-                ))}
+                </div>
             </div>
         </div>
     )

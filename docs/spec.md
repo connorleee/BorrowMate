@@ -105,6 +105,8 @@ BorrowBase lets users:
 - `id` (uuid, primary key)
 - `name` (string, required)
 - `description` (string, optional)
+- `privacy` (enum: "private" | "public", default: "private")
+  - Note: private groups are only visible to members; public groups can be discovered and joined by anyone
 - `created_by` (uuid, foreign key → User.id)
 - `created_at` (timestamp)
 
@@ -124,6 +126,8 @@ BorrowBase lets users:
 - `owner_user_id` (uuid, nullable, foreign key → User.id)
   - Note: nullable to support items owned by people outside the app, but MVP assumes member ownership
 - `visibility` (enum: "shared" | "personal")
+- `privacy` (enum: "private" | "public", default: "private")
+  - Note: private items are only visible to group members; public items can be discovered outside the group
 - `status` (enum: "available" | "unavailable")
 - `price_usd` (float, optional)
 - `created_at` (timestamp)
@@ -143,6 +147,16 @@ BorrowBase lets users:
 - `status` (enum: "borrowed" | "returned" | "overdue")
   - Note: can be derived but stored for performance
 - `created_at` (timestamp)
+
+### UserFollow
+- `id` (uuid, primary key)
+- `follower_id` (uuid, foreign key → User.id)
+  - Note: the user who is following
+- `following_id` (uuid, foreign key → User.id)
+  - Note: the user being followed
+- `created_at` (timestamp)
+- Unique constraint on `(follower_id, following_id)` to prevent duplicate follows
+- Check constraint to prevent self-follows
 
 ---
 

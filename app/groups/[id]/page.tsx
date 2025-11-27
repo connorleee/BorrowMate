@@ -1,6 +1,7 @@
 import { getGroupDetails } from '../actions'
 import { getGroupItems } from '@/app/items/actions'
 import Link from 'next/link'
+import ShareGroupLink from './share-group-link'
 
 export default async function GroupDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -11,13 +12,28 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
         return <div>Group not found</div>
     }
 
+    const isOwner = group.userRole === 'owner'
+
     return (
         <div className="flex flex-col gap-8 w-full">
-            <div className="flex flex-col gap-2 border-b pb-6">
+            <div className="flex flex-col gap-4 border-b pb-6">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h1 className="text-3xl font-bold">{group.name}</h1>
+                        <div className="flex items-center gap-3 mb-2">
+                            <h1 className="text-3xl font-bold">{group.name}</h1>
+                            <span className={`text-xs px-2 py-1 rounded-full ${group.privacy === 'public'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                {group.privacy}
+                            </span>
+                        </div>
                         {group.description && <p className="text-gray-600 mt-2">{group.description}</p>}
+                        <div className="flex items-center gap-2 mt-3 text-sm text-gray-500">
+                            <span>Owner: <span className="font-medium">{group.owner?.name || 'Unknown'}</span></span>
+                            <span>•</span>
+                            <span>{group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}</span>
+                        </div>
                     </div>
                     <Link
                         href={`/groups/${id}/items/new`}
@@ -26,7 +42,32 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
                         Add Item
                     </Link>
                 </div>
+
+                {group.invite_code && (
+                    <ShareGroupLink inviteCode={group.invite_code} groupId={id} />
+                )}
             </div>
+
+            {group.memberships && group.memberships.length > 0 && (
+                <div>
+                    <h2 className="text-xl font-bold mb-4">Members</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {group.memberships.map((membership: any) => (
+                            <div key={membership.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+                                <div className="flex-1">
+                                    <p className="font-medium">{membership.user.name}</p>
+                                    <p className="text-xs text-gray-500">{membership.user.email}</p>
+                                </div>
+                                {membership.role === 'owner' && (
+                                    <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                                        Owner
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div>
                 <h2 className="text-2xl font-bold mb-4">Inventory</h2>
