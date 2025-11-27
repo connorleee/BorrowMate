@@ -5,24 +5,44 @@ import { useState } from 'react'
 
 export default function AddItemForm() {
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
     const handleSubmit = async (formData: FormData) => {
         setIsSubmitting(true)
-        const result = await createItem(formData)
-        setIsSubmitting(false)
-        if (result?.error) {
-            alert(result.error)
-        } else {
-            // Optional: reset form or show success message
-            // For MVP, the page revalidation will update the list
-            const form = document.querySelector('form') as HTMLFormElement
-            form.reset()
+        setMessage(null)
+
+        try {
+            const result = await createItem(formData)
+            setIsSubmitting(false)
+
+            if (result?.error) {
+                setMessage({ type: 'error', text: result.error })
+            } else {
+                setMessage({ type: 'success', text: 'Item added successfully!' })
+                const form = document.querySelector('form') as HTMLFormElement
+                form.reset()
+                // Clear success message after 3 seconds
+                setTimeout(() => setMessage(null), 3000)
+            }
+        } catch (error) {
+            setIsSubmitting(false)
+            setMessage({ type: 'error', text: 'An unexpected error occurred' })
+            console.error('Form submission error:', error)
         }
     }
 
     return (
         <form action={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <h2 className="text-xl font-semibold mb-4">Add New Item</h2>
+
+            {message && (
+                <div className={`p-3 rounded-md text-sm ${message.type === 'success'
+                        ? 'bg-green-50 text-green-800 border border-green-200'
+                        : 'bg-red-50 text-red-800 border border-red-200'
+                    }`}>
+                    {message.text}
+                </div>
+            )}
 
             {/* Group selection removed as items are added before group assignment */}
 

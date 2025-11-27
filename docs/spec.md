@@ -40,17 +40,25 @@ BorrowBase lets users:
 ### Must-have features
 1. **Auth**
    - Email/password login and signup.
+   - Google OAuth sign-in.
    - Each user can belong to multiple groups.
 
 2. **Groups**
    - Create group (name, optional description).
+   - Each group has a unique invite code for shareable links.
+   - Groups can be public (discoverable) or private (invite-only, default).
+   - Group creator becomes the owner.
    - Invite others via shareable join code or link.
    - Switch between groups.
 
 3. **Items**
-   - Add item: name, owner (user), category, optional description, status (available / unavailable), visibility (personal vs shared).
-   - Items belong to a single group.
+   - Add item: name, owner (user), category, optional description, status (available / unavailable), visibility (personal vs shared), privacy (private vs public).
+   - Items can belong to a group or be personal (group_id is nullable).
+   - Personal items are only visible to the owner.
+   - Private items are only visible to group members.
+   - Public items can be discovered outside the group.
    - List/filter items for the current group.
+   - View personal items on "My Items" page.
 
 4. **Borrowing**
    - Mark item as borrowed:
@@ -76,9 +84,14 @@ BorrowBase lets users:
 ### Group Management
 - As a user, I can create a group and become its owner.
 - As a user, I can join an existing group via invite code/link.
+- As a user, I can set a group to be public or private (default: private).
+- As a user, I can share my group's invite link with others.
+- As a user, I can view a dedicated page for each group showing its items.
 
 ### Item Management
 - As a group member, I can add items to that group's inventory.
+- As a user, I can add personal items (not associated with any group).
+- As a user, I can set item privacy to control discoverability outside the group.
 
 ### Borrowing Workflows
 - As a member, I can mark an item as borrowed by someone and see all current borrowings.
@@ -86,9 +99,14 @@ BorrowBase lets users:
 
 ### Views & Visibility
 - As a member, I can see:
-  - Items I own
+  - Items I own (both group and personal items)
   - Items I'm borrowing
   - Items my friends have borrowed from me
+- As a user, I can follow other users to see their public items.
+- As a user, I have a "My Items" page showing:
+  - Items I own
+  - Items I'm currently borrowing
+  - Ability to add new items
 
 ---
 
@@ -107,6 +125,8 @@ BorrowBase lets users:
 - `description` (string, optional)
 - `privacy` (enum: "private" | "public", default: "private")
   - Note: private groups are only visible to members; public groups can be discovered and joined by anyone
+- `invite_code` (string, unique, required, auto-generated)
+  - Note: 8-character alphanumeric code for shareable group links
 - `created_by` (uuid, foreign key → User.id)
 - `created_at` (timestamp)
 
@@ -119,7 +139,8 @@ BorrowBase lets users:
 
 ### Item
 - `id` (uuid, primary key)
-- `group_id` (uuid, foreign key → Group.id)
+- `group_id` (uuid, nullable, foreign key → Group.id)
+  - Note: nullable to support personal items not associated with any group
 - `name` (string, required)
 - `description` (string, optional)
 - `category` (string, optional)
@@ -128,6 +149,7 @@ BorrowBase lets users:
 - `visibility` (enum: "shared" | "personal")
 - `privacy` (enum: "private" | "public", default: "private")
   - Note: private items are only visible to group members; public items can be discovered outside the group
+  - Note: for personal items (group_id is null), privacy controls whether the item appears in public searches
 - `status` (enum: "available" | "unavailable")
 - `price_usd` (float, optional)
 - `created_at` (timestamp)

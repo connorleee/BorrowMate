@@ -36,7 +36,9 @@ export async function createItem(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
-  const { error } = await supabase
+  console.log('Creating item:', { groupId, name, description, category, visibility, owner_user_id: user.id })
+
+  const { data, error } = await supabase
     .from('items')
     .insert({
       group_id: groupId || null,
@@ -46,8 +48,14 @@ export async function createItem(formData: FormData) {
       visibility,
       owner_user_id: user.id,
     })
+    .select()
 
-  if (error) return { error: error.message }
+  console.log('Insert result:', { data, error })
+
+  if (error) {
+    console.error('Error creating item:', error)
+    return { error: error.message }
+  }
 
   if (groupId) {
     revalidatePath(`/groups/${groupId}`)
