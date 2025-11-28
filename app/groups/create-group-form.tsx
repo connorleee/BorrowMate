@@ -6,6 +6,7 @@ import { createGroup } from './actions'
 export default function CreateGroupForm() {
     const [isOpen, setIsOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     if (!isOpen) {
         return (
@@ -21,10 +22,19 @@ export default function CreateGroupForm() {
     return (
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 w-full max-w-md">
             <h3 className="font-bold mb-4">Create a New Group</h3>
+            {error && (
+                <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
+                    {error}
+                </div>
+            )}
             <form
                 action={async (formData) => {
                     setLoading(true)
-                    await createGroup(formData)
+                    setError(null)
+                    const result = await createGroup(formData)
+                    if (result?.error) {
+                        setError(result.error)
+                    }
                     setLoading(false)
                 }}
                 className="flex flex-col gap-4"

@@ -1,5 +1,6 @@
 import { getUserItems, getBorrowedItems } from './actions'
 import AddItemForm from '@/components/add-item-form'
+import DeleteItemButton from '@/components/delete-item-button'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 
@@ -87,6 +88,7 @@ export default async function ItemsPage() {
                                                     </span>
                                                 </div>
                                             </div>
+                                            <DeleteItemButton itemId={item.id} />
                                         </div>
                                     </div>
                                 ))}

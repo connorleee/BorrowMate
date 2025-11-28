@@ -140,3 +140,24 @@ export async function getBorrowedItems() {
 
   return data
 }
+
+export async function deleteItem(itemId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: 'Not authenticated' }
+
+  const { error } = await supabase
+    .from('items')
+    .delete()
+    .eq('id', itemId)
+    .eq('owner_user_id', user.id)
+
+  if (error) {
+    console.error('Error deleting item:', error)
+    return { error: error.message }
+  }
+
+  revalidatePath('/items')
+  return { success: true }
+}

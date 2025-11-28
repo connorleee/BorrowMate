@@ -1,8 +1,12 @@
 import { getActiveBorrows, returnItem } from '@/app/borrow/actions'
+import { getUserItems } from '@/app/items/actions'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
-    const { borrowed, lent } = await getActiveBorrows()
+    const [{ borrowed, lent }, userItems] = await Promise.all([
+        getActiveBorrows(),
+        getUserItems()
+    ])
 
     return (
         <div className="flex flex-col gap-12 w-full">
@@ -66,6 +70,41 @@ export default async function DashboardPage() {
                                         Mark Returned
                                     </button>
                                 </form>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* My Items */}
+            <section>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold">My Items</h2>
+                    <Link href="/items" className="text-sm text-blue-600 hover:underline">
+                        Manage Items
+                    </Link>
+                </div>
+                {userItems.length === 0 ? (
+                    <p className="text-gray-500">You haven't added any items yet.</p>
+                ) : (
+                    <div className="grid gap-4">
+                        {userItems.map((item: any) => (
+                            <div key={item.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
+                                <div>
+                                    <h3 className="font-bold">{item.name}</h3>
+                                    <p className="text-sm text-gray-600">{item.description || 'No description'}</p>
+                                    <div className="flex gap-2 mt-1">
+                                        <span className={`text-xs px-2 py-0.5 rounded ${item.visibility === 'shared' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                            }`}>
+                                            {item.visibility === 'shared' ? 'Shared' : 'Personal'}
+                                        </span>
+                                        {item.status === 'unavailable' && (
+                                            <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-800">
+                                                Unavailable
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>
