@@ -30,8 +30,8 @@ export default async function DashboardPage() {
                         {borrowed.map((record: any) => (
                             <div key={record.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
                                 <div>
-                                    <h3 className="font-bold">{record.items.name}</h3>
-                                    <p className="text-sm text-gray-600">From: {record.lender?.name}</p>
+                                    <h3 className="font-bold">{record.item?.name || 'Unknown Item'}</h3>
+                                    <p className="text-sm text-gray-600">From: {record.lender?.name || 'Unknown'}</p>
                                     <p className="text-xs text-gray-400">Due: {record.due_date ? new Date(record.due_date).toLocaleDateString() : 'No due date'}</p>
                                 </div>
                                 <form action={async () => {
@@ -58,7 +58,7 @@ export default async function DashboardPage() {
                         {lent.map((record: any) => (
                             <div key={record.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
                                 <div>
-                                    <h3 className="font-bold">{record.items.name}</h3>
+                                    <h3 className="font-bold">{record.item?.name || 'Unknown Item'}</h3>
                                     <p className="text-sm text-gray-600">To: {record.borrower_name || record.borrower?.name || 'Unknown'}</p>
                                     <p className="text-xs text-gray-400">Due: {record.due_date ? new Date(record.due_date).toLocaleDateString() : 'No due date'}</p>
                                 </div>

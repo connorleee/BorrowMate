@@ -64,7 +64,9 @@ export async function borrowItem(formData: FormData) {
 
     if (itemError) return { error: itemError.message }
 
-    revalidatePath(`/groups/${groupId}`)
+    if (groupId) {
+        revalidatePath(`/groups/${groupId}`)
+    }
     revalidatePath(`/items/${itemId}`)
     redirect(`/groups/${groupId}`)
 }
@@ -91,7 +93,9 @@ export async function returnItem(recordId: string, itemId: string, groupId: stri
 
     if (itemError) return { error: itemError.message }
 
-    revalidatePath(`/groups/${groupId}`)
+    if (groupId) {
+        revalidatePath(`/groups/${groupId}`)
+    }
     revalidatePath(`/items/${itemId}`)
     revalidatePath('/dashboard')
 }
@@ -106,8 +110,18 @@ export async function getActiveBorrows() {
         .from('borrow_records')
         .select(`
             *,
-            items (name, description),
-            lender:lender_user_id (name)
+            item:item_id (
+                id,
+                name,
+                description,
+                status,
+                category
+            ),
+            lender:lender_user_id (
+                id,
+                name,
+                email
+            )
         `)
         .eq('borrower_user_id', user.id)
         .eq('status', 'borrowed')
@@ -117,8 +131,18 @@ export async function getActiveBorrows() {
         .from('borrow_records')
         .select(`
             *,
-            items (name, description),
-            borrower:borrower_user_id (name)
+            item:item_id (
+                id,
+                name,
+                description,
+                status,
+                category
+            ),
+            borrower:borrower_user_id (
+                id,
+                name,
+                email
+            )
         `)
         .eq('lender_user_id', user.id)
         .eq('status', 'borrowed')

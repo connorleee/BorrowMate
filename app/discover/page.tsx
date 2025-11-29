@@ -87,11 +87,11 @@ export default async function DiscoverPage() {
                                                     href={`/users/${item.owner.id}`}
                                                     className="text-blue-600 hover:text-blue-800 font-medium"
                                                 >
-                                                    {item.owner.name}
+                                                    {item.owner?.name || 'Unknown'}
                                                 </Link>
                                                 {item.groups && (
                                                     <span className="text-gray-500 text-xs">
-                                                        {item.groups.name}
+                                                        {item.groups?.name}
                                                     </span>
                                                 )}
                                             </div>

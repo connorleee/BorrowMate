@@ -1,6 +1,6 @@
 import { getUserItems, getBorrowedItems } from './actions'
 import AddItemForm from '@/components/add-item-form'
-import DeleteItemButton from '@/components/delete-item-button'
+import MyInventorySection from '@/components/my-inventory-section'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 
@@ -37,9 +37,9 @@ export default async function ItemsPage() {
                                 {borrowedItems.map((record: any) => (
                                     <div key={record.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center">
                                         <div>
-                                            <h3 className="font-medium text-lg">{record.item.name}</h3>
+                                            <h3 className="font-medium text-lg">{record.item?.name || 'Unknown Item'}</h3>
                                             <p className="text-sm text-gray-500">
-                                                Borrowed from <span className="font-medium text-gray-700">{record.item.owner.name}</span>
+                                                Borrowed from <span className="font-medium text-gray-700">{record.item?.owner?.name || 'Unknown'}</span>
                                             </p>
                                             <p className="text-xs text-gray-400 mt-1">
                                                 Since {new Date(record.start_date).toLocaleDateString()}
@@ -56,45 +56,7 @@ export default async function ItemsPage() {
                     </section>
 
                     {/* My Inventory Section */}
-                    <section>
-                        <h2 className="text-2xl font-semibold mb-4 text-gray-800">My Inventory</h2>
-                        {userItems.length === 0 ? (
-                            <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
-                                You haven't added any items yet.
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                {userItems.map((item: any) => (
-                                    <div key={item.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h3 className="font-medium text-lg">{item.name}</h3>
-                                                <p className="text-sm text-gray-500 mb-2">{item.description || 'No description'}</p>
-                                                <div className="flex gap-2 text-xs">
-                                                    {item.groups ? (
-                                                        <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                                            {item.groups.name}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="bg-yellow-50 text-yellow-700 px-2 py-1 rounded border border-yellow-200">
-                                                            Unassigned
-                                                        </span>
-                                                    )}
-                                                    <span className={`px-2 py-1 rounded ${item.visibility === 'shared'
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-gray-100 text-gray-800'
-                                                        }`}>
-                                                        {item.visibility === 'shared' ? 'Shared' : 'Personal'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <DeleteItemButton itemId={item.id} />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </section>
+                    <MyInventorySection items={userItems} />
                 </div>
 
                 {/* Sidebar / Add Item Form */}
