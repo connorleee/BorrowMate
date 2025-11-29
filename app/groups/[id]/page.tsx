@@ -1,12 +1,15 @@
 import { getGroupDetails } from '../actions'
-import { getGroupItems } from '@/app/items/actions'
+import { getGroupItems, getUserItems } from '@/app/items/actions'
 import Link from 'next/link'
 import ShareGroupLink from './share-group-link'
+import GroupItemsManager from './group-items-manager'
+import InviteUserButton from '@/components/invite-user-button'
 
 export default async function GroupDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
     const group = await getGroupDetails(id)
     const items = await getGroupItems(id)
+    const userItems = await getUserItems()
 
     if (!group) {
         return <div>Group not found</div>
@@ -22,8 +25,8 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
                         <div className="flex items-center gap-3 mb-2">
                             <h1 className="text-3xl font-bold">{group.name}</h1>
                             <span className={`text-xs px-2 py-1 rounded-full ${group.privacy === 'public'
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-gray-100 text-gray-800'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
                                 }`}>
                                 {group.privacy}
                             </span>
@@ -35,12 +38,7 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
                             <span>{group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}</span>
                         </div>
                     </div>
-                    <Link
-                        href={`/groups/${id}/items/new`}
-                        className="bg-foreground text-background px-4 py-2 rounded-lg font-medium"
-                    >
-                        Add Item
-                    </Link>
+                    <GroupItemsManager groupId={id} userItems={userItems} />
                 </div>
 
                 {group.invite_code && (
@@ -50,7 +48,10 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
 
             {group.memberships && group.memberships.length > 0 && (
                 <div>
-                    <h2 className="text-xl font-bold mb-4">Members</h2>
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-bold">Members</h2>
+                        <InviteUserButton groupId={id} />
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {group.memberships.map((membership: any) => (
                             <div key={membership.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">

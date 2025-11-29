@@ -236,3 +236,111 @@ export async function regenerateInviteCode(groupId: string) {
     revalidatePath(`/groups/${groupId}`)
     return { success: true, inviteCode: data }
 }
+
+export async function addItemsToGroup(groupId: string, itemIds: string[]) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'Not authenticated' }
+    }
+
+    // Verify user is a member of the group
+    const { data: membership } = await supabase
+        .from('group_memberships')
+        .select('id')
+        .eq('group_id', groupId)
+        .eq('user_id', user.id)
+        .single()
+
+    if (!membership) {
+        return { error: 'You must be a member of the group to add items' }
+    }
+
+    // Update items to belong to the group
+    const { error } = await supabase
+        .from('items')
+        .update({ group_id: groupId })
+        .in('id', itemIds)
+        .eq('owner_user_id', user.id) // Ensure user owns the items
+
+    if (error) {
+        console.error('Error adding items to group:', error)
+        return { error: 'Failed to add items to group' }
+    }
+
+    revalidatePath(`/groups/${groupId}`)
+    return { success: true }
+}
+
+export async function searchUsers(query: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return []
+    }
+
+    if (!query || query.length < 2) {
+        return []
+    }
+
+    const { data, error } = await supabase
+        .from('users')
+        .select('id, name, email')
+        .or(`name.ilike.%${query}%,email.ilike.%${query}%`)
+        .limit(10)
+
+    if (error) {
+        console.error('Error searching users:', error)
+        return []
+    }
+
+    return data
+}
+
+export async function addMembers(groupId: string, userIds: string[]) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'Not authenticated' }
+    }
+
+    // Verify user is a member of the group (enforced by RLS, but good to check)
+    const { data: membership } = await supabase
+        .from('group_memberships')
+        .select('id')
+        .eq('group_id', groupId)
+        .eq('user_id', user.id)
+        .single()
+
+    if (!membership) {
+        return { error: 'You must be a member of the group to add others' }
+    }
+
+    const newMembers = userIds.map(userId => ({
+        group_id: groupId,
+        user_id: userId,
+        role: 'member'
+    }))
+
+    const { error } = await supabase
+        .from('group_memberships')
+        .insert(newMembers)
+        // Ignore duplicates if any
+        .select()
+
+    if (error) {
+        // If it's a unique constraint violation, it means some users are already members.
+        // We can probably ignore that for now or handle it more gracefully.
+        if (error.code === '23505') { // unique_violation
+            return { error: 'One or more users are already members of this group.' }
+        }
+        console.error('Error adding members:', error)
+        return { error: 'Failed to add members: ' + error.message }
+    }
+
+    revalidatePath(`/groups/${groupId}`)
+    return { success: true }
+}
