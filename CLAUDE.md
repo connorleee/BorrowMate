@@ -4,7 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-BorrowMate is a Next.js application for tracking shared inventory and borrowing among roommates and friend groups. Users can catalog items (personal or shared), manage groups, track who borrowed what, and follow other users to lend items outside of group contexts.
+BorrowMate (BorrowBase) is a contact-centric item lending app designed for simplicity and minimal friction. The core lending flow is intentionally streamlined:
+
+**Core Lending Flow:** Lend something → pick or create contact → pick one or more items → optional due date → confirm.
+
+Users can manage personal and shared inventory, track who borrowed what, and organize loans through contacts. Groups and user follows exist as optional organizational features, not requirements for core lending functionality.
 
 **Tech Stack:**
 - Next.js 16 (App Router)
@@ -68,6 +72,18 @@ npx supabase db reset    # Reset local DB and reapply all migrations
 - Multi-select uses `Set<string>` for O(1) lookups
 - Debounced search uses `setTimeout` with cleanup in `useEffect`
 
+### High-Level Flow (Contact-Centric Lending)
+
+The app prioritizes a simple, minimal-friction lending experience:
+
+1. **Initiate Lending** - User taps "Lend" from dashboard
+2. **Select or Create Contact** - Search/filter existing contacts or quickly create a new one
+3. **Pick Items** - Multi-select from personal inventory (with optional due date)
+4. **Confirm** - Review and submit borrow record(s)
+5. **Track & Return** - View active loans and mark items as returned when complete
+
+All lending operations center on **contacts**, not groups. Groups remain available for organizing shared inventories or batch operations, but are not required for the core lending flow.
+
 ## Database Schema (Supabase)
 
 ### Core Tables
@@ -76,7 +92,13 @@ npx supabase db reset    # Reset local DB and reapply all migrations
 - Auto-populated via trigger on auth.users insert
 - Fields: id, name, email, phone, created_at
 
-**groups** - Household/friend groups
+**contacts** - User's personal lending contacts
+- Per-user private table (not shared across users)
+- Fields: id, owner_user_id, name, email (nullable), phone (nullable), linked_user_id (nullable FK to users.id), created_at, updated_at
+- `linked_user_id` allows linking a contact to an actual BorrowMate user
+- RLS: Only visible to owner
+
+**groups** - Household/friend groups (secondary/optional)
 - Fields: id, name, description, created_by, privacy ('public'|'private'), invite_code
 - RLS: Viewable by members only
 
@@ -85,26 +107,32 @@ npx supabase db reset    # Reset local DB and reapply all migrations
 - Unique constraint on (user_id, group_id)
 
 **items** - Inventory catalog
-- Fields: id, group_id (nullable), name, description, category, owner_user_id, visibility ('shared'|'personal'), status ('available'|'unavailable'), privacy ('public'|'private'), price_usd
+- Fields: id, group_id (nullable), name, description, category, owner_user_id, visibility ('shared'|'personal'), ownership_type ('owner'|'shared'), status ('available'|'unavailable'), privacy ('public'|'private'), qr_slug (nullable), price_usd, created_at, updated_at
 - `group_id = null` means personal item not assigned to group
-- RLS: Viewable by group members OR owner OR followers (if public)
+- `ownership_type` indicates whether user owns or co-owns the item
+- `qr_slug` optional for QR/NFC quick-action linking
+- RLS: Viewable by owner, group members, or followers (if public)
 
-**borrow_records** - Borrowing transactions
-- Fields: item_id, group_id (nullable), lender_user_id, borrower_user_id (nullable), borrower_name (for external borrowers), start_date, due_date, returned_at, status ('borrowed'|'returned'|'overdue')
-- `group_id = null` for personal item lending
-- RLS: Viewable by lender, borrower, or group members
+**borrow_records** - Borrowing transactions (contact-centric)
+- Fields: id, item_id, contact_id, group_id (nullable), lender_user_id, borrower_user_id (nullable), start_date, due_date, returned_at, status ('borrowed'|'returned'|'overdue'|'lost'), created_at, updated_at
+- `contact_id` (required) - Links to contacts table; core identifier for lending
+- `borrower_user_id` (nullable) - If contact is linked to a BorrowMate user
+- `group_id` (nullable) - If lending involves a group; primary lending is contact-based
+- RLS: Viewable by lender, borrower (if user), or group members (if applicable)
 
-**user_follows** - User following relationships
+**user_follows** - User following relationships (secondary/optional)
 - Fields: follower_id, following_id
 - Asymmetric (one-way) follows
 - Check constraint prevents self-follows
+- Note: Not required for core lending flow; contacts are the primary organizational unit
 
 ### RLS (Row-Level Security) Important Notes
 
 **All tables have RLS enabled.** When writing server actions:
 - Failed inserts/updates often indicate RLS policy violations
 - Check policies in `supabase/migrations/20240101000000_init.sql` and subsequent migrations
-- Personal items (null group_id) require special RLS handling added in migration `20250128170000_make_borrow_records_group_nullable.sql`
+- Contacts are per-user private; RLS ensures only owner can access
+- Contact-based lending (null group_id) requires proper RLS handling on borrow_records to respect contact ownership
 
 ### Migration Workflow
 
@@ -173,18 +201,56 @@ export default function Modal({ isOpen }) {
 ## Important Gotchas
 
 1. **Server/Client Boundary**: Never import server utilities in client components or vice versa
-2. **RLS Violations**: If mutations fail silently, check RLS policies - especially for null group_id scenarios
+2. **RLS Violations**: If mutations fail silently, check RLS policies - especially for contact-based lending
 3. **Middleware**: Uses `utils/supabase/middleware.ts` for session refresh
 4. **Async Server Components**: All server components are async and use `await` for data fetching
 5. **Form Actions**: Can pass server actions directly to `action` prop or call imperatively from client components
 6. **Next.js 16**: Uses Turbopack in development, be aware of caching behavior
 
+## UI & Product Flows
+
+### Core Lending Flow (3–5 Taps)
+
+1. User initiates "Lend" action
+2. Select or create a contact (search, filter, or quick-add)
+3. Select one or more items from inventory
+4. Optionally set due date
+5. Confirm and create borrow record(s)
+
+**Philosophy:** Minimize steps and decision fatigue. Contact selection is always the first choice point.
+
+### Quick Return Flow
+
+- **Currently Lent** view displays active loans grouped by contact
+- Single tap to mark item as returned
+- System auto-updates status and clears item from "unavailable"
+
+### Multi-Item Lending Sessions
+
+- Select multiple items to lend to same contact in one action
+- Each item creates a separate borrow_record
+- Due date applies to all items in session (or individually if needed)
+
+### Optional Features
+
+- **Smart Reminders** - Due date notifications; overdue alerts
+- **QR/NFC Quick Actions** - `qr_slug` field enables quick item lookup and lending flows
+- **Activity Timeline** - Visual history of lending/returns per contact
+- **Ownership Badges** - Visually distinguish owned vs. shared items in inventory
+
 ## Batch Lending Feature
 
-Recently added feature allowing users to lend multiple personal items to followers or group members:
-- Multi-select UI with checkboxes (uses `Set<string>` state)
-- Recipient search with 300ms debounce
-- Creates borrow_records with `group_id = null`
+Core feature for contact-centric lending: Select one contact + multiple items in a single session.
+
+**User Flow:**
+- Multi-select UI with checkboxes (uses `Set<string>` state for O(1) lookups)
+- Contact search with 300ms debounce
+- Optional due date for entire batch (or per-item if needed)
+- Confirm to create multiple borrow_records linked to single contact
+
+**Implementation:**
+- Creates separate borrow_record for each item, all linked to same contact_id
 - Comprehensive error handling with partial success reporting
+- Item status updated to 'unavailable' upon successful lending
 - Components: `MyInventorySection`, `BatchLendModal`, `LendableItemCard`, `BatchLendButton`
 - Server action: `batchLendItems()` in `app/items/actions.ts`

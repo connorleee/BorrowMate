@@ -110,14 +110,14 @@ export async function getActiveBorrows() {
         .from('borrow_records')
         .select(`
             *,
-            item:item_id (
+            item:items (
                 id,
                 name,
                 description,
                 status,
                 category
             ),
-            lender:lender_user_id (
+            lender:users!borrow_records_lender_user_id_fkey (
                 id,
                 name,
                 email
@@ -131,14 +131,14 @@ export async function getActiveBorrows() {
         .from('borrow_records')
         .select(`
             *,
-            item:item_id (
+            item:items (
                 id,
                 name,
                 description,
                 status,
                 category
             ),
-            borrower:borrower_user_id (
+            borrower:users!borrow_records_borrower_user_id_fkey (
                 id,
                 name,
                 email
