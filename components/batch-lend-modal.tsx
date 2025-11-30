@@ -2,20 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { getPotentialBorrowers, searchPotentialBorrowers } from '@/app/items/actions'
+import { searchContacts, createContact } from '@/app/contacts/actions'
 
-interface User {
+interface Contact {
   id: string
   name: string
-  email: string
-  source?: string
+  email?: string | null
+  phone?: string | null
+  linked_user_id?: string | null
 }
 
 interface BatchLendModalProps {
   isOpen: boolean
   onClose: () => void
   selectedItemIds: string[]
-  onLend: (borrowerId: string) => Promise<void>
+  onLend: (contactId: string, dueDate?: string) => Promise<void>
 }
 
 export default function BatchLendModal({
@@ -24,31 +25,24 @@ export default function BatchLendModal({
   selectedItemIds,
   onLend
 }: BatchLendModalProps) {
-  const [selectedBorrower, setSelectedBorrower] = useState<string | null>(null)
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [following, setFollowing] = useState<User[]>([])
-  const [groupMembers, setGroupMembers] = useState<User[]>([])
-  const [searchResults, setSearchResults] = useState<User[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [searchResults, setSearchResults] = useState<Contact[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [dueDate, setDueDate] = useState('')
 
-  // Load initial data when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      loadPotentialBorrowers()
-    } else {
-      // Reset state when modal closes
-      setSelectedBorrower(null)
-      setSearchQuery('')
-      setSearchResults([])
-      setError(null)
-    }
-  }, [isOpen])
+  // Mode for quick contact creation
+  const [quickAddMode, setQuickAddMode] = useState(false)
+  const [quickAddName, setQuickAddName] = useState('')
+  const [quickAddEmail, setQuickAddEmail] = useState('')
+  const [isCreatingQuick, setIsCreatingQuick] = useState(false)
 
   // Debounced search
   useEffect(() => {
+    if (!isOpen) return
+
     if (!searchQuery || searchQuery.length < 2) {
       setSearchResults([])
       setIsSearching(false)
@@ -57,36 +51,73 @@ export default function BatchLendModal({
 
     setIsSearching(true)
     const delayDebounceFn = setTimeout(async () => {
-      const results = await searchPotentialBorrowers(searchQuery)
-      setSearchResults(results)
-      setIsSearching(false)
+      try {
+        const results = await searchContacts(searchQuery)
+        setSearchResults(results as Contact[])
+      } catch (err) {
+        console.error('Error searching contacts:', err)
+        setSearchResults([])
+      } finally {
+        setIsSearching(false)
+      }
     }, 300)
 
     return () => clearTimeout(delayDebounceFn)
-  }, [searchQuery])
+  }, [searchQuery, isOpen])
 
-  const loadPotentialBorrowers = async () => {
-    setIsLoading(true)
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedContactId(null)
+      setSearchQuery('')
+      setSearchResults([])
+      setError(null)
+      setDueDate('')
+      setQuickAddMode(false)
+      setQuickAddName('')
+      setQuickAddEmail('')
+    }
+  }, [isOpen])
+
+  const handleQuickAdd = async () => {
+    if (!quickAddName.trim()) {
+      setError('Contact name is required')
+      return
+    }
+
+    setIsCreatingQuick(true)
+    setError(null)
+
     try {
-      const { following: followingData, groupMembers: groupMembersData } =
-        await getPotentialBorrowers()
-      setFollowing(followingData)
-      setGroupMembers(groupMembersData)
+      const formData = new FormData()
+      formData.append('name', quickAddName)
+      formData.append('email', quickAddEmail)
+
+      const result = await createContact(formData)
+      if (result.error) {
+        setError(result.error)
+      } else if (result.data) {
+        setSelectedContactId(result.data.id)
+        setQuickAddMode(false)
+        setQuickAddName('')
+        setQuickAddEmail('')
+        setSearchQuery('')
+      }
     } catch (err) {
-      setError('Failed to load potential borrowers')
+      setError(err instanceof Error ? err.message : 'Failed to create contact')
     } finally {
-      setIsLoading(false)
+      setIsCreatingQuick(false)
     }
   }
 
   const handleSubmit = async () => {
-    if (!selectedBorrower) return
+    if (!selectedContactId) return
 
     setIsSubmitting(true)
     setError(null)
 
     try {
-      await onLend(selectedBorrower)
+      await onLend(selectedContactId, dueDate || undefined)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to lend items')
@@ -97,20 +128,13 @@ export default function BatchLendModal({
 
   if (!isOpen) return null
 
-  // Determine which list to display
-  const showSearchResults = searchQuery.length >= 2
-  const displayFollowing = showSearchResults
-    ? searchResults.filter((u) => u.source === 'following' || u.source === 'both')
-    : following
-  const displayGroupMembers = showSearchResults
-    ? searchResults.filter((u) => u.source === 'group' || u.source === 'both')
-    : groupMembers
+  if (typeof document === 'undefined') return null
 
-  const hasNoRecipients = following.length === 0 && groupMembers.length === 0
+  const showSearchResults = searchQuery.length >= 2
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b flex justify-between items-center">
           <h2 className="text-xl font-bold">
@@ -138,123 +162,155 @@ export default function BatchLendModal({
           </button>
         </div>
 
-        {/* Search Bar */}
-        <div className="p-4 border-b">
-          <input
-            type="text"
-            placeholder="Search by name or email..."
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            disabled={isSubmitting}
-          />
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mx-4 mt-4 bg-red-100 text-red-800 p-2 rounded-md text-sm">
-            {error}
-          </div>
-        )}
-
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {isLoading ? (
-            <div className="text-center py-8 text-gray-500">Loading...</div>
-          ) : hasNoRecipients ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>You don't have any followers or group members to lend to.</p>
-              <p className="text-sm mt-2">
-                Follow users or join groups to lend items.
-              </p>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-sm">
+              {error}
             </div>
-          ) : isSearching ? (
-            <div className="text-center py-4 text-gray-500">Searching...</div>
-          ) : showSearchResults && searchResults.length === 0 ? (
-            <div className="text-center py-4 text-gray-500">No users found</div>
+          )}
+
+          {!quickAddMode ? (
+            <>
+              {/* Search Bar */}
+              <div>
+                <input
+                  type="text"
+                  placeholder="Search contacts by name, email, or phone..."
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  disabled={isSubmitting}
+                  autoFocus
+                />
+              </div>
+
+              {/* Quick Add Button */}
+              <button
+                onClick={() => {
+                  setQuickAddMode(true)
+                  setError(null)
+                }}
+                disabled={isSubmitting}
+                className="w-full py-2 px-3 border border-dashed border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 text-sm font-medium transition-colors"
+              >
+                + Create New Contact
+              </button>
+
+              {/* Contact List */}
+              {isSearching ? (
+                <div className="text-center py-8 text-gray-500">Searching...</div>
+              ) : showSearchResults && searchResults.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">No contacts found</div>
+              ) : searchResults.length > 0 ? (
+                <div className="space-y-2">
+                  {searchResults.map((contact) => (
+                    <div
+                      key={contact.id}
+                      className={`flex items-center p-3 rounded-lg border cursor-pointer transition-colors ${
+                        selectedContactId === contact.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:bg-gray-50'
+                      }`}
+                      onClick={() => setSelectedContactId(contact.id)}
+                    >
+                      <div
+                        className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 flex-shrink-0 ${
+                          selectedContactId === contact.id
+                            ? 'border-blue-500 bg-blue-500'
+                            : 'border-gray-300 bg-white'
+                        }`}
+                      >
+                        {selectedContactId === contact.id && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium">{contact.name}</div>
+                        {contact.email && (
+                          <div className="text-xs text-gray-500">{contact.email}</div>
+                        )}
+                      </div>
+                      {contact.linked_user_id && (
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded whitespace-nowrap">
+                          Linked
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  <p>Search for an existing contact or create a new one.</p>
+                </div>
+              )}
+            </>
           ) : (
-            <div className="space-y-6">
-              {/* People You Follow */}
-              {displayFollowing.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                    People You Follow
-                  </h3>
-                  <div className="space-y-2">
-                    {displayFollowing.map((user) => (
-                      <div
-                        key={user.id}
-                        className={`flex items-center p-3 rounded-lg border cursor-pointer transition-colors ${
-                          selectedBorrower === user.id
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:bg-gray-50'
-                        }`}
-                        onClick={() => setSelectedBorrower(user.id)}
-                      >
-                        <div
-                          className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${
-                            selectedBorrower === user.id
-                              ? 'border-blue-500 bg-blue-500'
-                              : 'border-gray-300 bg-white'
-                          }`}
-                        >
-                          {selectedBorrower === user.id && (
-                            <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-medium">{user.name}</div>
-                          <div className="text-xs text-gray-500">{user.email}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+            /* Quick Add Form */
+            <div className="space-y-4">
+              <h3 className="font-medium">Quick Add Contact</h3>
 
-              {/* Group Members */}
-              {displayGroupMembers.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                    Group Members
-                  </h3>
-                  <div className="space-y-2">
-                    {displayGroupMembers.map((user) => (
-                      <div
-                        key={user.id}
-                        className={`flex items-center p-3 rounded-lg border cursor-pointer transition-colors ${
-                          selectedBorrower === user.id
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:bg-gray-50'
-                        }`}
-                        onClick={() => setSelectedBorrower(user.id)}
-                      >
-                        <div
-                          className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${
-                            selectedBorrower === user.id
-                              ? 'border-blue-500 bg-blue-500'
-                              : 'border-gray-300 bg-white'
-                          }`}
-                        >
-                          {selectedBorrower === user.id && (
-                            <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-medium">{user.name}</div>
-                          <div className="text-xs text-gray-500">{user.email}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={quickAddName}
+                  onChange={(e) => setQuickAddName(e.target.value)}
+                  placeholder="Contact name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  disabled={isCreatingQuick}
+                  autoFocus
+                />
+              </div>
 
-              {!showSearchResults && (
-                <div className="text-center text-sm text-gray-400 pt-2">
-                  Type to search for specific users
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={quickAddEmail}
+                  onChange={(e) => setQuickAddEmail(e.target.value)}
+                  placeholder="contact@example.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  disabled={isCreatingQuick}
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setQuickAddMode(false)}
+                  disabled={isCreatingQuick}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleQuickAdd}
+                  disabled={isCreatingQuick || !quickAddName.trim()}
+                  className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
+                >
+                  {isCreatingQuick ? 'Creating...' : 'Add & Select'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Due Date Picker */}
+          {selectedContactId && !quickAddMode && (
+            <div className="border-t pt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Due Date (Optional)
+              </label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              />
             </div>
           )}
         </div>
@@ -270,9 +326,9 @@ export default function BatchLendModal({
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!selectedBorrower || isSubmitting}
+            disabled={!selectedContactId || isSubmitting}
             className={`px-4 py-2 rounded-lg font-medium text-white transition-colors ${
-              !selectedBorrower || isSubmitting
+              !selectedContactId || isSubmitting
                 ? 'bg-blue-300 cursor-not-allowed'
                 : 'bg-blue-600 hover:bg-blue-700'
             }`}

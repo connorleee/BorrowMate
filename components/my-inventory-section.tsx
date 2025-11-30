@@ -4,7 +4,7 @@ import { useState } from 'react'
 import LendableItemCard from './lendable-item-card'
 import BatchLendButton from './batch-lend-button'
 import BatchLendModal from './batch-lend-modal'
-import { batchLendItems } from '@/app/items/actions'
+import { batchLendToContact } from '@/app/borrow/actions'
 
 interface Item {
   id: string
@@ -56,39 +56,24 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
     setIsLendModalOpen(true)
   }
 
-  const handleLendItems = async (borrowerId: string) => {
+  const handleLendItems = async (contactId: string, dueDate?: string) => {
     try {
-      const result = await batchLendItems(Array.from(selectedItems), borrowerId)
+      const result = await batchLendToContact(Array.from(selectedItems), contactId, dueDate)
 
       if (result.error) {
         setFeedbackMessage({
           type: 'error',
-          text: result.error,
-          details: result.details?.map((d: any) => `${d.itemId}: ${d.error}`)
+          text: result.error
         })
         return
       }
 
-      // At this point, result.success is true - narrow the type
-      const successResult = result as {
-        success: boolean
-        borrowerName: string
-        succeeded: string[]
-        failed: { itemId: string; error: string }[]
-      }
-
-      const successText = `Successfully lent ${successResult.succeeded.length} item${
-        successResult.succeeded.length !== 1 ? 's' : ''
-      } to ${successResult.borrowerName}`
-
-      const failureDetails = successResult.failed?.map(
-        (f: any) => `${f.itemId}: ${f.error}`
-      )
+      const itemCount = result.data?.length || selectedItems.size
+      const successText = `Successfully lent ${itemCount} item${itemCount !== 1 ? 's' : ''}`
 
       setFeedbackMessage({
-        type: successResult.failed.length > 0 ? 'error' : 'success',
-        text: successText,
-        details: failureDetails?.length > 0 ? failureDetails : undefined
+        type: 'success',
+        text: successText
       })
 
       // Exit multi-select mode and clear selections
@@ -97,11 +82,9 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
       setIsLendModalOpen(false)
 
       // Auto-dismiss success message after 5 seconds
-      if (successResult.failed.length === 0) {
-        setTimeout(() => {
-          setFeedbackMessage(null)
-        }, 5000)
-      }
+      setTimeout(() => {
+        setFeedbackMessage(null)
+      }, 5000)
     } catch (error) {
       setFeedbackMessage({
         type: 'error',

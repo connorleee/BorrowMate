@@ -16,8 +16,9 @@ export default async function TopNav() {
                     {user ? (
                         <>
                             <Link href="/dashboard" className="hover:text-gray-600">Dashboard</Link>
-                            <Link href="/groups" className="hover:text-gray-600">Groups</Link>
                             <Link href="/items" className="hover:text-gray-600">My Items</Link>
+                            <Link href="/contacts" className="hover:text-gray-600">Contacts</Link>
+                            <Link href="/groups" className="hover:text-gray-600">Groups</Link>
                             <div className="flex items-center gap-4 ml-4 pl-4 border-l">
                                 <span className="text-gray-500 hidden sm:inline">{user.user_metadata.name || user.email}</span>
                                 <form action={logout}>

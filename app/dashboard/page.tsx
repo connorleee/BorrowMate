@@ -1,11 +1,12 @@
-import { getActiveBorrows, returnItem } from '@/app/borrow/actions'
+import { getActiveBorrows, returnItem, getActiveBorrowsGroupedByContact } from '@/app/borrow/actions'
 import { getUserItems } from '@/app/items/actions'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
-    const [{ borrowed, lent }, userItems] = await Promise.all([
+    const [{ borrowed, lent }, userItems, lentGroupedByContact] = await Promise.all([
         getActiveBorrows(),
-        getUserItems()
+        getUserItems(),
+        getActiveBorrowsGroupedByContact()
     ])
 
     return (
@@ -48,28 +49,52 @@ export default async function DashboardPage() {
                 )}
             </section>
 
-            {/* Items I lent out */}
+            {/* Items I lent out - grouped by contact */}
             <section>
-                <h2 className="text-xl font-bold mb-4">Items I've Lent Out</h2>
-                {lent.length === 0 ? (
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold">Items I've Lent Out</h2>
+                    <Link href="/contacts" className="text-sm text-blue-600 hover:underline">
+                        Manage Contacts
+                    </Link>
+                </div>
+                {lentGroupedByContact.length === 0 ? (
                     <p className="text-gray-500">You haven't lent anything out.</p>
                 ) : (
-                    <div className="grid gap-4">
-                        {lent.map((record: any) => (
-                            <div key={record.id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
-                                <div>
-                                    <h3 className="font-bold">{record.item?.name || 'Unknown Item'}</h3>
-                                    <p className="text-sm text-gray-600">To: {record.borrower_name || record.borrower?.name || 'Unknown'}</p>
-                                    <p className="text-xs text-gray-400">Due: {record.due_date ? new Date(record.due_date).toLocaleDateString() : 'No due date'}</p>
+                    <div className="space-y-6">
+                        {lentGroupedByContact.map((group: any) => (
+                            <div key={group.contactId} className="border rounded-lg overflow-hidden bg-white">
+                                {/* Contact Header */}
+                                <div className="bg-gray-50 px-4 py-3 border-b">
+                                    <h3 className="font-bold text-lg">{group.contact?.name || 'Unknown Contact'}</h3>
+                                    {group.contact?.email && (
+                                        <p className="text-sm text-gray-600">{group.contact.email}</p>
+                                    )}
                                 </div>
-                                <form action={async () => {
-                                    'use server'
-                                    await returnItem(record.id, record.item_id, record.group_id)
-                                }}>
-                                    <button className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200">
-                                        Mark Returned
-                                    </button>
-                                </form>
+
+                                {/* Items for this contact */}
+                                <div className="divide-y">
+                                    {group.items?.map((record: any) => (
+                                        <div key={record.id} className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                            <div className="flex-1">
+                                                <h4 className="font-medium">{record.item?.name || 'Unknown Item'}</h4>
+                                                {record.item?.description && (
+                                                    <p className="text-sm text-gray-600">{record.item.description}</p>
+                                                )}
+                                                <p className="text-xs text-gray-400 mt-1">
+                                                    Due: {record.due_date ? new Date(record.due_date).toLocaleDateString() : 'No due date'}
+                                                </p>
+                                            </div>
+                                            <form action={async () => {
+                                                'use server'
+                                                await returnItem(record.id, record.item_id, record.group_id)
+                                            }}>
+                                                <button className="ml-4 text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 transition-colors">
+                                                    Mark Returned
+                                                </button>
+                                            </form>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         ))}
                     </div>

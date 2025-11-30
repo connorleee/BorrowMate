@@ -5,11 +5,11 @@ export default function Home() {
         <div className="flex flex-col items-center justify-center min-h-[80vh] text-center gap-8">
             <div className="space-y-4 max-w-2xl">
                 <h1 className="text-5xl font-bold tracking-tight">
-                    Never lose track of shared stuff again.
+                    Never lose track of what you've lent.
                 </h1>
                 <p className="text-xl text-gray-600">
-                    BorrowBase helps roommates and friend groups track shared inventory and borrowing.
-                    Know who has what, when it's due back, and keep your household organized.
+                    Lend to anyone — they don't need an account. BorrowMate makes tracking who has what simple and effortless.
+                    Add contacts, lend items, set due dates, and stay organized.
                 </p>
             </div>
 
@@ -30,16 +30,16 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 text-left max-w-4xl">
                 <div className="p-6 bg-gray-50 rounded-xl">
-                    <h3 className="font-bold text-lg mb-2">Track Inventory</h3>
-                    <p className="text-gray-600">Catalog shared items like tools, games, and kitchen gear in one place.</p>
+                    <h3 className="font-bold text-lg mb-2">Lend to Anyone</h3>
+                    <p className="text-gray-600">Create contacts for friends and family, then lend items with just a few taps — no signup required.</p>
                 </div>
                 <div className="p-6 bg-gray-50 rounded-xl">
-                    <h3 className="font-bold text-lg mb-2">Log Borrowing</h3>
-                    <p className="text-gray-600">Mark items as borrowed and set due dates so everyone knows where things are.</p>
+                    <h3 className="font-bold text-lg mb-2">Stay Organized</h3>
+                    <p className="text-gray-600">View all items you've lent, grouped by contact, with optional due dates to remember when things are due back.</p>
                 </div>
                 <div className="p-6 bg-gray-50 rounded-xl">
                     <h3 className="font-bold text-lg mb-2">Manage Groups</h3>
-                    <p className="text-gray-600">Create multiple groups for your apartment, family, or friend circle.</p>
+                    <p className="text-gray-600">Share inventory with households or friend groups, organize shared items, and collaborate effortlessly.</p>
                 </div>
             </div>
         </div>

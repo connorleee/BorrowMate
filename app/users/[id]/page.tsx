@@ -1,5 +1,4 @@
-import { getUserProfile, getUserPublicItems, isFollowing, getFollowCounts } from '@/app/users/actions'
-import { followUser, unfollowUser } from '@/app/users/actions'
+import { getUserProfile, getUserPublicItems } from '@/app/users/actions'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import FollowButton from './FollowButton'
@@ -13,11 +12,9 @@ export default async function UserProfilePage({ params }: { params: { id: string
     }
 
     const userId = params.id
-    const [profile, publicItems, following, followCounts] = await Promise.all([
+    const [profile, publicItems] = await Promise.all([
         getUserProfile(userId),
-        getUserPublicItems(userId),
-        isFollowing(userId),
-        getFollowCounts(userId)
+        getUserPublicItems(userId)
     ])
 
     if (!profile) {
@@ -41,21 +38,10 @@ export default async function UserProfilePage({ params }: { params: { id: string
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">{profile.name}</h1>
                             <p className="text-gray-600">{profile.email}</p>
-
-                            <div className="flex gap-6 mt-4">
-                                <div>
-                                    <span className="font-semibold text-gray-900">{followCounts.followers}</span>
-                                    <span className="text-gray-600 ml-1">followers</span>
-                                </div>
-                                <div>
-                                    <span className="font-semibold text-gray-900">{followCounts.following}</span>
-                                    <span className="text-gray-600 ml-1">following</span>
-                                </div>
-                            </div>
                         </div>
 
                         {!isOwnProfile && (
-                            <FollowButton userId={userId} initialFollowing={following} />
+                            <FollowButton />
                         )}
                     </div>
                 </div>
@@ -63,13 +49,13 @@ export default async function UserProfilePage({ params }: { params: { id: string
                 {/* Public Items */}
                 <div className="bg-white rounded-lg shadow-sm p-6">
                     <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                        Public Items {isOwnProfile && '(visible to your followers)'}
+                        Public Items
                     </h2>
 
                     {publicItems.length === 0 ? (
                         <p className="text-gray-500">
                             {isOwnProfile
-                                ? 'You haven\'t made any items public yet. Set items to public in your groups to share them with your followers.'
+                                ? 'You haven\'t made any items public yet. Set items to public in your groups to share them.'
                                 : 'This user hasn\'t shared any public items yet.'}
                         </p>
                     ) : (
