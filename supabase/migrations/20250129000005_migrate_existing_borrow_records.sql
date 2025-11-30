@@ -82,10 +82,3 @@ END $$;
 -- Step 5: Make contact_id NOT NULL (per decision #3)
 ALTER TABLE public.borrow_records
   ALTER COLUMN contact_id SET NOT NULL;
-
--- Step 6: Ensure foreign key constraint is in place
--- (it should be from migration 20250129000001, but verify)
-ALTER TABLE public.borrow_records
-  ADD CONSTRAINT fk_borrow_records_contact_id
-    FOREIGN KEY (contact_id) REFERENCES public.contacts(id) ON DELETE CASCADE
-  ON CONFLICT DO NOTHING;

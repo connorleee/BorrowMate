@@ -1,3 +1,12 @@
+-- Create trigger function for auto-updating updated_at column (if not exists)
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ language 'plpgsql';
+
 -- Create contacts table for contact-centric lending
 CREATE TABLE contacts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

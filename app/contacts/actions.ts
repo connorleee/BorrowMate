@@ -12,21 +12,24 @@ export async function getContacts() {
   const { data, error } = await supabase
     .from('contacts')
     .select(`
-      *,
-      linked_user:linked_user_id (
-        name,
-        email
-      )
+      id,
+      owner_user_id,
+      name,
+      email,
+      phone,
+      linked_user_id,
+      created_at,
+      updated_at
     `)
     .eq('owner_user_id', user.id)
     .order('name', { ascending: true })
 
   if (error) {
-    console.error('Error fetching contacts:', error)
+    console.error('Error fetching contacts:', JSON.stringify(error, null, 2))
     return []
   }
 
-  return data
+  return data || []
 }
 
 export async function searchContacts(query: string) {
@@ -42,22 +45,25 @@ export async function searchContacts(query: string) {
   const { data, error } = await supabase
     .from('contacts')
     .select(`
-      *,
-      linked_user:linked_user_id (
-        name,
-        email
-      )
+      id,
+      owner_user_id,
+      name,
+      email,
+      phone,
+      linked_user_id,
+      created_at,
+      updated_at
     `)
     .eq('owner_user_id', user.id)
     .or(`name.ilike.${searchTerm},email.ilike.${searchTerm},phone.ilike.${searchTerm}`)
     .order('name', { ascending: true })
 
   if (error) {
-    console.error('Error searching contacts:', error)
+    console.error('Error searching contacts:', JSON.stringify(error, null, 2))
     return []
   }
 
-  return data
+  return data || []
 }
 
 export async function createContact(formData: FormData) {

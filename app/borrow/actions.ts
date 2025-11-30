@@ -287,23 +287,26 @@ export async function getActiveBorrowsGroupedByContact() {
     }
 
     // Fetch all active borrow records for items lent by this user
+    // Note: Only join with items (which exists), not contacts (which may not be migrated yet)
     const { data: borrowRecords, error } = await supabase
         .from('borrow_records')
         .select(`
-            *,
+            id,
+            item_id,
+            contact_id,
+            lender_user_id,
+            borrower_user_id,
+            start_date,
+            due_date,
+            returned_at,
+            status,
+            created_at,
             item:items (
                 id,
                 name,
                 description,
                 status,
                 category
-            ),
-            contact:contacts (
-                id,
-                name,
-                email,
-                phone,
-                linked_user_id
             )
         `)
         .eq('lender_user_id', user.id)
@@ -312,25 +315,47 @@ export async function getActiveBorrowsGroupedByContact() {
         .order('created_at', { ascending: false })
 
     if (error) {
-        console.error('Error fetching active borrows:', error)
+        console.error('Error fetching active borrows:', JSON.stringify(error, null, 2))
         return []
+    }
+
+    // Guard against null/undefined records
+    if (!borrowRecords || borrowRecords.length === 0) {
+        return []
+    }
+
+    // Fetch contacts separately to avoid join issues if table doesn't exist
+    let contactsMap: Record<string, any> = {}
+    const contactIds = [...new Set(borrowRecords.map(r => r.contact_id).filter(Boolean))]
+
+    if (contactIds.length > 0) {
+        const { data: contacts } = await supabase
+            .from('contacts')
+            .select('id, name, email, phone, linked_user_id')
+            .in('id', contactIds)
+
+        if (contacts) {
+            contactsMap = Object.fromEntries(contacts.map(c => [c.id, c]))
+        }
     }
 
     // Group records by contact
     const groupedByContact: Record<string, typeof borrowRecords> = {}
 
-    borrowRecords?.forEach(record => {
+    borrowRecords.forEach(record => {
         const contactId = record.contact_id
-        if (!groupedByContact[contactId]) {
+        if (contactId && !groupedByContact[contactId]) {
             groupedByContact[contactId] = []
         }
-        groupedByContact[contactId].push(record)
+        if (contactId) {
+            groupedByContact[contactId].push(record)
+        }
     })
 
     // Convert to array format for display
     const result = Object.entries(groupedByContact).map(([contactId, records]) => ({
         contactId,
-        contact: records[0]?.contact,
+        contact: contactsMap[contactId] || { id: contactId, name: 'Unknown Contact' },
         items: records,
     }))
 
