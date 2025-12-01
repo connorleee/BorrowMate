@@ -92,7 +92,7 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
   if (typeof document === 'undefined') return null
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-6 pb-4 border-b">
@@ -130,11 +130,10 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
             {/* Status Badge */}
             <div className="flex gap-2">
               <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  data.item.status === 'available'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
-                }`}
+                className={`px-3 py-1 rounded-full text-sm font-medium ${data.item.status === 'available'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-red-100 text-red-800'
+                  }`}
               >
                 {data.item.status === 'available' ? 'Available' : 'Unavailable'}
               </span>
@@ -234,13 +233,12 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
                           )}
                         </div>
                         <span
-                          className={`text-xs px-2 py-1 rounded whitespace-nowrap ${
-                            record.status === 'returned'
-                              ? 'bg-green-100 text-green-800'
-                              : record.status === 'borrowed'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-gray-100 text-gray-800'
-                          }`}
+                          className={`text-xs px-2 py-1 rounded whitespace-nowrap ${record.status === 'returned'
+                            ? 'bg-green-100 text-green-800'
+                            : record.status === 'borrowed'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-gray-100 text-gray-800'
+                            }`}
                         >
                           {record.status}
                         </span>
@@ -353,7 +351,7 @@ function ItemEditSubModal({ item, onClose, onSuccess }: { item: any; onClose: ()
   if (typeof document === 'undefined') return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
         <h3 className="text-xl font-bold mb-4">Edit Item</h3>
 
