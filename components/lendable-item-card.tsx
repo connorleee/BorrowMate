@@ -14,17 +14,21 @@ interface LendableItemCardProps {
   isMultiSelectMode: boolean
   isSelected: boolean
   onToggleSelect: (itemId: string) => void
+  onViewDetails?: (itemId: string) => void
 }
 
 export default function LendableItemCard({
   item,
   isMultiSelectMode,
   isSelected,
-  onToggleSelect
+  onToggleSelect,
+  onViewDetails
 }: LendableItemCardProps) {
   const handleClick = () => {
     if (isMultiSelectMode) {
       onToggleSelect(item.id)
+    } else if (onViewDetails) {
+      onViewDetails(item.id)
     }
   }
 
@@ -35,9 +39,11 @@ export default function LendableItemCard({
           ? isSelected
             ? 'border-blue-500 bg-blue-50 cursor-pointer'
             : 'border-gray-200 hover:bg-gray-50 cursor-pointer'
-          : 'border-gray-200'
+          : 'border-gray-200 cursor-pointer hover:border-blue-300 hover:shadow-md'
       }`}
       onClick={handleClick}
+      role="button"
+      tabIndex={0}
     >
       <div className="flex justify-between items-start">
         <div className="flex items-start gap-3 flex-1">

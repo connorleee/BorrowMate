@@ -4,6 +4,7 @@ import { useState } from 'react'
 import LendableItemCard from './lendable-item-card'
 import BatchLendButton from './batch-lend-button'
 import BatchLendModal from './batch-lend-modal'
+import ItemDetailModal from './item-detail-modal'
 import { batchLendToContact } from '@/app/borrow/actions'
 
 interface Item {
@@ -29,6 +30,7 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [isLendModalOpen, setIsLendModalOpen] = useState(false)
+  const [selectedItemForDetail, setSelectedItemForDetail] = useState<string | null>(null)
   const [feedbackMessage, setFeedbackMessage] = useState<FeedbackMessage | null>(null)
 
   // Filter to only personal items (no group_id and available)
@@ -181,6 +183,7 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
                 isMultiSelectMode={isMultiSelectMode && isSelectable}
                 isSelected={selectedItems.has(item.id)}
                 onToggleSelect={toggleItemSelection}
+                onViewDetails={() => setSelectedItemForDetail(item.id)}
               />
             )
           })}
@@ -194,6 +197,15 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
         selectedItemIds={Array.from(selectedItems)}
         onLend={handleLendItems}
       />
+
+      {/* Item Detail Modal */}
+      {selectedItemForDetail && (
+        <ItemDetailModal
+          isOpen={!!selectedItemForDetail}
+          onClose={() => setSelectedItemForDetail(null)}
+          itemId={selectedItemForDetail}
+        />
+      )}
     </section>
   )
 }
