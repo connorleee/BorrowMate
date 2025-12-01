@@ -35,8 +35,8 @@ export default function AboutPage() {
             <section className="space-y-8">
                 <h2 className="text-3xl font-bold">Key Features</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                        <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
+                    <div className="p-6 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl border border-primary-200">
+                        <div className="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center mb-4">
                             <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                             </svg>
@@ -117,11 +117,11 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            <section className="space-y-6 bg-gradient-to-r from-blue-50 to-purple-50 p-8 rounded-2xl border border-blue-200">
+            <section className="space-y-6 bg-gradient-to-r from-primary-50 to-purple-50 p-8 rounded-2xl border border-primary-200">
                 <h2 className="text-3xl font-bold">How It Works</h2>
                 <div className="space-y-4">
                     <div className="flex gap-4 items-start">
-                        <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
+                        <div className="flex-shrink-0 w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold">
                             1
                         </div>
                         <div>
@@ -132,7 +132,7 @@ export default function AboutPage() {
                         </div>
                     </div>
                     <div className="flex gap-4 items-start">
-                        <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
+                        <div className="flex-shrink-0 w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold">
                             2
                         </div>
                         <div>
@@ -143,7 +143,7 @@ export default function AboutPage() {
                         </div>
                     </div>
                     <div className="flex gap-4 items-start">
-                        <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
+                        <div className="flex-shrink-0 w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold">
                             3
                         </div>
                         <div>
@@ -154,7 +154,7 @@ export default function AboutPage() {
                         </div>
                     </div>
                     <div className="flex gap-4 items-start">
-                        <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
+                        <div className="flex-shrink-0 w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold">
                             4
                         </div>
                         <div>

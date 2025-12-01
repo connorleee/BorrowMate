@@ -60,7 +60,7 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
                                     <p className="text-xs text-gray-500">{membership.user?.email || ''}</p>
                                 </div>
                                 {membership.role === 'owner' && (
-                                    <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                                    <span className="text-xs px-2 py-1 bg-primary-100 text-primary-800 rounded-full">
                                         Owner
                                     </span>
                                 )}

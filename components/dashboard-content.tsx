@@ -47,7 +47,7 @@ export default function DashboardContent({
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <Link
             href="/discover"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors"
           >
             Discover Items
           </Link>
@@ -63,7 +63,7 @@ export default function DashboardContent({
               {borrowed.map((record) => (
                 <div
                   key={record.id}
-                  className="p-4 border rounded-lg bg-white flex justify-between items-center cursor-pointer hover:border-blue-300 hover:shadow-md transition-colors"
+                  className="p-4 border rounded-lg bg-white flex justify-between items-center cursor-pointer hover:border-primary-300 hover:shadow-md transition-colors"
                   onClick={() => setSelectedItemId(record.item_id)}
                 >
                   <div>
@@ -83,7 +83,7 @@ export default function DashboardContent({
         <section>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">Items I've Lent Out</h2>
-            <Link href="/contacts" className="text-sm text-blue-600 hover:underline">
+            <Link href="/contacts" className="text-sm text-primary-600 hover:underline">
               Manage Contacts
             </Link>
           </div>
@@ -130,7 +130,7 @@ export default function DashboardContent({
         <section>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">My Items</h2>
-            <Link href="/items" className="text-sm text-blue-600 hover:underline">
+            <Link href="/items" className="text-sm text-primary-600 hover:underline">
               Manage Items
             </Link>
           </div>
@@ -141,7 +141,7 @@ export default function DashboardContent({
               {userItems.map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 border rounded-lg bg-white flex justify-between items-center cursor-pointer hover:border-blue-300 hover:shadow-md transition-colors"
+                  className="p-4 border rounded-lg bg-white flex justify-between items-center cursor-pointer hover:border-primary-300 hover:shadow-md transition-colors"
                   onClick={() => setSelectedItemId(item.id)}
                 >
                   <div>

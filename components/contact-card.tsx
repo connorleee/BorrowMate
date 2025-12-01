@@ -40,7 +40,7 @@ export default function ContactCard({
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-bold text-lg">{name}</h3>
             {linked_user_id && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                 Linked User
               </span>
             )}

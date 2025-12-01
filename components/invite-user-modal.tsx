@@ -101,7 +101,7 @@ export default function InviteUserModal({ groupId, isOpen, onClose }: InviteUser
                             {results.map(user => (
                                 <div
                                     key={user.id}
-                                    className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-50 ${selectedUsers.some(u => u.id === user.id) ? 'bg-blue-50 border-blue-200 border' : ''
+                                    className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-50 ${selectedUsers.some(u => u.id === user.id) ? 'bg-primary-50 border-primary-200 border' : ''
                                         }`}
                                     onClick={() => handleSelectUser(user)}
                                 >
@@ -139,7 +139,7 @@ export default function InviteUserModal({ groupId, isOpen, onClose }: InviteUser
                         <button
                             onClick={handleSubmit}
                             disabled={selectedUsers.length === 0 || isSubmitting}
-                            className={`px-4 py-2 bg-blue-600 text-white rounded-md ${selectedUsers.length === 0 || isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+                            className={`px-4 py-2 bg-primary-500 text-white rounded-md ${selectedUsers.length === 0 || isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary-600'
                                 }`}
                         >
                             {isSubmitting ? 'Adding...' : 'Add Members'}

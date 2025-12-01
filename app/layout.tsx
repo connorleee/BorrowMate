@@ -1,4 +1,5 @@
-import TopNav from "@/components/TopNav";
+import Sidebar from "@/components/Sidebar";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 export default function RootLayout({
@@ -7,16 +8,20 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-            <body className="bg-background text-foreground antialiased">
-                <main className="min-h-screen flex flex-col items-center">
-                    <TopNav />
-                    <div className="flex-1 w-full flex flex-col gap-20 items-center">
-                        <div className="flex-1 flex flex-col gap-20 max-w-4xl px-3 w-full">
-                            {children}
-                        </div>
+        <html lang="en" suppressHydrationWarning>
+            <body className="bg-base text-text-primary antialiased">
+                <ThemeProvider>
+                    <div className="flex min-h-screen">
+                        <Sidebar />
+                        <main className="flex-1 flex flex-col items-center w-full md:translate-x-0">
+                            <div className="flex-1 w-full flex flex-col gap-20 items-center">
+                                <div className="flex-1 flex flex-col gap-20 max-w-4xl px-3 w-full pt-16 md:pt-0">
+                                    {children}
+                                </div>
+                            </div>
+                        </main>
                     </div>
-                </main>
+                </ThemeProvider>
             </body>
         </html>
     );

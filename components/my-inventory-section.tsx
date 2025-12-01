@@ -114,8 +114,8 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
 
       {/* Selection Controls */}
       {isMultiSelectMode && (
-        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex justify-between items-center">
-          <div className="font-medium text-blue-900">
+        <div className="mb-4 p-4 bg-primary-50 border border-primary-200 rounded-lg flex justify-between items-center">
+          <div className="font-medium text-primary-900">
             {selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''} selected
           </div>
           <div className="flex gap-2">
@@ -130,8 +130,8 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
               disabled={selectedItems.size === 0}
               className={`px-4 py-2 rounded-lg font-medium text-white transition-colors ${
                 selectedItems.size === 0
-                  ? 'bg-blue-300 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700'
+                  ? 'bg-primary-300 cursor-not-allowed'
+                  : 'bg-primary-500 hover:bg-primary-600'
               }`}
             >
               Continue to Lend

@@ -62,7 +62,7 @@ export default function ContactListSection({ initialContacts }: ContactListSecti
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search contacts by name, email, or phone..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
         />
         {isSearching && (
           <div className="absolute right-3 top-3 text-gray-400">

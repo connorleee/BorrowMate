@@ -55,7 +55,7 @@ export default function ItemsPageContent({ borrowedItems, userItems }: ItemsPage
                   {borrowedItems.map((record) => (
                     <div
                       key={record.id}
-                      className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center cursor-pointer hover:border-blue-300 hover:shadow-md transition-colors"
+                      className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center cursor-pointer hover:border-primary-300 hover:shadow-md transition-colors"
                       onClick={() => setSelectedItemId(record.item_id)}
                     >
                       <div>

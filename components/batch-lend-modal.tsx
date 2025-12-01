@@ -177,7 +177,7 @@ export default function BatchLendModal({
                 <input
                   type="text"
                   placeholder="Search contacts by name, email, or phone..."
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   disabled={isSubmitting}
@@ -192,7 +192,7 @@ export default function BatchLendModal({
                   setError(null)
                 }}
                 disabled={isSubmitting}
-                className="w-full py-2 px-3 border border-dashed border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 text-sm font-medium transition-colors"
+                className="w-full py-2 px-3 border border-dashed border-primary-300 rounded-lg text-primary-600 hover:bg-primary-50 text-sm font-medium transition-colors"
               >
                 + Create New Contact
               </button>
@@ -209,7 +209,7 @@ export default function BatchLendModal({
                       key={contact.id}
                       className={`flex items-center p-3 rounded-lg border cursor-pointer transition-colors ${
                         selectedContactId === contact.id
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-primary-500 bg-primary-50'
                           : 'border-gray-200 hover:bg-gray-50'
                       }`}
                       onClick={() => setSelectedContactId(contact.id)}
@@ -217,7 +217,7 @@ export default function BatchLendModal({
                       <div
                         className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 flex-shrink-0 ${
                           selectedContactId === contact.id
-                            ? 'border-blue-500 bg-blue-500'
+                            ? 'border-primary-500 bg-primary-500'
                             : 'border-gray-300 bg-white'
                         }`}
                       >
@@ -232,7 +232,7 @@ export default function BatchLendModal({
                         )}
                       </div>
                       {contact.linked_user_id && (
-                        <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded whitespace-nowrap">
+                        <span className="ml-2 text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded whitespace-nowrap">
                           Linked
                         </span>
                       )}
@@ -259,7 +259,7 @@ export default function BatchLendModal({
                   value={quickAddName}
                   onChange={(e) => setQuickAddName(e.target.value)}
                   placeholder="Contact name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                   disabled={isCreatingQuick}
                   autoFocus
                 />
@@ -274,7 +274,7 @@ export default function BatchLendModal({
                   value={quickAddEmail}
                   onChange={(e) => setQuickAddEmail(e.target.value)}
                   placeholder="contact@example.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                   disabled={isCreatingQuick}
                 />
               </div>
@@ -290,7 +290,7 @@ export default function BatchLendModal({
                 <button
                   onClick={handleQuickAdd}
                   disabled={isCreatingQuick || !quickAddName.trim()}
-                  className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
+                  className="flex-1 px-3 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 text-sm font-medium disabled:opacity-50"
                 >
                   {isCreatingQuick ? 'Creating...' : 'Add & Select'}
                 </button>
@@ -309,7 +309,7 @@ export default function BatchLendModal({
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               />
             </div>
           )}
@@ -329,8 +329,8 @@ export default function BatchLendModal({
             disabled={!selectedContactId || isSubmitting}
             className={`px-4 py-2 rounded-lg font-medium text-white transition-colors ${
               !selectedContactId || isSubmitting
-                ? 'bg-blue-300 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700'
+                ? 'bg-primary-300 cursor-not-allowed'
+                : 'bg-primary-500 hover:bg-primary-600'
             }`}
           >
             {isSubmitting ? 'Lending...' : 'Lend Items'}

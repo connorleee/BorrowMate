@@ -31,7 +31,7 @@ export default async function ContactsPage() {
       <div className="mt-8 text-center">
         <Link
           href="/items"
-          className="text-blue-600 hover:underline"
+          className="text-primary-600 hover:underline"
         >
           ← Back to Items
         </Link>

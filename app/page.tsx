@@ -16,7 +16,7 @@ export default function Home() {
             <div className="flex gap-4">
                 <Link
                     href="/auth"
-                    className="bg-foreground text-background px-8 py-3 rounded-lg font-bold text-lg hover:opacity-90 transition-opacity"
+                    className="bg-primary-500 text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-primary-600 transition-colors"
                 >
                     Get Started
                 </Link>

@@ -61,7 +61,7 @@ export default async function UserProfilePage({ params }: { params: { id: string
                     ) : (
                         <div className="grid gap-4 md:grid-cols-2">
                             {publicItems.map((item) => (
-                                <div key={item.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-500 transition-colors">
+                                <div key={item.id} className="border border-gray-200 rounded-lg p-4 hover:border-primary-500 transition-colors">
                                     <div className="flex justify-between items-start mb-2">
                                         <h3 className="font-semibold text-gray-900">{item.name}</h3>
                                         <span className={`px-2 py-1 text-xs rounded-full ${item.status === 'available'

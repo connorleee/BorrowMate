@@ -69,7 +69,7 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Contact name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               required
               disabled={isLoading}
             />
@@ -84,7 +84,7 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="contact@example.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               disabled={isLoading}
             />
           </div>
@@ -98,7 +98,7 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(555) 123-4567"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               disabled={isLoading}
             />
           </div>
@@ -115,7 +115,7 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
             <button
               type="submit"
               disabled={isLoading || !name.trim()}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Adding...' : 'Add Contact'}
             </button>

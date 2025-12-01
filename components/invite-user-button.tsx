@@ -10,7 +10,7 @@ export default function InviteUserButton({ groupId }: { groupId: string }) {
         <>
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors"
+                className="text-sm bg-primary-500 text-white px-3 py-1 rounded-md hover:bg-primary-600 transition-colors"
             >
                 Invite Members
             </button>

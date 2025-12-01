@@ -36,9 +36,9 @@ export default function LendableItemCard({
       className={`bg-white p-4 rounded-lg shadow-sm border transition-colors ${
         isMultiSelectMode
           ? isSelected
-            ? 'border-blue-500 bg-blue-50 cursor-pointer'
+            ? 'border-primary-500 bg-primary-50 cursor-pointer'
             : 'border-gray-200 hover:bg-gray-50 cursor-pointer'
-          : 'border-gray-200 cursor-pointer hover:border-blue-300 hover:shadow-md'
+          : 'border-gray-200 cursor-pointer hover:border-primary-300 hover:shadow-md'
       }`}
       onClick={handleClick}
       role="button"
@@ -50,7 +50,7 @@ export default function LendableItemCard({
             <div
               className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 mt-1 ${
                 isSelected
-                  ? 'bg-blue-500 border-blue-500'
+                  ? 'bg-primary-500 border-primary-500'
                   : 'border-gray-300 bg-white'
               }`}
             >

@@ -40,7 +40,7 @@ export default async function ItemDetailsPage({ params }: { params: Promise<{ id
                             {item.status === 'available' ? 'Available' : 'Unavailable'}
                         </span>
                         {item.privacy && (
-                            <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                            <span className="px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
                                 {item.privacy === 'private' ? 'Private' : 'Public'}
                             </span>
                         )}
@@ -72,7 +72,7 @@ export default async function ItemDetailsPage({ params }: { params: Promise<{ id
 
                     {/* Current Borrow Status */}
                     {activeBorrow && contact ? (
-                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <div className="bg-primary-50 p-4 rounded-lg border border-primary-200">
                             <h3 className="text-sm font-medium text-gray-700 mb-2">Currently Borrowed By</h3>
                             <p className="font-medium text-gray-900">{contact.name}</p>
                             {contact.email && <p className="text-sm text-gray-600">Email: {contact.email}</p>}
@@ -136,7 +136,7 @@ export default async function ItemDetailsPage({ params }: { params: Promise<{ id
                                                     record.status === 'returned'
                                                         ? 'bg-green-100 text-green-800'
                                                         : record.status === 'borrowed'
-                                                          ? 'bg-blue-100 text-blue-800'
+                                                          ? 'bg-primary-100 text-primary-800'
                                                           : 'bg-gray-100 text-gray-800'
                                                 }`}
                                             >

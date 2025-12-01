@@ -66,13 +66,13 @@ export default function ItemSelectorModal({ isOpen, onClose, items, onAdd }: Ite
                                 <div
                                     key={item.id}
                                     className={`flex items-center p-3 rounded-lg border cursor-pointer transition-colors ${selectedItems.has(item.id)
-                                            ? 'border-blue-500 bg-blue-50'
+                                            ? 'border-primary-500 bg-primary-50'
                                             : 'border-gray-200 hover:bg-gray-50'
                                         }`}
                                     onClick={() => toggleItem(item.id)}
                                 >
                                     <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 ${selectedItems.has(item.id)
-                                            ? 'bg-blue-500 border-blue-500'
+                                            ? 'bg-primary-500 border-primary-500'
                                             : 'border-gray-300 bg-white'
                                         }`}>
                                         {selectedItems.has(item.id) && (
@@ -101,8 +101,8 @@ export default function ItemSelectorModal({ isOpen, onClose, items, onAdd }: Ite
                         onClick={handleSubmit}
                         disabled={selectedItems.size === 0 || isSubmitting}
                         className={`px-4 py-2 rounded-lg font-medium text-white transition-colors ${selectedItems.size === 0 || isSubmitting
-                                ? 'bg-blue-300 cursor-not-allowed'
-                                : 'bg-blue-600 hover:bg-blue-700'
+                                ? 'bg-primary-300 cursor-not-allowed'
+                                : 'bg-primary-500 hover:bg-primary-600'
                             }`}
                     >
                         {isSubmitting ? 'Adding...' : `Add ${selectedItems.size} Item${selectedItems.size !== 1 ? 's' : ''}`}
