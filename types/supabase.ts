@@ -117,42 +117,48 @@ export interface Database {
             items: {
                 Row: {
                     id: string
-                    group_id: string
+                    group_id: string | null
                     name: string
                     description: string | null
                     category: string | null
                     owner_user_id: string | null
-                    visibility: "shared" | "personal"
                     privacy: "private" | "public"
                     status: "available" | "unavailable"
                     price_usd: number | null
                     created_at: string
+                    updated_at: string | null
+                    ownership_type: "owner" | "shared"
+                    qr_slug: string | null
                 }
                 Insert: {
                     id?: string
-                    group_id: string
+                    group_id?: string | null
                     name: string
                     description?: string | null
                     category?: string | null
                     owner_user_id?: string | null
-                    visibility?: "shared" | "personal"
                     privacy?: "private" | "public"
                     status?: "available" | "unavailable"
                     price_usd?: number | null
                     created_at?: string
+                    updated_at?: string | null
+                    ownership_type?: "owner" | "shared"
+                    qr_slug?: string | null
                 }
                 Update: {
                     id?: string
-                    group_id?: string
+                    group_id?: string | null
                     name?: string
                     description?: string | null
                     category?: string | null
                     owner_user_id?: string | null
-                    visibility?: "shared" | "personal"
                     privacy?: "private" | "public"
                     status?: "available" | "unavailable"
                     price_usd?: number | null
                     created_at?: string
+                    updated_at?: string | null
+                    ownership_type?: "owner" | "shared"
+                    qr_slug?: string | null
                 }
                 Relationships: [
                     {
@@ -279,10 +285,10 @@ export interface Database {
         }
         Enums: {
             membership_role: "owner" | "member"
-            item_visibility: "shared" | "personal"
             item_status: "available" | "unavailable"
             item_privacy: "private" | "public"
             borrow_status: "borrowed" | "returned" | "overdue"
+            item_ownership_type: "owner" | "shared"
         }
         CompositeTypes: {
             [_ in never]: never

@@ -69,15 +69,15 @@ export default function AddItemForm() {
             </div>
 
             <div>
-                <label htmlFor="visibility" className="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
+                <label htmlFor="privacy" className="block text-sm font-medium text-gray-700 mb-1">Privacy</label>
                 <select
-                    name="visibility"
-                    id="visibility"
+                    name="privacy"
+                    id="privacy"
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    defaultValue="shared"
+                    defaultValue="private"
                 >
-                    <option value="shared">Shared (Visible to group)</option>
-                    <option value="personal">Personal (Only visible to me)</option>
+                    <option value="private">Private (Only visible to me)</option>
+                    <option value="public">Public (Visible to borrowers and group members)</option>
                 </select>
             </div>
 

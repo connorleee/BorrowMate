@@ -23,7 +23,6 @@ interface Item {
   id: string
   name: string
   description?: string
-  visibility: string
   status: string
   groups?: { id: string; name: string } | null
 }

@@ -7,7 +7,6 @@ interface LendableItemCardProps {
     id: string
     name: string
     description?: string
-    visibility: string
     status: string
     groups?: { id: string; name: string } | null
   }
@@ -87,15 +86,6 @@ export default function LendableItemCard({
                   Unassigned
                 </span>
               )}
-              <span
-                className={`px-2 py-1 rounded ${
-                  item.visibility === 'shared'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-800'
-                }`}
-              >
-                {item.visibility === 'shared' ? 'Shared' : 'Personal'}
-              </span>
               {item.status === 'unavailable' && (
                 <span className="px-2 py-1 rounded bg-red-100 text-red-800">
                   Unavailable

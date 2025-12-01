@@ -31,12 +31,12 @@ export async function createItem(formData: FormData) {
   const name = formData.get('name') as string
   const description = formData.get('description') as string
   const category = formData.get('category') as string
-  const visibility = formData.get('visibility') as 'shared' | 'personal'
+  const privacy = formData.get('privacy') as 'private' | 'public'
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
-  console.log('Creating item:', { groupId, name, description, category, visibility, owner_user_id: user.id })
+  console.log('Creating item:', { groupId, name, description, category, privacy, owner_user_id: user.id })
 
   const { data, error } = await supabase
     .from('items')
@@ -45,7 +45,7 @@ export async function createItem(formData: FormData) {
       name,
       description,
       category,
-      visibility,
+      privacy,
       owner_user_id: user.id,
     })
     .select()

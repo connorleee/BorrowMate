@@ -39,9 +39,9 @@ export default async function ItemDetailsPage({ params }: { params: Promise<{ id
                         >
                             {item.status === 'available' ? 'Available' : 'Unavailable'}
                         </span>
-                        {item.visibility && (
+                        {item.privacy && (
                             <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                {item.visibility === 'personal' ? 'Personal' : 'Shared'}
+                                {item.privacy === 'private' ? 'Private' : 'Public'}
                             </span>
                         )}
                     </div>

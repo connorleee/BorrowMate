@@ -137,9 +137,9 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
               >
                 {data.item.status === 'available' ? 'Available' : 'Unavailable'}
               </span>
-              {data.item.visibility && (
+              {data.item.privacy && (
                 <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                  {data.item.visibility === 'personal' ? 'Personal' : 'Shared'}
+                  {data.item.privacy === 'private' ? 'Private' : 'Public'}
                 </span>
               )}
             </div>

@@ -90,7 +90,7 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
                                 {item.description && <p className="text-sm text-gray-600 mb-2">{item.description}</p>}
                                 <div className="text-xs text-gray-400 mt-4 flex justify-between">
                                     <span>Owner: {item.users?.name || 'Unknown'}</span>
-                                    <span>{item.visibility}</span>
+                                    <span>{item.privacy}</span>
                                 </div>
                             </div>
                         ))}

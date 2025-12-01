@@ -58,10 +58,10 @@ export default function AddItemPage({ params }: { params: Promise<{ id: string }
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">Visibility</label>
-                    <select name="visibility" className="p-2 border rounded">
-                        <option value="shared">Shared (Visible to Group)</option>
-                        <option value="personal">Personal (Private)</option>
+                    <label className="text-sm font-medium">Privacy</label>
+                    <select name="privacy" className="p-2 border rounded">
+                        <option value="public">Public (Visible to group members)</option>
+                        <option value="private">Private (Only visible to me)</option>
                     </select>
                 </div>
 

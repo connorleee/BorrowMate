@@ -630,3 +630,141 @@ When deploying to production:
 4. After migration, all contacts are owner-private; users see only their own contacts
 5. No user-facing changes required; app automatically uses new contact-based flows
 6. Consider monitoring logs for any RLS policy violations during transition period
+
+---
+
+## Phase 8: Decouple Item Visibility from Group Membership ✅ COMPLETE
+
+### Problem Statement
+Previously, item visibility was tightly coupled to group membership. The `visibility` field (shared|personal) didn't actually control RLS access—only group membership did. This violated the requirement that groups should be purely organizational, with visibility independently controlling access.
+
+### Solution Implemented
+- **Remove `visibility` field** - No longer needed; `privacy` field alone controls access
+- **Decouple `privacy` from `group_id`** - Group membership no longer affects visibility
+- **Implement privacy-based RLS** - Access now determined solely by privacy setting + user's role (owner/borrower/group member)
+
+### Architecture Changes
+
+**New Access Rules:**
+- **Owner** always sees their items (regardless of privacy)
+- **Private items** - Only owner can see (unless they're the active borrower or lender)
+- **Public items**:
+  - **Personal items** (group_id IS NULL): Visible to borrowers + owner
+  - **Group items** (group_id IS NOT NULL): Visible to group members + borrowers + lender
+
+**Borrow records:**
+- Lender always sees their own records
+- Borrower always sees their own records
+- Group members can see records for public group items
+
+### Database Migrations Created ✅
+- [x] `supabase/migrations/20250129000007_remove_visibility_field.sql` - Drop visibility column and enum
+- [x] `supabase/migrations/20250129000008_update_item_visibility_rls.sql` - Implement privacy-based RLS
+- [x] `supabase/migrations/20250129000009_update_borrow_records_visibility_rls.sql` - Update borrow record access rules
+
+### Migrations Detail
+
+**Migration 20250129000007**: Remove Visibility Field
+- Drop `visibility` column from items table
+- Drop `item_visibility` enum type
+
+**Migration 20250129000008**: Item Visibility RLS
+- Drop old group-based policy: "Items are viewable by group members"
+- Drop old borrower policies: "Items are viewable by borrowers" and "Items are viewable by active borrowers"
+- Keep existing: "Items are viewable by owner"
+- Add: "Items are viewable by group members if public" - Check `privacy='public'` AND group membership
+- Add: "Items are viewable if public and borrowed by user" - Check `privacy='public'` AND active borrow record
+- Add: "Items are viewable by lender" - Lender always sees items they've lent (regardless of privacy)
+
+**Migration 20250129000009**: Borrow Record Visibility RLS
+- Drop old group-based policy: "Borrow records are viewable by group members"
+- Add: "Borrow records viewable by lender" - Always see own records
+- Add: "Borrow records viewable by borrower" - Always see own records
+- Add: "Borrow records viewable by group members if item public" - Check group membership + item privacy
+
+### Code Changes ✅
+
+**TypeScript Types** ([types/supabase.ts](types/supabase.ts))
+- Remove `visibility` from items Row/Insert/Update types
+- Remove `item_visibility` enum
+- Add missing fields: `updated_at`, `ownership_type`, `qr_slug`
+- Add `group_id` as nullable
+- Add `item_ownership_type` enum
+
+**Item Creation** ([app/items/actions.ts:createItem](app/items/actions.ts))
+- Changed form field from `visibility` to `privacy`
+- Updated insert payload to use `privacy` instead of `visibility`
+
+**Form Components**
+- [components/add-item-form.tsx](components/add-item-form.tsx):
+  - Replace "Visibility" dropdown with "Privacy" dropdown
+  - Option: "Private (Only visible to me)" [default]
+  - Option: "Public (Visible to borrowers and group members)"
+
+- [app/groups/[id]/items/new/page.tsx](app/groups/[id]/items/new/page.tsx):
+  - Replace "Visibility" with "Privacy" dropdown
+  - Updated labels to clarify privacy semantics
+
+**Display Components**
+- [components/item-detail-modal.tsx](components/item-detail-modal.tsx):
+  - Show `privacy` badge instead of `visibility`
+  - Display: "Private" or "Public"
+
+- [app/items/[id]/page.tsx](app/items/[id]/page.tsx):
+  - Show `privacy` badge instead of `visibility`
+
+- [app/groups/[id]/page.tsx](app/groups/[id]/page.tsx):
+  - Display `privacy` instead of `visibility` in inventory
+
+- [components/lendable-item-card.tsx](components/lendable-item-card.tsx):
+  - Remove `visibility` property from Item interface
+  - Remove visibility badge from UI
+
+- [components/my-inventory-section.tsx](components/my-inventory-section.tsx):
+  - Remove `visibility` property from Item interface
+
+- [components/dashboard-content.tsx](components/dashboard-content.tsx):
+  - Remove `visibility` property from Item interface
+  - Remove visibility badge from "My Items" section
+
+- [components/items-page-content.tsx](components/items-page-content.tsx):
+  - Remove `visibility` property from Item interface
+
+### Testing Strategy
+
+**Database Level:**
+- Verify visibility column is removed from items table
+- Verify all RLS policies execute without errors
+- Test with private items: only owner should access
+- Test with public personal items: borrowers + owner should access
+- Test with public group items: group members + borrowers + owner should access
+- Test borrow record visibility for all scenarios
+
+**Application Level:**
+- Create items with public/private privacy settings
+- Verify items appear/disappear based on user's role
+- Verify group items respect privacy setting (not automatic group member access)
+- Verify borrow history visible based on item privacy + user relationship
+
+### Backward Compatibility
+- **All existing items will default to `privacy='public'`** when migrations run
+- No data loss - group assignments preserved, visibility just decoupled
+- Group members will see public items (same as before)
+- Private items will only be visible to owner (tighter access than before - intentional)
+
+### Key Design Decision
+The previous `visibility` field was ambiguous—"shared" vs "personal" didn't clearly map to RLS behavior. New design:
+- **`privacy='public'`** explicitly means "I'm OK with specific people seeing this"
+- **`privacy='private'`** explicitly means "Only I can see this"
+- **Group membership** no longer grants automatic access; must be public
+
+### Migrations Ready for Deployment ✅
+All 3 migrations are syntax-valid and ready to run:
+```bash
+npx supabase db push --yes  # Deploy to Supabase
+```
+
+Migrations will run in order:
+1. 20250129000007 - Remove visibility field
+2. 20250129000008 - Add privacy-based item RLS
+3. 20250129000009 - Add privacy-based borrow record RLS

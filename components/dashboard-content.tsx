@@ -23,7 +23,6 @@ interface Item {
   id: string
   name: string
   description?: string
-  visibility: string
   status: string
   groups?: { id: string; name: string } | null
 }
@@ -148,22 +147,11 @@ export default function DashboardContent({
                   <div>
                     <h3 className="font-bold">{item.name}</h3>
                     <p className="text-sm text-gray-600">{item.description || 'No description'}</p>
-                    <div className="flex gap-2 mt-1">
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded ${
-                          item.visibility === 'shared'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {item.visibility === 'shared' ? 'Shared' : 'Personal'}
+                    {item.status === 'unavailable' && (
+                      <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-800 inline-block mt-1">
+                        Unavailable
                       </span>
-                      {item.status === 'unavailable' && (
-                        <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-800">
-                          Unavailable
-                        </span>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
               ))}
