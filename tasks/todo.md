@@ -758,8 +758,17 @@ The previous `visibility` field was ambiguous—"shared" vs "personal" didn't cl
 - **`privacy='private'`** explicitly means "Only I can see this"
 - **Group membership** no longer grants automatic access; must be public
 
+### RLS Recursion Fix ✅
+**Migration 20250129000010**: Fix Infinite Recursion
+- **Problem**: Policies on items checked borrow_records, which checked items → circular dependency
+- **Solution**: Created SECURITY DEFINER helper functions to break the cycle:
+  - `is_borrower_of_item(item_id, user_id)` - Check if user is currently borrowing
+  - `is_lender_of_item(item_id, user_id)` - Check if user has lent the item
+  - `is_public_group_item(item_id)` - Check if item is public and in a group
+- **Result**: Policies now use these functions instead of direct table joins, eliminating recursion
+
 ### Migrations Ready for Deployment ✅
-All 3 migrations are syntax-valid and ready to run:
+All 4 migrations are syntax-valid and ready to run:
 ```bash
 npx supabase db push --yes  # Deploy to Supabase
 ```
@@ -768,3 +777,4 @@ Migrations will run in order:
 1. 20250129000007 - Remove visibility field
 2. 20250129000008 - Add privacy-based item RLS
 3. 20250129000009 - Add privacy-based borrow record RLS
+4. 20250129000010 - Fix RLS recursion with SECURITY DEFINER functions
