@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { searchContacts } from '@/app/contacts/actions'
-import ContactCard from '@/components/contact-card'
+import { searchContacts, deleteContact } from '@/app/contacts/actions'
+import { ContactCard } from '@/components/Card'
 
 interface Contact {
   id: string
@@ -20,14 +20,10 @@ export default function ContactListSection({ initialContacts }: ContactListSecti
   const [query, setQuery] = useState('')
   const [contacts, setContacts] = useState(initialContacts)
   const [isSearching, setIsSearching] = useState(false)
-  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmId, setConfirmId] = useState<string | null>(null)
 
   useEffect(() => {
-    // Clear existing timeout
-    if (searchTimeout) {
-      clearTimeout(searchTimeout)
-    }
-
     if (!query.trim()) {
       setContacts(initialContacts)
       setIsSearching(false)
@@ -47,12 +43,23 @@ export default function ContactListSection({ initialContacts }: ContactListSecti
       }
     }, 300)
 
-    setSearchTimeout(timeout)
-
     return () => {
       clearTimeout(timeout)
     }
   }, [query, initialContacts])
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id)
+    try {
+      await deleteContact(id)
+      setContacts(contacts.filter(c => c.id !== id))
+      setConfirmId(null)
+    } catch (err) {
+      console.error('Error deleting contact:', err)
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -83,14 +90,44 @@ export default function ContactListSection({ initialContacts }: ContactListSecti
       ) : (
         <div className="grid gap-3">
           {contacts.map((contact) => (
-            <ContactCard
-              key={contact.id}
-              id={contact.id}
-              name={contact.name}
-              email={contact.email}
-              phone={contact.phone}
-              linked_user_id={contact.linked_user_id}
-            />
+            <div key={contact.id}>
+              <ContactCard
+                name={contact.name}
+                email={contact.email}
+                phone={contact.phone}
+                linkedUser={!!contact.linked_user_id}
+                actions={
+                  <button
+                    onClick={() => setConfirmId(contact.id)}
+                    disabled={deletingId === contact.id}
+                    className="px-3 py-1 text-sm rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
+                  >
+                    Delete
+                  </button>
+                }
+              />
+              {confirmId === contact.id && (
+                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded flex items-center justify-between gap-3">
+                  <p className="text-sm text-red-700">Delete this contact?</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setConfirmId(null)}
+                      disabled={deletingId === contact.id}
+                      className="px-3 py-1 text-xs rounded border border-red-300 text-red-600 hover:bg-red-100 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => handleDelete(contact.id)}
+                      disabled={deletingId === contact.id}
+                      className="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {deletingId === contact.id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       )}

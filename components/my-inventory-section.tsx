@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import LendableItemCard from './lendable-item-card'
+import { ItemCard } from './Card'
 import BatchLendButton from './batch-lend-button'
 import BatchLendModal from './batch-lend-modal'
 import ItemDetailModal from './item-detail-modal'
 import { batchLendToContact } from '@/app/borrow/actions'
+import DeleteItemButton from './delete-item-button'
 
 interface Item {
   id: string
@@ -169,20 +170,25 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
           You haven't added any items yet.
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {items.map((item) => {
             const isPersonal = !item.groups
             const isAvailable = item.status === 'available'
             const isSelectable = isPersonal && isAvailable
 
             return (
-              <LendableItemCard
+              <ItemCard
                 key={item.id}
-                item={item}
+                itemId={item.id}
+                name={item.name}
+                description={item.description}
+                status={item.status}
+                groupName={item.groups?.name}
                 isMultiSelectMode={isMultiSelectMode && isSelectable}
                 isSelected={selectedItems.has(item.id)}
                 onToggleSelect={toggleItemSelection}
                 onViewDetails={() => setSelectedItemForDetail(item.id)}
+                deleteButton={!isMultiSelectMode && <DeleteItemButton itemId={item.id} />}
               />
             )
           })}

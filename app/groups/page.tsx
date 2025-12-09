@@ -1,5 +1,6 @@
 import { getUserGroups } from './actions'
 import CreateGroupForm from './create-group-form'
+import { GroupCard } from '@/components/Card'
 import Link from 'next/link'
 
 export default async function GroupsPage() {
@@ -20,19 +21,13 @@ export default async function GroupsPage() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {groups.map((group: any) => (
-                        <Link
-                            key={group.id}
-                            href={`/groups/${group.id}`}
-                            className="block p-6 bg-white border rounded-lg hover:shadow-md transition-shadow"
-                        >
-                            <h2 className="text-xl font-bold mb-2">{group.name}</h2>
-                            {group.description && (
-                                <p className="text-gray-600 text-sm mb-4 line-clamp-2">{group.description}</p>
-                            )}
-                            <div className="flex justify-between items-center text-xs text-gray-400">
-                                <span>{group.role === 'owner' ? 'Owner' : 'Member'}</span>
-                                <span>{new Date(group.created_at).toLocaleDateString()}</span>
-                            </div>
+                        <Link key={group.id} href={`/groups/${group.id}`} className="block">
+                            <GroupCard
+                                name={group.name}
+                                description={group.description}
+                                role={group.role}
+                                createdAt={group.created_at}
+                            />
                         </Link>
                     ))}
                 </div>
