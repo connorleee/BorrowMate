@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
+/* Custom Dark Mode Variant */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+
 @theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
 
   /* Primary - Purple */
   --color-primary-50: #faf5ff;

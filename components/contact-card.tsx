@@ -34,7 +34,7 @@ export default function ContactCard({
   }
 
   return (
-    <div className="p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors">
+    <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -48,19 +48,19 @@ export default function ContactCard({
 
           <div className="space-y-1 text-sm">
             {email && (
-              <p className="text-gray-600">
-                <span className="text-gray-400">Email:</span> {email}
+              <p className="text-gray-600 dark:text-gray-400">
+                <span className="text-gray-400 dark:text-gray-500">Email:</span> {email}
               </p>
             )}
             {phone && (
-              <p className="text-gray-600">
-                <span className="text-gray-400">Phone:</span> {phone}
+              <p className="text-gray-600 dark:text-gray-400">
+                <span className="text-gray-400 dark:text-gray-500">Phone:</span> {phone}
               </p>
             )}
           </div>
 
           {!email && !phone && (
-            <p className="text-xs text-gray-400 italic">No additional info</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 italic">No additional info</p>
           )}
         </div>
 

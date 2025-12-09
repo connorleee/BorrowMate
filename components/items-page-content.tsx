@@ -52,31 +52,35 @@ export default function ItemsPageContent({ borrowedItems, userItems }: ItemsPage
                   You are not currently borrowing any items.
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                   {borrowedItems.map((record) => (
                     <Card
                       key={record.id}
                       interactive
                       onClick={() => setSelectedItemId(record.item_id)}
+                      className="h-full"
+                      variant="compact"
                     >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-base text-gray-900 mb-1 truncate">
+                      <div className="flex flex-col h-full justify-between">
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-sm text-gray-900 mb-1 truncate">
                             {record.item?.name || 'Unknown Item'}
                           </h3>
-                          <p className="text-xs text-gray-600 mb-1">
-                            From{' '}
+                          <p className="text-xs text-gray-600 mb-2 truncate">
+                            from{' '}
                             <span className="font-medium text-gray-700">
                               {record.item?.owner?.name || 'Unknown'}
                             </span>
                           </p>
-                          <p className="text-xs text-gray-400">
-                            Since {new Date(record.start_date).toLocaleDateString()}
-                          </p>
                         </div>
-                        <span className="ml-2 px-2.5 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full flex-shrink-0">
-                          Borrowed
-                        </span>
+                        <div className="flex justify-between items-center mt-2">
+                          <p className="text-[10px] text-gray-400">
+                            Since {new Date(record.start_date).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}
+                          </p>
+                          <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-[10px] font-medium rounded-full flex-shrink-0">
+                            Borrowed
+                          </span>
+                        </div>
                       </div>
                     </Card>
                   ))}

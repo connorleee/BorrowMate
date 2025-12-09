@@ -129,11 +129,10 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
             <button
               onClick={handleContinueToLend}
               disabled={selectedItems.size === 0}
-              className={`px-4 py-2 rounded-lg font-medium text-white transition-colors ${
-                selectedItems.size === 0
-                  ? 'bg-primary-300 cursor-not-allowed'
-                  : 'bg-primary-500 hover:bg-primary-600'
-              }`}
+              className={`px-4 py-2 rounded-lg font-medium text-white transition-colors ${selectedItems.size === 0
+                ? 'bg-primary-300 cursor-not-allowed'
+                : 'bg-primary-500 hover:bg-primary-600'
+                }`}
             >
               Continue to Lend
             </button>
@@ -144,11 +143,10 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
       {/* Feedback Message */}
       {feedbackMessage && (
         <div
-          className={`p-4 rounded-lg mb-4 ${
-            feedbackMessage.type === 'success'
-              ? 'bg-green-50 border border-green-200 text-green-800'
-              : 'bg-red-50 border border-red-200 text-red-800'
-          }`}
+          className={`p-4 rounded-lg mb-4 ${feedbackMessage.type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-800'
+            : 'bg-red-50 border border-red-200 text-red-800'
+            }`}
         >
           <p className="font-medium">{feedbackMessage.text}</p>
           {feedbackMessage.details && feedbackMessage.details.length > 0 && (
@@ -170,7 +168,7 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
           You haven't added any items yet.
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item) => {
             const isPersonal = !item.groups
             const isAvailable = item.status === 'available'
@@ -189,6 +187,8 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
                 onToggleSelect={toggleItemSelection}
                 onViewDetails={() => setSelectedItemForDetail(item.id)}
                 deleteButton={!isMultiSelectMode && <DeleteItemButton itemId={item.id} />}
+                className="h-full"
+                variant="compact"
               />
             )
           })}

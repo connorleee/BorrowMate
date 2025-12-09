@@ -4,6 +4,7 @@ import Link from 'next/link'
 import ShareGroupLink from './share-group-link'
 import GroupItemsManager from './group-items-manager'
 import InviteUserButton from '@/components/invite-user-button'
+import { ItemCard } from '@/components/Card'
 
 export default async function GroupDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -79,20 +80,15 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {items.map((item: any) => (
-                            <div key={item.id} className="p-4 border rounded-lg bg-white">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-bold">{item.name}</h3>
-                                    <span className={`text-xs px-2 py-1 rounded-full ${item.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                        }`}>
-                                        {item.status}
-                                    </span>
-                                </div>
-                                {item.description && <p className="text-sm text-gray-600 mb-2">{item.description}</p>}
-                                <div className="text-xs text-gray-400 mt-4 flex justify-between">
-                                    <span>Owner: {item.users?.name || 'Unknown'}</span>
-                                    <span>{item.privacy}</span>
-                                </div>
-                            </div>
+                            <ItemCard
+                                key={item.id}
+                                itemId={item.id}
+                                name={item.name}
+                                description={item.description}
+                                status={item.status}
+                                variant="compact"
+                                className="h-full"
+                            />
                         ))}
                     </div>
                 )}

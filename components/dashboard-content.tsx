@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import ItemDetailModal from './item-detail-modal'
+import { Card, ItemCard } from './Card'
 
 interface BorrowRecord {
   id: string
@@ -59,27 +60,31 @@ export default function DashboardContent({
           {borrowed.length === 0 ? (
             <p className="text-gray-500">You aren't borrowing anything right now.</p>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {borrowed.map((record) => (
-                <div
+                <Card
                   key={record.id}
-                  className="p-4 border rounded-lg bg-white flex justify-between items-center cursor-pointer hover:border-primary-300 hover:shadow-md transition-colors"
+                  interactive
                   onClick={() => setSelectedItemId(record.item_id)}
+                  variant="compact"
+                  className="h-full"
                 >
-                  <div>
-                    <h3 className="font-bold">{record.item?.name || 'Unknown Item'}</h3>
-                    <p className="text-sm text-gray-600">From: {record.lender?.name || 'Unknown'}</p>
-                    <p className="text-xs text-gray-400">
-                      Due: {record.due_date ? new Date(record.due_date).toLocaleDateString() : 'No due date'}
+                  <div className="flex flex-col h-full justify-between">
+                    <div>
+                      <h3 className="font-semibold text-sm truncate">{record.item?.name || 'Unknown Item'}</h3>
+                      <p className="text-xs text-gray-600 truncate">From: {record.lender?.name || 'Unknown'}</p>
+                    </div>
+                    <p className="text-[10px] text-gray-400 mt-2">
+                      Due: {record.due_date ? new Date(record.due_date).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' }) : 'No due date'}
                     </p>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
           )}
         </section>
 
-        {/* Items I lent out - grouped by contact */}
+        {/* Items I lent out */}
         <section>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">Items I've Lent Out</h2>
@@ -90,37 +95,37 @@ export default function DashboardContent({
           {lentGroupedByContact.length === 0 ? (
             <p className="text-gray-500">You haven't lent anything out.</p>
           ) : (
-            <div className="space-y-6">
-              {lentGroupedByContact.map((group) => (
-                <div key={group.contactId} className="border rounded-lg overflow-hidden bg-white">
-                  {/* Contact Header */}
-                  <div className="bg-gray-50 px-4 py-3 border-b">
-                    <h3 className="font-bold text-lg">{group.contact?.name || 'Unknown Contact'}</h3>
-                    {group.contact?.email && <p className="text-sm text-gray-600">{group.contact.email}</p>}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              {lentGroupedByContact.flatMap(group =>
+                group.items.map((record: any) => ({
+                  ...record,
+                  contactName: group.contact?.name || 'Unknown Contact',
+                  contactEmail: group.contact?.email
+                }))
+              ).map((record) => (
+                <Card
+                  key={record.id}
+                  interactive
+                  onClick={() => setSelectedItemId(record.item_id)}
+                  variant="compact"
+                  className="h-full"
+                >
+                  <div className="flex flex-col h-full justify-between">
+                    <div>
+                      <h3 className="font-semibold text-sm truncate">{record.item?.name || 'Unknown Item'}</h3>
+                      <p className="text-xs text-gray-600 truncate">To: {record.contactName}</p>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <p className="text-[10px] text-gray-400">
+                        Due: {record.due_date ? new Date(record.due_date).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' }) : 'No due date'}
+                      </p>
+                      <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full flex-shrink-0 ${record.status === 'overdue' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                        {record.status === 'overdue' ? 'Overdue' : 'Lent'}
+                      </span>
+                    </div>
                   </div>
-
-                  {/* Items for this contact */}
-                  <div className="divide-y">
-                    {group.items?.map((record: any) => (
-                      <div
-                        key={record.id}
-                        className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors cursor-pointer"
-                        onClick={() => setSelectedItemId(record.item_id)}
-                      >
-                        <div className="flex-1">
-                          <h4 className="font-medium">{record.item?.name || 'Unknown Item'}</h4>
-                          {record.item?.description && (
-                            <p className="text-sm text-gray-600">{record.item.description}</p>
-                          )}
-                          <p className="text-xs text-gray-400 mt-1">
-                            Due:{' '}
-                            {record.due_date ? new Date(record.due_date).toLocaleDateString() : 'No due date'}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                </Card>
               ))}
             </div>
           )}
@@ -137,23 +142,19 @@ export default function DashboardContent({
           {userItems.length === 0 ? (
             <p className="text-gray-500">You haven't added any items yet.</p>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {userItems.map((item) => (
-                <div
+                <ItemCard
                   key={item.id}
-                  className="p-4 border rounded-lg bg-white flex justify-between items-center cursor-pointer hover:border-primary-300 hover:shadow-md transition-colors"
-                  onClick={() => setSelectedItemId(item.id)}
-                >
-                  <div>
-                    <h3 className="font-bold">{item.name}</h3>
-                    <p className="text-sm text-gray-600">{item.description || 'No description'}</p>
-                    {item.status === 'unavailable' && (
-                      <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-800 inline-block mt-1">
-                        Unavailable
-                      </span>
-                    )}
-                  </div>
-                </div>
+                  itemId={item.id}
+                  name={item.name}
+                  description={item.description}
+                  status={item.status}
+                  groupName={item.groups?.name}
+                  onViewDetails={() => setSelectedItemId(item.id)}
+                  variant="compact"
+                  className="h-full"
+                />
               ))}
             </div>
           )}

@@ -33,13 +33,12 @@ export default function LendableItemCard({
 
   return (
     <div
-      className={`bg-white p-5 rounded-lg shadow-sm border transition-colors ${
-        isMultiSelectMode
-          ? isSelected
-            ? 'border-primary-500 bg-primary-50 cursor-pointer'
-            : 'border-gray-200 hover:bg-gray-50 cursor-pointer'
-          : 'border-gray-200 cursor-pointer hover:border-primary-300 hover:shadow-md'
-      }`}
+      className={`bg-white dark:bg-gray-800 p-5 rounded-lg shadow-sm border transition-colors ${isMultiSelectMode
+        ? isSelected
+          ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 dark:border-primary-500 cursor-pointer'
+          : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'
+        : 'border-gray-200 dark:border-gray-700 cursor-pointer hover:border-primary-300 dark:hover:border-primary-500 hover:shadow-md'
+        }`}
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -48,11 +47,10 @@ export default function LendableItemCard({
         <div className="flex items-start gap-3 flex-1">
           {isMultiSelectMode && (
             <div
-              className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                isSelected
-                  ? 'bg-primary-500 border-primary-500'
-                  : 'border-gray-300 bg-white'
-              }`}
+              className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 mt-0.5 ${isSelected
+                ? 'bg-primary-500 border-primary-500'
+                : 'border-gray-300 bg-white'
+                }`}
             >
               {isSelected && (
                 <svg
@@ -72,22 +70,22 @@ export default function LendableItemCard({
             </div>
           )}
           <div className="flex-1">
-            <h3 className="font-semibold text-base leading-snug text-gray-900 mb-1">{item.name}</h3>
-            <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+            <h3 className="font-semibold text-base leading-snug text-gray-900 dark:text-gray-100 mb-1">{item.name}</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">
               {item.description || 'No description'}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {item.groups ? (
-                <span className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded text-xs font-medium">
+                <span className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded text-xs font-medium">
                   {item.groups.name}
                 </span>
               ) : (
-                <span className="bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded border border-yellow-200 text-xs font-medium">
+                <span className="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2.5 py-1 rounded border border-yellow-200 dark:border-yellow-800 text-xs font-medium">
                   Unassigned
                 </span>
               )}
               {item.status === 'unavailable' && (
-                <span className="px-2.5 py-1 rounded bg-red-100 text-red-800 text-xs font-medium">
+                <span className="px-2.5 py-1 rounded bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 text-xs font-medium">
                   Unavailable
                 </span>
               )}
