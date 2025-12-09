@@ -33,7 +33,7 @@ export default function LendableItemCard({
 
   return (
     <div
-      className={`bg-white p-4 rounded-lg shadow-sm border transition-colors ${
+      className={`bg-white p-5 rounded-lg shadow-sm border transition-colors ${
         isMultiSelectMode
           ? isSelected
             ? 'border-primary-500 bg-primary-50 cursor-pointer'
@@ -48,7 +48,7 @@ export default function LendableItemCard({
         <div className="flex items-start gap-3 flex-1">
           {isMultiSelectMode && (
             <div
-              className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 mt-1 ${
+              className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 mt-0.5 ${
                 isSelected
                   ? 'bg-primary-500 border-primary-500'
                   : 'border-gray-300 bg-white'
@@ -72,22 +72,22 @@ export default function LendableItemCard({
             </div>
           )}
           <div className="flex-1">
-            <h3 className="font-medium text-lg">{item.name}</h3>
-            <p className="text-sm text-gray-500 mb-2">
+            <h3 className="font-semibold text-base leading-snug text-gray-900 mb-1">{item.name}</h3>
+            <p className="text-xs text-gray-500 mb-3 leading-relaxed">
               {item.description || 'No description'}
             </p>
-            <div className="flex gap-2 text-xs">
+            <div className="flex flex-wrap gap-1.5">
               {item.groups ? (
-                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                <span className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded text-xs font-medium">
                   {item.groups.name}
                 </span>
               ) : (
-                <span className="bg-yellow-50 text-yellow-700 px-2 py-1 rounded border border-yellow-200">
+                <span className="bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded border border-yellow-200 text-xs font-medium">
                   Unassigned
                 </span>
               )}
               {item.status === 'unavailable' && (
-                <span className="px-2 py-1 rounded bg-red-100 text-red-800">
+                <span className="px-2.5 py-1 rounded bg-red-100 text-red-800 text-xs font-medium">
                   Unavailable
                 </span>
               )}

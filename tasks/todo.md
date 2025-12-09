@@ -778,3 +778,95 @@ Migrations will run in order:
 2. 20250129000008 - Add privacy-based item RLS
 3. 20250129000009 - Add privacy-based borrow record RLS
 4. 20250129000010 - Fix RLS recursion with SECURITY DEFINER functions
+
+---
+
+## Phase 9: Improve Item Tiles UI
+
+### Overview
+Improve the visual design of item tiles to match a cleaner, more polished design (reference: Peymen dashboard). Focus on typography hierarchy, spacing, and visual clarity without changing layout.
+
+### Improvements to Implement
+
+#### 1. [ ] Enhance Typography Hierarchy in Item Tiles
+- **File**: `components/lendable-item-card.tsx`
+- Make item name bolder/more prominent
+- Ensure description text is clearly secondary (smaller, lighter gray)
+- Add proper spacing between name and description
+
+#### 2. [ ] Improve Card Layout and Spacing
+- **File**: `components/lendable-item-card.tsx`
+- Increase padding for better whitespace
+- Improve vertical spacing between content sections
+- Better visual separation between title, description, and badges
+
+#### 3. [ ] Update Badge/Status Styling
+- **File**: `components/lendable-item-card.tsx`
+- Make badges cleaner and more modern
+- Better color contrast and sizing
+- Improve spacing between multiple badges
+
+#### 4. [ ] Optimize Overall Visual Hierarchy
+- Ensure title is prominent and bold
+- Secondary info (description, group) is visually subordinate
+- Status badges are clear but not dominant
+
+### Design Reference
+The design reference shows:
+- Larger, bolder section titles (primary information)
+- Smaller, gray secondary text (supplementary information)
+- Clean card layouts with good spacing
+- Clear visual separation between elements
+
+### Review Section
+
+#### Summary of Changes ✅
+
+**File Modified**: `components/lendable-item-card.tsx`
+
+#### 1. Enhanced Typography Hierarchy ✅
+- **Title**: Changed from `font-medium text-lg` → `font-semibold text-base leading-snug text-gray-900 mb-1`
+  - Bolder font weight (semibold) for prominence
+  - Proper leading with `leading-snug`
+  - Dark gray (text-gray-900) for maximum contrast
+  - Bottom margin `mb-1` for proper spacing
+
+- **Description**: Changed from `text-sm text-gray-500` → `text-xs text-gray-500 mb-3 leading-relaxed`
+  - Smaller text (xs) to de-emphasize
+  - Larger bottom margin `mb-3` to separate from badges
+  - Better line height with `leading-relaxed`
+
+#### 2. Improved Card Layout and Spacing ✅
+- **Card Padding**: Increased from `p-4` → `p-5` for better whitespace
+- **Checkbox Alignment**: Adjusted from `mt-1` → `mt-0.5` for visual alignment with new spacing
+- **Badge Container**: Changed from `gap-2` → `gap-1.5` for tighter, cleaner spacing
+- **Added `flex-wrap`** to badge container for responsive badge layout
+
+#### 3. Updated Badge/Status Styling ✅
+- **Padding**: Increased from `px-2 py-1` → `px-2.5 py-1` for better proportions
+- **Font Weight**: Added `font-medium` to all badges for visual weight
+- **Text Size**: Made explicit with `text-xs` for consistency
+- **Color Enhancement**:
+  - Group badge: `bg-gray-100 text-gray-600` (clean, neutral)
+  - Unassigned: `bg-yellow-50 text-yellow-700 border border-yellow-200` (warning state)
+  - Unavailable: `bg-red-100 text-red-800` (alert state)
+
+#### 4. Visual Hierarchy Optimization ✅
+All changes work together to create clear visual hierarchy:
+1. **Item Name** - Most prominent (larger, bold, dark)
+2. **Description** - Secondary (smaller, light gray)
+3. **Metadata** - Least prominent (badges, small, neutral colors)
+4. **Checkbox** - Subtle alignment with content
+
+#### Visual Improvements
+- Cleaner, more modern appearance matching the Peymen dashboard design reference
+- Better visual separation between content elements
+- Improved readability with proper typography hierarchy
+- More spacious layout without layout changes
+- Consistent badge styling across all status types
+
+#### Code Quality
+- Only CSS/Tailwind changes - zero functional changes
+- Minimal impact - only 1 file modified
+- No breaking changes to component interface
+- Maintains all existing functionality (multi-select, detail view, delete)
