@@ -56,6 +56,7 @@ export default function ContactDetailContent({
   const [isLendModalOpen, setIsLendModalOpen] = useState(false)
   const [isLending, setIsLending] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [confirmReturnRecord, setConfirmReturnRecord] = useState<BorrowRecord | null>(null)
 
   const handleReturn = async (record: BorrowRecord) => {
     if (!record.item) return
@@ -204,11 +205,11 @@ export default function ContactDetailContent({
                   </div>
                 </div>
                 <button
-                  onClick={() => handleReturn(record)}
+                  onClick={() => setConfirmReturnRecord(record)}
                   disabled={isReturning === record.id}
                   className="ml-4 px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors"
                 >
-                  {isReturning === record.id ? 'Returning...' : 'Return'}
+                  {isReturning === record.id ? 'Marking...' : 'Mark Returned'}
                 </button>
               </div>
             ))}
@@ -270,6 +271,39 @@ export default function ContactDetailContent({
         contactName={contact.name}
         isSubmitting={isLending}
       />
+
+      {/* Confirm Return Modal */}
+      {confirmReturnRecord && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              Confirm Return
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Mark <span className="font-medium text-gray-900 dark:text-gray-100">{confirmReturnRecord.item?.name}</span> as returned from {contact.name}?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmReturnRecord(null)}
+                disabled={isReturning === confirmReturnRecord.id}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  await handleReturn(confirmReturnRecord)
+                  setConfirmReturnRecord(null)
+                }}
+                disabled={isReturning === confirmReturnRecord.id}
+                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
+              >
+                {isReturning === confirmReturnRecord.id ? 'Marking...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
