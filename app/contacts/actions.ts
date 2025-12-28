@@ -281,12 +281,48 @@ export async function getContactWithBorrowHistory(contactId: string) {
   const currentlyBorrowed = records.filter(r => r.status === 'borrowed')
   const history = records.filter(r => r.status !== 'borrowed')
 
+  // Fetch items the contact has lent TO the logged-in user (if contact is a linked user)
+  let borrowedFromContact: typeof records = []
+  if (contact.linked_user_id) {
+    const { data: borrowedFromRecords } = await supabase
+      .from('borrow_records')
+      .select(`
+        id,
+        item_id,
+        contact_id,
+        lender_user_id,
+        start_date,
+        due_date,
+        returned_at,
+        status,
+        created_at,
+        item:items (
+          id,
+          name,
+          description,
+          category,
+          status
+        )
+      `)
+      .eq('lender_user_id', contact.linked_user_id)
+      .eq('borrower_user_id', user.id)
+      .eq('status', 'borrowed')
+      .order('created_at', { ascending: false })
+
+    borrowedFromContact = (borrowedFromRecords || []).map(record => ({
+      ...record,
+      item: Array.isArray(record.item) ? record.item[0] || null : record.item,
+    }))
+  }
+
   return {
     contact,
     currentlyBorrowed,
+    borrowedFromContact,
     history,
     stats: {
       currentCount: currentlyBorrowed.length,
+      borrowedFromCount: borrowedFromContact.length,
       totalCount: records.length,
     },
   }

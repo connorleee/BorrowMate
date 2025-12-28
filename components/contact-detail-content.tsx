@@ -35,12 +35,14 @@ interface BorrowRecord {
 
 interface Stats {
   currentCount: number
+  borrowedFromCount: number
   totalCount: number
 }
 
 interface ContactDetailContentProps {
   contact: Contact
   currentlyBorrowed: BorrowRecord[]
+  borrowedFromContact: BorrowRecord[]
   history: BorrowRecord[]
   stats: Stats
 }
@@ -48,6 +50,7 @@ interface ContactDetailContentProps {
 export default function ContactDetailContent({
   contact,
   currentlyBorrowed,
+  borrowedFromContact,
   history,
   stats,
 }: ContactDetailContentProps) {
@@ -147,8 +150,16 @@ export default function ContactDetailContent({
             <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
               {stats.currentCount}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Currently Borrowed</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Your Items with {contact.name}</div>
           </div>
+          {contact.linked_user_id && (
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {stats.borrowedFromCount}
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{contact.name}&apos;s Items with You</div>
+            </div>
+          )}
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-700 dark:text-gray-300">
               {stats.totalCount}
@@ -171,14 +182,14 @@ export default function ContactDetailContent({
         </div>
       )}
 
-      {/* Currently Borrowed */}
+      {/* Items with Contact */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-          Currently Borrowed ({currentlyBorrowed.length})
+          Your Items with {contact.name} ({currentlyBorrowed.length})
         </h2>
         {currentlyBorrowed.length === 0 ? (
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
-            No items currently borrowed
+            {contact.name} doesn&apos;t have any of your items
           </div>
         ) : (
           <div className="space-y-3">
@@ -216,6 +227,44 @@ export default function ContactDetailContent({
           </div>
         )}
       </div>
+
+      {/* Items Borrowed FROM Contact (only if contact is a linked user) */}
+      {contact.linked_user_id && (
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            {contact.name}&apos;s Items with You ({borrowedFromContact.length})
+          </h2>
+          {borrowedFromContact.length === 0 ? (
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+              You don&apos;t have any of {contact.name}&apos;s items
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {borrowedFromContact.map((record) => (
+                <div
+                  key={record.id}
+                  className="bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700 p-4"
+                >
+                  <div className="flex-1 min-w-0">
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                      {record.item?.name || 'Unknown Item'}
+                    </span>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      Borrowed {formatDate(record.start_date)}
+                      {record.due_date && (
+                        <span className={isOverdue(record.due_date) ? 'text-red-600 dark:text-red-400 font-medium' : ''}>
+                          {' '}&middot; Due {formatDate(record.due_date)}
+                          {isOverdue(record.due_date) && ' (Overdue)'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Borrow History */}
       <div>

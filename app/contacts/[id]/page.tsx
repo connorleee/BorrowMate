@@ -15,7 +15,7 @@ export default async function ContactDetailPage({ params }: ContactPageProps) {
     redirect('/contacts')
   }
 
-  const { contact, currentlyBorrowed, history, stats } = result
+  const { contact, currentlyBorrowed, borrowedFromContact, history, stats } = result
 
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -30,6 +30,7 @@ export default async function ContactDetailPage({ params }: ContactPageProps) {
       <ContactDetailContent
         contact={contact}
         currentlyBorrowed={currentlyBorrowed}
+        borrowedFromContact={borrowedFromContact}
         history={history}
         stats={stats}
       />
