@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
+import Link from 'next/link'
 
 // ============= BASE CARD COMPONENT =============
 
@@ -155,6 +156,7 @@ export function ItemCard({
 // ============= CONTACT CARD VARIANT =============
 
 interface ContactCardProps {
+  id?: string
   name: string
   email?: string | null
   phone?: string | null
@@ -164,6 +166,7 @@ interface ContactCardProps {
 }
 
 export function ContactCard({
+  id,
   name,
   email,
   phone,
@@ -176,7 +179,15 @@ export function ContactCard({
       <div className="flex justify-between items-start">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-semibold text-base text-gray-900 dark:text-gray-100 truncate">{name}</h3>
+            <h3 className="font-semibold text-base text-gray-900 dark:text-gray-100 truncate">
+              {id ? (
+                <Link href={`/contacts/${id}`} className="hover:text-primary-600 hover:underline">
+                  {name}
+                </Link>
+              ) : (
+                name
+              )}
+            </h3>
             {linkedUser && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 flex-shrink-0">
                 Linked

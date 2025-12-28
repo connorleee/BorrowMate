@@ -99,6 +99,7 @@ export default function DashboardContent({
               {lentGroupedByContact.flatMap(group =>
                 group.items.map((record: any) => ({
                   ...record,
+                  contactId: group.contactId,
                   contactName: group.contact?.name || 'Unknown Contact',
                   contactEmail: group.contact?.email
                 }))
@@ -113,7 +114,16 @@ export default function DashboardContent({
                   <div className="flex flex-col h-full justify-between">
                     <div>
                       <h3 className="font-semibold text-sm truncate">{record.item?.name || 'Unknown Item'}</h3>
-                      <p className="text-xs text-gray-600 truncate">To: {record.contactName}</p>
+                      <p className="text-xs text-gray-600 truncate">
+                        To:{' '}
+                        <Link
+                          href={`/contacts/${record.contactId}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-primary-600 hover:underline"
+                        >
+                          {record.contactName}
+                        </Link>
+                      </p>
                     </div>
                     <div className="flex justify-between items-center mt-2">
                       <p className="text-[10px] text-gray-400">

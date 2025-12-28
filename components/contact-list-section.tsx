@@ -92,6 +92,7 @@ export default function ContactListSection({ initialContacts }: ContactListSecti
           {contacts.map((contact) => (
             <div key={contact.id}>
               <ContactCard
+                id={contact.id}
                 name={contact.name}
                 email={contact.email}
                 phone={contact.phone}

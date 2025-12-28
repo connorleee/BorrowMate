@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { deleteContact } from '@/app/contacts/actions'
 
 interface ContactCardProps {
@@ -38,7 +39,11 @@ export default function ContactCard({
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-bold text-lg">{name}</h3>
+            <h3 className="font-bold text-lg">
+              <Link href={`/contacts/${id}`} className="hover:text-primary-600 hover:underline">
+                {name}
+              </Link>
+            </h3>
             {linked_user_id && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                 Linked User

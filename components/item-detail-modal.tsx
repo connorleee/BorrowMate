@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import Link from 'next/link'
 import { getItemDetailsWithBorrow, getItemBorrowHistory, deleteItem } from '@/app/items/actions'
 import { returnItem } from '@/app/borrow/actions'
 
@@ -174,7 +175,15 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
               <div className="bg-primary-50 p-4 rounded-lg border border-primary-200">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">Currently Borrowed By</h3>
                 <div className="space-y-2">
-                  <p className="text-gray-900 font-medium">{data.contact.name}</p>
+                  <p className="text-gray-900 font-medium">
+                    <Link
+                      href={`/contacts/${data.contact.id}`}
+                      className="text-primary-600 hover:underline"
+                      onClick={onClose}
+                    >
+                      {data.contact.name}
+                    </Link>
+                  </p>
                   {data.contact.email && (
                     <p className="text-sm text-gray-600">Email: {data.contact.email}</p>
                   )}
@@ -221,7 +230,19 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
                     <div key={record.id || idx} className="p-3 bg-gray-50 rounded border border-gray-200">
                       <div className="flex justify-between items-start gap-2">
                         <div className="flex-1">
-                          <p className="font-medium text-gray-900">{record.contact?.name || 'Unknown'}</p>
+                          <p className="font-medium text-gray-900">
+                            {record.contact?.id ? (
+                              <Link
+                                href={`/contacts/${record.contact.id}`}
+                                className="text-primary-600 hover:underline"
+                                onClick={onClose}
+                              >
+                                {record.contact.name}
+                              </Link>
+                            ) : (
+                              record.contact?.name || 'Unknown'
+                            )}
+                          </p>
                           <p className="text-xs text-gray-600 mt-1">
                             {new Date(record.start_date).toLocaleDateString()}
                             {record.due_date && ` - Due: ${new Date(record.due_date).toLocaleDateString()}`}

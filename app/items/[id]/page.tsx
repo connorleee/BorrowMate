@@ -74,7 +74,14 @@ export default async function ItemDetailsPage({ params }: { params: Promise<{ id
                     {activeBorrow && contact ? (
                         <div className="bg-primary-50 p-4 rounded-lg border border-primary-200">
                             <h3 className="text-sm font-medium text-gray-700 mb-2">Currently Borrowed By</h3>
-                            <p className="font-medium text-gray-900">{contact.name}</p>
+                            <p className="font-medium text-gray-900">
+                                <Link
+                                    href={`/contacts/${contact.id}`}
+                                    className="text-primary-600 hover:underline"
+                                >
+                                    {contact.name}
+                                </Link>
+                            </p>
                             {contact.email && <p className="text-sm text-gray-600">Email: {contact.email}</p>}
                             {contact.phone && <p className="text-sm text-gray-600">Phone: {contact.phone}</p>}
                             {activeBorrow.due_date && (
@@ -118,7 +125,16 @@ export default async function ItemDetailsPage({ params }: { params: Promise<{ id
                                         <div className="flex justify-between items-start gap-2">
                                             <div className="flex-1">
                                                 <p className="font-medium text-gray-900">
-                                                    {record.contact?.name || 'Unknown'}
+                                                    {record.contact?.id ? (
+                                                        <Link
+                                                            href={`/contacts/${record.contact.id}`}
+                                                            className="text-primary-600 hover:underline"
+                                                        >
+                                                            {record.contact.name}
+                                                        </Link>
+                                                    ) : (
+                                                        record.contact?.name || 'Unknown'
+                                                    )}
                                                 </p>
                                                 <p className="text-xs text-gray-600 mt-1">
                                                     {new Date(record.start_date).toLocaleDateString()}

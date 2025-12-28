@@ -218,3 +218,76 @@ export async function linkContactToUser(contactId: string, userId: string) {
   revalidatePath('/contacts')
   return { data }
 }
+
+export async function getContactWithBorrowHistory(contactId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
+  // Fetch contact with ownership verification (RLS enforces, but explicit check too)
+  const { data: contact, error: contactError } = await supabase
+    .from('contacts')
+    .select('id, owner_user_id, name, email, phone, linked_user_id, created_at')
+    .eq('id', contactId)
+    .single()
+
+  if (contactError || !contact) {
+    return { error: 'Contact not found' }
+  }
+
+  if (contact.owner_user_id !== user.id) {
+    return { error: 'Unauthorized' }
+  }
+
+  // Fetch all borrow records for this contact
+  const { data: borrowRecords, error: borrowError } = await supabase
+    .from('borrow_records')
+    .select(`
+      id,
+      item_id,
+      contact_id,
+      lender_user_id,
+      start_date,
+      due_date,
+      returned_at,
+      status,
+      created_at,
+      item:items (
+        id,
+        name,
+        description,
+        category,
+        status
+      )
+    `)
+    .eq('contact_id', contactId)
+    .eq('lender_user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (borrowError) {
+    console.error('Error fetching borrow history:', borrowError)
+    return { error: borrowError.message }
+  }
+
+  // Transform records to ensure item is a single object (not array)
+  const records = (borrowRecords || []).map(record => ({
+    ...record,
+    item: Array.isArray(record.item) ? record.item[0] || null : record.item,
+  }))
+
+  const currentlyBorrowed = records.filter(r => r.status === 'borrowed')
+  const history = records.filter(r => r.status !== 'borrowed')
+
+  return {
+    contact,
+    currentlyBorrowed,
+    history,
+    stats: {
+      currentCount: currentlyBorrowed.length,
+      totalCount: records.length,
+    },
+  }
+}
