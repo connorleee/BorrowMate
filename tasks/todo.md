@@ -1,236 +1,338 @@
-# Contact's Public Items Section
+# Fix "Unknown Item" Bug - COMPLETED ✅
 
-## Objective
-Add a new section to the contact detail page that displays the contact's public items (when linked_user_id exists) with filtering capabilities and the ability to request to borrow items.
+## Resolution Summary
+Created migration `20251228000002_fix_lender_item_visibility.sql` that fixes the RLS policy for lender visibility.
 
-## Background
-When a contact is linked to a BorrowMate user (has a linked_user_id), we should be able to see their public items. This allows users to:
-- Browse what items the contact has available
-- Filter items by category or search term
-- Request to borrow items from the contact
+**The Fix**: Replaced the SECURITY DEFINER helper function approach with a direct EXISTS query in the RLS policy. This ensures that when querying borrow_records with item joins, the items are visible to lenders.
 
-According to the RLS policies, public items from a linked user are visible when:
-- The item has privacy='public'
-- The current user is viewing items from a user they're connected to (via contact relationship)
+**Migration Created**: `supabase/migrations/20251228000002_fix_lender_item_visibility.sql`
 
-## Tasks
+**To Apply**:
+1. Start Docker Desktop
+2. Run: `npx supabase start`
+3. Run: `npx supabase db push`
 
-- [x] Create server action `getPublicItemsForContact(contactId)` in `app/contacts/actions.ts`
-  - Fetch public items where owner_user_id = contact.linked_user_id
-  - Filter for privacy='public'
-  - Return items with categories for filtering
+Or apply directly in Supabase dashboard SQL editor.
 
-- [x] Add new section to `components/contact-detail-content.tsx`
-  - Display section only when contact.linked_user_id exists
-  - Show "{contact.name}'s Available Items" header
-  - Add search/filter UI (search input + category filter dropdown)
-  - Display items in grid using ItemCard component
-  - Add "Request to Borrow" button on each item card
+**What Changed**:
+- Simplified the "Items are viewable by lender" RLS policy
+- Removed dependency on `is_lender_of_item()` SECURITY DEFINER function
+- Used direct EXISTS check for better compatibility with Supabase joins
 
-- [x] Create `BorrowRequestModal` component
-  - Modal for requesting to borrow an item
-  - Show item details
-  - Optional due date input
-  - Message/notes field for the request
-  - Submit button to create borrow request
+This should fix all 6 locations where items were showing as "Unknown Item".
 
-- [x] Create server action `createBorrowRequest(itemId, contactId, dueDate?, message?)` in `app/borrow/actions.ts`
-  - Create a new borrow_record with status='borrowed'
-  - Link to contact_id and item_id
-  - Set lender_user_id to contact.linked_user_id
-  - Set borrower_user_id to current user
-  - Include optional due_date and message
+---
 
-- [x] Update contact detail page to pass public items to ContactDetailContent
-  - Call getPublicItemsForContact in server component
-  - Pass items to ContactDetailContent component
+# Request to Borrow with Notification Infrastructure
 
-- [x] Add client-side filtering logic
-  - Filter by search term (name, description, category)
-  - Filter by category dropdown
-  - Debounce search input (300ms)
+## Problem Statement
+Currently, the "Request to Borrow" button immediately creates a borrow record and marks the item as unavailable. We need to transform this into a proper request/approval flow where:
+1. Requester clicks "Request to Borrow" → creates a borrow request (NOT a borrow record)
+2. Item owner receives a notification
+3. Owner can accept or reject the request
+4. Upon acceptance → creates borrow record and marks item unavailable
+5. Upon rejection → just updates request status
 
-## Implementation Notes
+## Architectural Overview
 
-### Server Action: getPublicItemsForContact
-```typescript
-// In app/contacts/actions.ts
-export async function getPublicItemsForContact(contactId: string) {
-  // 1. Fetch contact to get linked_user_id
-  // 2. If no linked_user_id, return empty array
-  // 3. Fetch items where owner_user_id = linked_user_id AND privacy = 'public'
-  // 4. Return items with all necessary fields
-}
+### Database Schema
+We'll create two new tables:
+
+**`borrow_requests`** - Pending borrow requests (separate from actual borrow_records)
+- `id` (uuid, PK)
+- `item_id` (uuid, FK to items) - What item is being requested
+- `requester_contact_id` (uuid, FK to contacts, nullable) - If owner creates request on behalf of contact
+- `requester_user_id` (uuid, FK to users, nullable) - If requester is logged-in user
+- `owner_user_id` (uuid, FK to users) - Item owner who needs to approve
+- `requested_due_date` (date, nullable)
+- `message` (text, nullable) - Optional message from requester
+- `status` (text) - 'pending', 'accepted', 'rejected', 'cancelled'
+- `created_at`, `updated_at`, `responded_at` (timestamps)
+
+**`notifications`** - Universal notification system
+- `id` (uuid, PK)
+- `recipient_user_id` (uuid, FK to users) - Who receives this notification
+- `sender_user_id` (uuid, FK to users, nullable) - Who triggered it
+- `sender_contact_id` (uuid, FK to contacts, nullable) - If sender is a contact
+- `type` (text) - 'borrow_request', 'request_accepted', 'request_rejected'
+- `title` (text) - Notification title
+- `message` (text, nullable) - Notification body
+- `status` (text) - 'unread', 'read'
+- `related_item_id` (uuid, FK to items, nullable)
+- `related_request_id` (uuid, FK to borrow_requests, nullable)
+- `related_borrow_record_id` (uuid, FK to borrow_records, nullable)
+- `action_url` (text, nullable) - Where to navigate on click
+- `created_at`, `read_at` (timestamps)
+
+**Indexes:**
+- `notifications(recipient_user_id, status, created_at DESC)` - For fetching user's notifications
+- `borrow_requests(owner_user_id, status)` - For fetching pending requests
+
+### Current Code Analysis
+- **Current behavior**: `createBorrowRequest()` in `app/borrow/actions.ts:365` immediately creates a borrow_record
+- **Files to modify**:
+  - `app/borrow/actions.ts` - Update createBorrowRequest, add accept/reject actions
+  - `components/contact-detail-content.tsx` - Already has UI wired up
+  - `components/borrow-request-modal.tsx` - Already has UI wired up
+
+### Notification Delivery Strategy
+**MVP Approach - Simple Polling:**
+- Poll for notifications every 30 seconds when user is active
+- Use `useEffect` with `setInterval` in header component
+- Badge shows unread count
+- No real-time WebSockets (keep it simple for now)
+- No email/SMS notifications (in-app only)
+
+### Flow Diagrams
+
+**Request Flow:**
+```
+User A (requester) viewing User B's (owner) public item
+  ↓
+Clicks "Request to Borrow"
+  ↓
+Creates borrow_request (status: pending)
+  ↓
+Creates notification for User B (type: borrow_request)
+  ↓
+User A sees success message
+  ↓
+User B polls and sees notification badge
+  ↓
+User B clicks notification → sees request details
+  ↓
+User B accepts OR rejects
+  ↓
+If accepted:
+  - Update borrow_request (status: accepted, responded_at: now)
+  - Create borrow_record (status: borrowed)
+  - Update item (status: unavailable)
+  - Create notification for User A (type: request_accepted)
+If rejected:
+  - Update borrow_request (status: rejected, responded_at: now)
+  - Create notification for User A (type: request_rejected)
 ```
 
-### Contact Detail Content Updates
-- Add new section after "Items Borrowed FROM Contact" section
-- Only render if contact.linked_user_id exists AND publicItems.length > 0
-- Use same card styling as other sections
-- Filter items client-side based on search/category state
+## Implementation Plan
 
-### Borrow Request Flow
-- User clicks "Request to Borrow" on an item card
-- Modal opens with item details
-- User can add optional due date and message
-- On submit, create borrow_record (status could be 'borrowed' or add new 'pending' status)
-- Show success feedback
-- Refresh page to update UI
+### Phase 1: Database Schema Setup
+- [ ] Create migration for `borrow_requests` table
+  - Table structure with all fields
+  - RLS policies (users can create requests for viewable items, owners can update their requests)
+  - Indexes for performance
+  - Check constraints on status enum
 
-### Filtering UI
-- Search input with magnifying glass icon
-- Category dropdown populated from unique categories in items
-- "All Categories" option in dropdown
-- Real-time filtering as user types/selects
+- [ ] Create migration for `notifications` table
+  - Table structure with all fields
+  - RLS policy (users can only see their own notifications)
+  - Index on (recipient_user_id, status, created_at DESC)
+  - Check constraints on type and status enums
 
-## Simplicity Considerations
-- Reuse existing ItemCard component from Card.tsx
-- Keep filtering logic simple (client-side, no need for server-side pagination yet)
-- Use existing borrow_records table (no need for separate requests table)
-- Minimal new components (just BorrowRequestModal)
-- Follow existing patterns from LendToContactModal
+- [ ] Apply migrations to local database
+  - Run `npx supabase db push`
+  - Verify tables created correctly
 
-## Testing Checklist
-- [x] Contact without linked_user_id doesn't show public items section
-- [x] Contact with linked_user_id shows their public items
-- [x] Private items from contact are NOT shown
-- [x] Search filtering works correctly
-- [x] Category filtering works correctly
-- [x] Borrow request modal opens and closes properly
-- [x] Borrow request creates record successfully
-- [x] Page refreshes and shows updated state after request
-- [x] Build and lint pass with no errors
+### Phase 2: Server Actions for Borrow Requests
+- [ ] Update `createBorrowRequest()` in `app/borrow/actions.ts`
+  - Change to create borrow_request instead of borrow_record
+  - Do NOT mark item as unavailable
+  - Create notification for item owner
+  - Return success with request ID
 
----
+- [ ] Create `acceptBorrowRequest()` in `app/borrow/actions.ts`
+  - Verify user is the owner
+  - Update borrow_request status to 'accepted'
+  - Create actual borrow_record
+  - Mark item as unavailable
+  - Create notification for requester (type: request_accepted)
+  - Revalidate paths
 
-## Review
+- [ ] Create `rejectBorrowRequest()` in `app/borrow/actions.ts`
+  - Verify user is the owner
+  - Update borrow_request status to 'rejected'
+  - Create notification for requester (type: request_rejected)
+  - Revalidate paths
 
-### Changes Made
+### Phase 3: Server Actions for Notifications
+- [ ] Create `getNotifications()` in new file `app/notifications/actions.ts`
+  - Fetch user's notifications ordered by created_at DESC
+  - Join with related items, requests, contacts for display
+  - Support pagination (limit to 50 most recent)
 
-#### New Files Created
+- [ ] Create `getUnreadNotificationCount()` in `app/notifications/actions.ts`
+  - Simple count query for badge
+  - Optimized for performance
 
-1. **`components/borrow-request-modal.tsx`** - Modal for requesting to borrow items
-   - Shows item details (name, description, category)
-   - Optional due date picker
-   - Optional message/notes field
-   - Follows same pattern as LendToContactModal for consistency
-   - Calls createBorrowRequest server action on submit
+- [ ] Create `markNotificationAsRead()` in `app/notifications/actions.ts`
+  - Update single notification status to 'read'
+  - Set read_at timestamp
+  - Revalidate notification count
 
-#### Files Modified
+- [ ] Create `markAllNotificationsAsRead()` in `app/notifications/actions.ts`
+  - Bulk update all unread to read
+  - Revalidate notification count
 
-1. **`app/contacts/actions.ts`** - Added `getPublicItemsForContact(contactId)`:
-   - Fetches public items owned by contact's linked user
-   - Verifies contact ownership and linked_user_id existence
-   - Filters for privacy='public'
-   - Returns items sorted by name
+### Phase 4: Notification UI Components
+- [ ] Create `components/notification-bell.tsx`
+  - Bell icon with unread count badge
+  - Click toggles notification panel
+  - Polling mechanism (every 30s) to refresh count
+  - Only poll when component is mounted (user is active)
 
-2. **`app/borrow/actions.ts`** - Added `createBorrowRequest(itemId, contactId, dueDate?, message?)`:
-   - Creates borrow_record with current user as borrower
-   - Sets lender_user_id to contact's linked_user_id
-   - Verifies item ownership and availability
-   - Updates item status to 'unavailable'
-   - Revalidates relevant paths
+- [ ] Create `components/notification-panel.tsx`
+  - Dropdown panel attached to bell
+  - List of notifications
+  - Each notification is clickable (navigates to action_url)
+  - Mark as read on click
+  - "Mark all as read" button
+  - Empty state when no notifications
 
-3. **`components/contact-detail-content.tsx`** - Added public items section:
-   - Added PublicItem interface and publicItems prop
-   - Added state for search, category filter, and borrow modal
-   - Implemented debounced search (300ms)
-   - Added filtering logic for search and category
-   - Renders public items section when contact.linked_user_id exists
-   - Search input with magnifying glass icon
-   - Category dropdown filter (only shown if categories exist)
-   - Items displayed in responsive grid using ItemCard
-   - "Request" button on available items opens BorrowRequestModal
-   - Integrated BorrowRequestModal with success/error feedback
+- [ ] Create `components/notification-item.tsx`
+  - Individual notification card
+  - Icon based on type
+  - Title and message
+  - Timestamp (relative: "2 minutes ago")
+  - Unread indicator (blue dot or highlighted background)
+  - Click handler to navigate and mark as read
 
-4. **`app/contacts/[id]/page.tsx`** - Updated to fetch and pass public items:
-   - Imports getPublicItemsForContact action
-   - Fetches public items for the contact
-   - Passes publicItems to ContactDetailContent component
+### Phase 5: Borrow Request Management UI
+- [ ] Create `components/borrow-request-card.tsx`
+  - Shows request details (item, requester, message, due date)
+  - Accept button (green)
+  - Reject button (red)
+  - Loading states during submission
+  - Used in notification panel and dedicated requests page
 
-### Features Implemented
+- [ ] Create `app/requests/page.tsx` (optional - dedicated page)
+  - Server component that fetches pending requests
+  - List of BorrowRequestCard components
+  - Filter by status (pending, accepted, rejected)
+  - Empty state
 
-1. **Public Items Display** - Shows contact's public items in new section
-   - Only visible when contact has linked_user_id
-   - Respects privacy settings (public items only)
-   - Responsive grid layout (1-2-3 columns)
+### Phase 6: Integration and Wiring
+- [ ] Add NotificationBell to header/layout
+  - Import and place in `app/layout.tsx` or navigation component
+  - Position in top-right corner
 
-2. **Real-time Filtering**
-   - Search input filters by name, description, category
-   - 300ms debounce for optimal performance
-   - Category dropdown dynamically populated from unique categories
-   - Shows filtered count in section header
+- [ ] Update contact detail page behavior
+  - Verify "Request to Borrow" button still works
+  - Success message should say "Request sent" not "Borrowed"
+  - Add note that owner needs to accept
 
-3. **Borrow Request Flow**
-   - Click "Request" on available items
-   - Modal shows item details
-   - Add optional due date
-   - Add optional message/note
-   - Creates borrow_record immediately (status='borrowed')
-   - Updates item to 'unavailable'
-   - Shows success feedback
-   - Refreshes page to show updated state
+- [ ] Add borrow request handling to notification flow
+  - When clicking notification with type='borrow_request'
+  - Navigate to request detail or show inline accept/reject
 
-4. **DRY Principles Applied**
-   - Reused existing ItemCard component
-   - Followed LendToContactModal pattern for consistency
-   - Used existing borrow_records table structure
-   - Shared filtering patterns from other components
-   - Consistent modal styling and behavior
+### Phase 7: Testing and Validation
+- [ ] Test complete request flow
+  - User A requests item from User B
+  - User B sees notification
+  - User B accepts → item becomes unavailable, User A gets notification
+  - User B rejects → item stays available, User A gets notification
 
-### Code Quality
+- [ ] Test notification polling
+  - Verify polling starts/stops correctly
+  - Verify badge count updates
+  - Verify no polling when user is inactive
 
-- ✅ Build successful (1019ms, TypeScript passed)
-- ✅ No new TypeScript errors
-- ✅ No lint errors
-- ✅ All components follow existing patterns
-- ✅ Server actions include proper auth checks
-- ✅ Client components handle loading/error states
-- ✅ Debounced search for performance
+- [ ] Test edge cases
+  - Item deleted while request pending
+  - Multiple simultaneous requests for same item
+  - Request for already unavailable item
+  - Network errors during accept/reject
 
-### UI/UX Improvements
+### Phase 8: Polish and UX Improvements
+- [ ] Add optimistic UI updates
+  - Instant badge count update on mark as read
+  - Instant request status update on accept/reject
 
-- Consistent card styling using unified ItemCard component
-- Search with icon for better visual clarity
-- Category filter only shows when relevant
-- Clear "Request" button on available items
-- Modal provides context with item details
-- Success/error feedback for all actions
-- Responsive design (mobile-first)
-- Dark mode support throughout
+- [ ] Add loading states and error handling
+  - Show spinners during async operations
+  - Display friendly error messages
+  - Handle RLS policy violations gracefully
 
-**Status**: ✅ **COMPLETE**
+- [ ] Add success confirmations
+  - Toast notifications for successful actions
+  - Subtle animations for state changes
 
----
+## Key Design Decisions
 
-## Bug Fix: RLS Policy for Contact Public Items
+### 1. Polling vs Real-time
+**Decision: Polling (30s interval)**
+- Simpler to implement
+- No WebSocket infrastructure needed
+- Good enough for MVP (notifications aren't ultra time-sensitive)
+- Can upgrade to Supabase Realtime later if needed
 
-### Issue
-Public items weren't showing up on the contact detail page because there was no RLS policy allowing users to view public items from their contacts' linked users.
+### 2. Notification Persistence
+**Decision: Keep all notifications indefinitely**
+- Users can review notification history
+- No automatic cleanup (can add later if storage becomes issue)
+- Mark as read vs delete (keep deleted ones hidden)
 
-### Root Cause
-The existing RLS policies only allowed viewing items from:
-- Yourself (owner)
-- Group members
-- Users you follow (via user_follows table)
-- Items you're borrowing
+### 3. Request Expiration
+**Decision: No automatic expiration for MVP**
+- Requests stay pending until accepted/rejected
+- Owner can always reject if no longer relevant
+- Can add auto-expire later (e.g., 7 days)
 
-There was no policy to allow viewing public items from contacts (via the contacts table with linked_user_id).
+### 4. Multiple Requests for Same Item
+**Decision: Allow multiple pending requests**
+- First accepted request wins
+- Subsequent accepts should fail gracefully (item unavailable)
+- Rejected requests don't affect item availability
 
-### Solution
-Created migration `20251228000000_allow_viewing_public_items_from_contacts.sql`:
-- Adds new RLS policy "Public items are viewable from contacts"
-- Allows viewing items where privacy='public' AND user has a contact with linked_user_id = item.owner_user_id
-- Simple, focused policy that matches existing patterns
+### 5. Notification Types (Extensible)
+**Initial types:**
+- `borrow_request` - Someone wants to borrow your item
+- `request_accepted` - Your borrow request was accepted
+- `request_rejected` - Your borrow request was rejected
 
-### Files Changed
-1. **`supabase/migrations/20251228000000_allow_viewing_public_items_from_contacts.sql`** (new)
-   - DROP POLICY IF EXISTS for idempotency
-   - CREATE POLICY with proper checks for privacy and contact relationship
+**Future types (not implemented now):**
+- `due_reminder` - Item due soon
+- `overdue_alert` - Item is overdue
+- `return_confirmation` - Item was returned
+- `item_shared` - Someone shared item with you
 
-### Testing
-- ✅ Migration applied successfully
-- ✅ Policy created in database
-- ✅ Public items now accessible from contact detail page
+## Simplicity Principles
+Following CLAUDE.md instructions to keep everything simple:
 
-**Status**: ✅ **FIXED**
+1. **Minimal schema changes**: Only 2 new tables, both straightforward
+2. **No complex state machines**: Simple status enums (pending/accepted/rejected)
+3. **Simple polling**: No WebSocket complexity
+4. **In-app only**: No email/SMS/push notifications
+5. **Reuse existing patterns**: Follow established server action and component patterns
+6. **No over-engineering**: No notification preferences, grouping, threading, or advanced features
+
+## Files to Create
+- `supabase/migrations/20251228000002_create_borrow_requests.sql`
+- `supabase/migrations/20251228000003_create_notifications.sql`
+- `app/notifications/actions.ts`
+- `components/notification-bell.tsx`
+- `components/notification-panel.tsx`
+- `components/notification-item.tsx`
+- `components/borrow-request-card.tsx`
+- `app/requests/page.tsx` (optional)
+
+## Files to Modify
+- `app/borrow/actions.ts` - Update createBorrowRequest, add accept/reject actions
+- `app/layout.tsx` or navigation component - Add NotificationBell
+- (No changes needed to contact-detail-content.tsx or borrow-request-modal.tsx - they already work)
+
+## Success Criteria
+✅ User can request to borrow an item
+✅ Owner receives in-app notification
+✅ Owner can accept or reject from notification
+✅ Acceptance creates borrow record and marks item unavailable
+✅ Rejection leaves item available
+✅ Requester receives notification of accept/reject decision
+✅ Notification badge shows unread count
+✅ All notifications are visible in dropdown panel
+✅ Complete flow works end-to-end
+
+## Notes
+- Following CLAUDE.md: No lazy fixes, find root causes
+- Keep changes minimal and simple
+- Impact as little code as possible
+- No temporary hacks or over-engineering
+- Thorough testing at each phase
