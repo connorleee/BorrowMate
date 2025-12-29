@@ -91,10 +91,12 @@ export default function AuthPage() {
 
             <div className="relative w-full">
                 <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
+                    <div className="w-full border-t" style={{ borderColor: 'var(--border)' }} />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                    <span className="px-4" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)' }}>
+                        Or continue with
+                    </span>
                 </div>
             </div>
 
