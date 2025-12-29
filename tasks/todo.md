@@ -336,3 +336,31 @@ Following CLAUDE.md instructions to keep everything simple:
 - Impact as little code as possible
 - No temporary hacks or over-engineering
 - Thorough testing at each phase
+
+---
+
+# Fix Infinite Recursion in borrow_records RLS Policy - COMPLETED ✅
+
+## Problem
+When accepting a borrow request, users see error: "infinite recursion detected in policy for relation 'borrow_records'"
+
+## Root Cause Analysis
+The recursion chain was:
+1. INSERT into `borrow_records` triggers INSERT policy
+2. INSERT policy "Users can create borrow records for items they own with their contacts." (from 20250129000001) queries `items` table
+3. Items SELECT policy "Items are viewable by borrower" (from 20251228000003) queries `borrow_records` **directly without SECURITY DEFINER**
+4. PostgreSQL detects circular dependency = infinite recursion error
+
+## Solution
+Migration 20250129000010 already created a SECURITY DEFINER function `is_borrower_of_item()` that bypasses RLS. However, migration 20251228000003 recreated the "Items are viewable by borrower" policy with a direct query instead of using this function.
+
+**Fix:** Drop and recreate the "Items are viewable by borrower" policy to use the SECURITY DEFINER function.
+
+## Changes Made
+- [x] Created migration `20251228000010_fix_items_borrower_policy_recursion.sql`
+- [x] Applied migration to local Supabase
+
+## Review
+- The fix follows the same pattern as migration 20251228000009 which fixed "Items are viewable by lender" using `is_lender_of_item()`
+- SECURITY DEFINER functions bypass RLS and break the circular dependency
+- No application code changes required - purely a database policy fix

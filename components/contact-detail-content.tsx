@@ -49,6 +49,13 @@ interface PublicItem {
   status: string
 }
 
+interface PendingRequest {
+  id: string
+  item_id: string
+  status: string
+  created_at: string
+}
+
 interface ContactDetailContentProps {
   contact: Contact
   currentlyBorrowed: BorrowRecord[]
@@ -56,6 +63,7 @@ interface ContactDetailContentProps {
   history: BorrowRecord[]
   stats: Stats
   publicItems: PublicItem[]
+  pendingRequests: PendingRequest[]
 }
 
 export default function ContactDetailContent({
@@ -65,6 +73,7 @@ export default function ContactDetailContent({
   history,
   stats,
   publicItems,
+  pendingRequests,
 }: ContactDetailContentProps) {
   const router = useRouter()
   const [isReturning, setIsReturning] = useState<string | null>(null)
@@ -133,7 +142,7 @@ export default function ContactDetailContent({
       if (result.error) {
         setFeedback({ type: 'error', text: result.error })
       } else {
-        setFeedback({ type: 'success', text: `Borrow request sent for ${selectedItemForBorrow?.name}` })
+        setFeedback({ type: 'success', text: `Request sent! Waiting for ${contact.name} to accept your request for ${selectedItemForBorrow?.name}` })
         setIsBorrowModalOpen(false)
         setSelectedItemForBorrow(null)
         router.refresh()
@@ -172,6 +181,10 @@ export default function ContactDetailContent({
   const handleRequestBorrow = (item: PublicItem) => {
     setSelectedItemForBorrow(item)
     setIsBorrowModalOpen(true)
+  }
+
+  const hasPendingRequest = (itemId: string) => {
+    return pendingRequests.some(req => req.item_id === itemId)
   }
 
   const formatDate = (dateString: string) => {
@@ -405,12 +418,21 @@ export default function ContactDetailContent({
                     className="h-full"
                   />
                   {item.status === 'available' && (
-                    <button
-                      onClick={() => handleRequestBorrow(item)}
-                      className="absolute bottom-3 right-3 px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-                    >
-                      Request to Borrow
-                    </button>
+                    hasPendingRequest(item.id) ? (
+                      <button
+                        disabled
+                        className="absolute bottom-3 right-3 px-3 py-1.5 text-sm bg-gray-400 text-white rounded-lg cursor-not-allowed"
+                      >
+                        Request Sent
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleRequestBorrow(item)}
+                        className="absolute bottom-3 right-3 px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                      >
+                        Request to Borrow
+                      </button>
+                    )
                   )}
                 </div>
               ))}

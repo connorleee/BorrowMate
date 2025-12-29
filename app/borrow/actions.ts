@@ -373,7 +373,7 @@ export async function createBorrowRequest(itemId: string, contactId: string, due
     // Verify contact ownership and get linked_user_id
     const { data: contact, error: contactError } = await supabase
         .from('contacts')
-        .select('owner_user_id, linked_user_id')
+        .select('owner_user_id, linked_user_id, name')
         .eq('id', contactId)
         .single()
 
@@ -388,7 +388,7 @@ export async function createBorrowRequest(itemId: string, contactId: string, due
     // Verify item exists and is owned by the linked user
     const { data: item, error: itemError } = await supabase
         .from('items')
-        .select('id, owner_user_id, status')
+        .select('id, owner_user_id, status, name')
         .eq('id', itemId)
         .single()
 
@@ -400,40 +400,297 @@ export async function createBorrowRequest(itemId: string, contactId: string, due
         return { error: 'Item is currently unavailable' }
     }
 
-    // Create borrow record with current user as borrower
-    const { data: record, error: insertError } = await supabase
-        .from('borrow_records')
+    // Get requester's name for notification
+    const { data: requesterUser } = await supabase
+        .from('users')
+        .select('name')
+        .eq('id', user.id)
+        .single()
+
+    // Create borrow request (NOT a borrow record - requires owner approval)
+    const { data: request, error: requestError } = await supabase
+        .from('borrow_requests')
         .insert({
             item_id: itemId,
-            contact_id: contactId,
-            lender_user_id: contact.linked_user_id,
-            borrower_user_id: user.id,
-            start_date: new Date().toISOString(),
-            due_date: dueDate ? new Date(dueDate).toISOString() : null,
-            status: 'borrowed' as const,
+            requester_user_id: user.id,
+            owner_user_id: contact.linked_user_id,
+            requested_due_date: dueDate ? new Date(dueDate).toISOString().split('T')[0] : null,
+            message: message || null,
+            status: 'pending' as const,
         })
         .select()
         .single()
 
-    if (insertError) {
-        console.error('Error creating borrow request:', insertError)
-        return { error: insertError.message }
+    if (requestError) {
+        console.error('Error creating borrow request:', requestError)
+        return { error: requestError.message }
     }
 
-    // Update item status to unavailable
-    const { error: updateError } = await supabase
-        .from('items')
-        .update({ status: 'unavailable' })
-        .eq('id', itemId)
+    // Create notification for item owner
+    const { error: notificationError } = await supabase
+        .from('notifications')
+        .insert({
+            recipient_user_id: contact.linked_user_id,
+            sender_user_id: user.id,
+            type: 'borrow_request' as const,
+            title: `${requesterUser?.name || 'Someone'} wants to borrow your ${item.name}`,
+            message: message || null,
+            status: 'unread' as const,
+            related_item_id: itemId,
+            related_request_id: request.id,
+            action_url: `/requests/${request.id}`,
+        })
 
-    if (updateError) {
-        console.error('Error updating item status:', updateError)
-        return { error: updateError.message }
+    if (notificationError) {
+        console.error('Error creating notification:', notificationError)
+        // Don't fail the request if notification fails - request is still created
     }
+
+    // Do NOT mark item as unavailable - owner needs to accept first
 
     revalidatePath('/dashboard')
     revalidatePath('/items')
     revalidatePath(`/contacts/${contactId}`)
 
-    return { data: record }
+    return { data: request }
+}
+
+export async function acceptBorrowRequest(requestId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'Not authenticated' }
+    }
+
+    // Fetch the borrow request (without joins to avoid RLS recursion)
+    const { data: request, error: requestError } = await supabase
+        .from('borrow_requests')
+        .select('*')
+        .eq('id', requestId)
+        .single()
+
+    if (requestError || !request) {
+        return { error: 'Borrow request not found' }
+    }
+
+    // Verify user is the owner
+    if (request.owner_user_id !== user.id) {
+        return { error: 'Unauthorized - you are not the item owner' }
+    }
+
+    // Verify request is still pending
+    if (request.status !== 'pending') {
+        return { error: `Request is already ${request.status}` }
+    }
+
+    // Fetch item separately to avoid circular RLS dependencies
+    const { data: item, error: itemError } = await supabase
+        .from('items')
+        .select('id, name, owner_user_id, status')
+        .eq('id', request.item_id)
+        .single()
+
+    if (itemError || !item) {
+        return { error: 'Item not found' }
+    }
+
+    // Verify item is still available
+    if (item.status === 'unavailable') {
+        return { error: 'Item is no longer available' }
+    }
+
+    // Fetch requester separately to avoid circular RLS dependencies
+    const { data: requester, error: requesterError } = await supabase
+        .from('users')
+        .select('id, name')
+        .eq('id', request.requester_user_id)
+        .single()
+
+    if (requesterError || !requester) {
+        return { error: 'Requester not found' }
+    }
+
+    // Update request status to accepted
+    const { error: updateRequestError } = await supabase
+        .from('borrow_requests')
+        .update({
+            status: 'accepted' as const,
+            responded_at: new Date().toISOString(),
+        })
+        .eq('id', requestId)
+
+    if (updateRequestError) {
+        console.error('Error updating borrow request:', updateRequestError)
+        return { error: updateRequestError.message }
+    }
+
+    // Find or create contact for the requester (from owner's perspective)
+    const { data: existingContact } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('owner_user_id', user.id)
+        .eq('linked_user_id', request.requester_user_id)
+        .single()
+
+    let contactId = existingContact?.id
+
+    if (!contactId) {
+        // Create new contact for the requester
+        const { data: newContact, error: contactError } = await supabase
+            .from('contacts')
+            .insert({
+                owner_user_id: user.id,
+                name: requester.name,
+                linked_user_id: request.requester_user_id,
+            })
+            .select()
+            .single()
+
+        if (contactError || !newContact) {
+            console.error('Error creating contact:', contactError)
+            return { error: 'Failed to create contact for requester' }
+        }
+
+        contactId = newContact.id
+    }
+
+    // Create borrow record
+    const { data: borrowRecord, error: borrowError } = await supabase
+        .from('borrow_records')
+        .insert({
+            item_id: request.item_id,
+            contact_id: contactId,
+            lender_user_id: user.id,
+            borrower_user_id: request.requester_user_id,
+            start_date: new Date().toISOString(),
+            due_date: request.requested_due_date ? new Date(request.requested_due_date).toISOString() : null,
+            status: 'borrowed' as const,
+        })
+        .select()
+        .single()
+
+    if (borrowError) {
+        console.error('Error creating borrow record:', borrowError)
+        return { error: borrowError.message }
+    }
+
+    // Mark item as unavailable
+    const { error: updateItemError } = await supabase
+        .from('items')
+        .update({ status: 'unavailable' })
+        .eq('id', request.item_id)
+
+    if (updateItemError) {
+        console.error('Error updating item status:', updateItemError)
+        return { error: updateItemError.message }
+    }
+
+    // Create notification for requester
+    const { error: notificationError } = await supabase
+        .from('notifications')
+        .insert({
+            recipient_user_id: request.requester_user_id,
+            sender_user_id: user.id,
+            type: 'request_accepted' as const,
+            title: `Your request to borrow ${item.name} was accepted`,
+            message: null,
+            status: 'unread' as const,
+            related_item_id: request.item_id,
+            related_request_id: requestId,
+            related_borrow_record_id: borrowRecord.id,
+            action_url: `/dashboard`,
+        })
+
+    if (notificationError) {
+        console.error('Error creating notification:', notificationError)
+        // Don't fail if notification fails
+    }
+
+    revalidatePath('/dashboard')
+    revalidatePath('/items')
+    revalidatePath('/requests')
+
+    return { data: borrowRecord }
+}
+
+export async function rejectBorrowRequest(requestId: string, rejectionMessage?: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'Not authenticated' }
+    }
+
+    // Fetch the borrow request (without joins to avoid RLS recursion)
+    const { data: request, error: requestError } = await supabase
+        .from('borrow_requests')
+        .select('*')
+        .eq('id', requestId)
+        .single()
+
+    if (requestError || !request) {
+        return { error: 'Borrow request not found' }
+    }
+
+    // Verify user is the owner
+    if (request.owner_user_id !== user.id) {
+        return { error: 'Unauthorized - you are not the item owner' }
+    }
+
+    // Verify request is still pending
+    if (request.status !== 'pending') {
+        return { error: `Request is already ${request.status}` }
+    }
+
+    // Fetch item separately to avoid circular RLS dependencies
+    const { data: item, error: itemError } = await supabase
+        .from('items')
+        .select('id, name')
+        .eq('id', request.item_id)
+        .single()
+
+    if (itemError || !item) {
+        return { error: 'Item not found' }
+    }
+
+    // Update request status to rejected
+    const { error: updateRequestError } = await supabase
+        .from('borrow_requests')
+        .update({
+            status: 'rejected' as const,
+            responded_at: new Date().toISOString(),
+        })
+        .eq('id', requestId)
+
+    if (updateRequestError) {
+        console.error('Error updating borrow request:', updateRequestError)
+        return { error: updateRequestError.message }
+    }
+
+    // Create notification for requester
+    const { error: notificationError } = await supabase
+        .from('notifications')
+        .insert({
+            recipient_user_id: request.requester_user_id,
+            sender_user_id: user.id,
+            type: 'request_rejected' as const,
+            title: `Your request to borrow ${item.name} was declined`,
+            message: rejectionMessage || null,
+            status: 'unread' as const,
+            related_item_id: request.item_id,
+            related_request_id: requestId,
+            action_url: `/items`,
+        })
+
+    if (notificationError) {
+        console.error('Error creating notification:', notificationError)
+        // Don't fail if notification fails
+    }
+
+    revalidatePath('/dashboard')
+    revalidatePath('/items')
+    revalidatePath('/requests')
+
+    return { success: true }
 }

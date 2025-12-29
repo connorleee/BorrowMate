@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { User } from '@supabase/supabase-js'
 import ThemeToggle from './ThemeToggle'
+import NotificationBell from './notification-bell'
 import { logout } from '@/app/auth/actions'
 
 interface SidebarClientContentProps {
@@ -30,36 +31,41 @@ export default function SidebarClientContent({ user }: SidebarClientContentProps
 
   return (
     <>
-      {/* Mobile hamburger button - appears only on small screens */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-40 md:hidden p-2 rounded-lg hover:bg-surface transition-colors"
-        aria-label="Toggle sidebar"
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
+      {/* Mobile header - appears only on small screens */}
+      <div className="fixed top-0 left-0 right-0 z-40 md:hidden flex items-center justify-between p-4 bg-base border-b border-gray-200">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="p-2 rounded-lg hover:bg-surface transition-colors"
+          aria-label="Toggle sidebar"
         >
-          {isOpen ? (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          ) : (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          )}
-        </svg>
-      </button>
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {isOpen ? (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            ) : (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            )}
+          </svg>
+        </button>
+
+        {/* Mobile notification bell */}
+        {user && <NotificationBell />}
+      </div>
 
       {/* Mobile overlay - appears when sidebar is open on small screens */}
       {isOpen && (
@@ -77,7 +83,7 @@ export default function SidebarClientContent({ user }: SidebarClientContentProps
         data-testid="sidebar"
       >
         {/* Header/Logo */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <Link
             href={user ? '/dashboard' : '/'}
             className="text-xl font-bold text-primary-600"
@@ -85,6 +91,8 @@ export default function SidebarClientContent({ user }: SidebarClientContentProps
           >
             BorrowBase
           </Link>
+          {/* Desktop notification bell */}
+          {user && <NotificationBell />}
         </div>
 
         {/* Navigation */}
