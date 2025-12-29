@@ -364,3 +364,51 @@ Migration 20250129000010 already created a SECURITY DEFINER function `is_borrowe
 - The fix follows the same pattern as migration 20251228000009 which fixed "Items are viewable by lender" using `is_lender_of_item()`
 - SECURITY DEFINER functions bypass RLS and break the circular dependency
 - No application code changes required - purely a database policy fix
+
+---
+
+# Add Dismiss Notifications Feature - COMPLETED ✅
+
+## Overview
+Add the ability for users to dismiss (delete) notifications from their notification panel.
+
+## Todo Items
+
+- [x] Add `dismissNotification` server action to delete a single notification
+- [x] Add `dismissAllNotifications` server action to clear all notifications
+- [x] Add dismiss button (X) to notification-item.tsx component
+- [x] Add "Clear all" button to notification-panel.tsx
+- [x] Test the functionality (build passed)
+
+## Review
+
+### Changes Made
+
+**1. Server Actions (`app/notifications/actions.ts`)**
+- Added `dismissNotification(notificationId)` - deletes a single notification
+- Added `dismissAllNotifications()` - clears all notifications for the user
+- Both actions revalidate `/dashboard` and `/notifications` paths
+
+**2. Notification Item (`components/notification-item.tsx`)**
+- Added `onDismiss` callback prop to the interface
+- Added `isDismissing` state for loading indicator
+- Added `handleDismiss` function that calls the server action
+- Added X button next to each notification with hover states and loading spinner
+
+**3. Notification Panel (`components/notification-panel.tsx`)**
+- Imported `dismissAllNotifications` action
+- Added `isClearingAll` state
+- Added `handleNotificationDismiss` to remove from local state
+- Added `handleClearAll` to clear all notifications
+- Added "Clear all" button in header (gray, turns red on hover)
+- Passed `onDismiss` prop to NotificationItem
+
+### Files Modified
+- `app/notifications/actions.ts`
+- `components/notification-item.tsx`
+- `components/notification-panel.tsx`
+
+### Notes
+- RLS policy for deletion already existed in the database schema
+- All changes were minimal and targeted
+- Build passes with no TypeScript errors

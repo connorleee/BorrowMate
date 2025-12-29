@@ -2,21 +2,34 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { markNotificationAsRead } from '@/app/notifications/actions'
+import { markNotificationAsRead, dismissNotification } from '@/app/notifications/actions'
 import { acceptBorrowRequest, rejectBorrowRequest } from '@/app/borrow/actions'
 
 interface NotificationItemProps {
   notification: any
   onRead: (notificationId: string) => void
+  onDismiss: (notificationId: string) => void
   onClose: () => void
 }
 
-export default function NotificationItem({ notification, onRead, onClose }: NotificationItemProps) {
+export default function NotificationItem({ notification, onRead, onDismiss, onClose }: NotificationItemProps) {
   const router = useRouter()
   const [isAccepting, setIsAccepting] = useState(false)
   const [isRejecting, setIsRejecting] = useState(false)
+  const [isDismissing, setIsDismissing] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [isExpanded, setIsExpanded] = useState(false)
+
+  const handleDismiss = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsDismissing(true)
+
+    const result = await dismissNotification(notification.id)
+    if (!result.error) {
+      onDismiss(notification.id)
+    }
+    setIsDismissing(false)
+  }
 
   const handleClick = async () => {
     // For borrow_request notifications, toggle expanded view
@@ -215,9 +228,29 @@ export default function NotificationItem({ notification, onRead, onClose }: Noti
               <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                 {notification.title}
               </p>
-              {notification.status === 'unread' && (
-                <span className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-1.5"></span>
-              )}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {notification.status === 'unread' && (
+                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                )}
+                <button
+                  onClick={handleDismiss}
+                  disabled={isDismissing}
+                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                  title="Dismiss"
+                >
+                  {isDismissing ? (
+                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
             {notification.message && !isExpanded && (

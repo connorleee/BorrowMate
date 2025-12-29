@@ -200,3 +200,54 @@ export async function getPendingRequestsForItems(itemIds: string[]) {
 
     return requests || []
 }
+
+export async function dismissNotification(notificationId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'Not authenticated' }
+    }
+
+    // Delete the notification
+    const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId)
+        .eq('recipient_user_id', user.id) // Ensure user owns this notification
+
+    if (error) {
+        console.error('Error dismissing notification:', error)
+        return { error: error.message }
+    }
+
+    revalidatePath('/dashboard')
+    revalidatePath('/notifications')
+
+    return { success: true }
+}
+
+export async function dismissAllNotifications() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'Not authenticated' }
+    }
+
+    // Delete all notifications for this user
+    const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('recipient_user_id', user.id)
+
+    if (error) {
+        console.error('Error dismissing all notifications:', error)
+        return { error: error.message }
+    }
+
+    revalidatePath('/dashboard')
+    revalidatePath('/notifications')
+
+    return { success: true }
+}

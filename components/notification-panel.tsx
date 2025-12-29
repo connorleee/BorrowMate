@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { getNotifications, markAllNotificationsAsRead } from '@/app/notifications/actions'
+import { getNotifications, markAllNotificationsAsRead, dismissAllNotifications } from '@/app/notifications/actions'
 import NotificationItem from './notification-item'
 
 interface NotificationPanelProps {
@@ -15,6 +15,7 @@ export default function NotificationPanel({ onClose, onCountChange, bellButtonRe
   const [notifications, setNotifications] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false)
+  const [isClearingAll, setIsClearingAll] = useState(false)
   const [position, setPosition] = useState({ top: 0, left: 0 })
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -93,6 +94,25 @@ export default function NotificationPanel({ onClose, onCountChange, bellButtonRe
     onCountChange()
   }
 
+  const handleNotificationDismiss = (notificationId: string) => {
+    // Remove from local state
+    setNotifications(notifications.filter(n => n.id !== notificationId))
+    onCountChange()
+  }
+
+  const handleClearAll = async () => {
+    setIsClearingAll(true)
+    try {
+      await dismissAllNotifications()
+      setNotifications([])
+      onCountChange()
+    } catch (error) {
+      console.error('Error clearing all notifications:', error)
+    } finally {
+      setIsClearingAll(false)
+    }
+  }
+
   const unreadCount = notifications.filter(n => n.status === 'unread').length
 
   // Don't render on server
@@ -109,15 +129,26 @@ export default function NotificationPanel({ onClose, onCountChange, bellButtonRe
         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
           Notifications
         </h2>
-        {unreadCount > 0 && (
-          <button
-            onClick={handleMarkAllAsRead}
-            disabled={isMarkingAllRead}
-            className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium disabled:opacity-50"
-          >
-            {isMarkingAllRead ? 'Marking...' : 'Mark all as read'}
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAllAsRead}
+              disabled={isMarkingAllRead || isClearingAll}
+              className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium disabled:opacity-50"
+            >
+              {isMarkingAllRead ? 'Marking...' : 'Mark all as read'}
+            </button>
+          )}
+          {notifications.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              disabled={isClearingAll || isMarkingAllRead}
+              className="text-sm text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 font-medium disabled:opacity-50"
+            >
+              {isClearingAll ? 'Clearing...' : 'Clear all'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Notifications List */}
@@ -152,6 +183,7 @@ export default function NotificationPanel({ onClose, onCountChange, bellButtonRe
                 key={notification.id}
                 notification={notification}
                 onRead={handleNotificationRead}
+                onDismiss={handleNotificationDismiss}
                 onClose={onClose}
               />
             ))}
