@@ -254,3 +254,4 @@ Core feature for contact-centric lending: Select one contact + multiple items in
 - Item status updated to 'unavailable' upon successful lending
 - Components: `MyInventorySection`, `BatchLendModal`, `LendableItemCard`, `BatchLendButton`
 - Server action: `batchLendItems()` in `app/items/actions.ts`
+- Always look for ways to DRYify the code. Prioritize using reusable components, logic, etc

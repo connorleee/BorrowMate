@@ -361,3 +361,79 @@ export async function getActiveBorrowsGroupedByContact() {
 
     return result
 }
+
+export async function createBorrowRequest(itemId: string, contactId: string, dueDate?: string, message?: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'Not authenticated' }
+    }
+
+    // Verify contact ownership and get linked_user_id
+    const { data: contact, error: contactError } = await supabase
+        .from('contacts')
+        .select('owner_user_id, linked_user_id')
+        .eq('id', contactId)
+        .single()
+
+    if (contactError || !contact || contact.owner_user_id !== user.id) {
+        return { error: 'Contact not found or unauthorized' }
+    }
+
+    if (!contact.linked_user_id) {
+        return { error: 'Contact is not linked to a user' }
+    }
+
+    // Verify item exists and is owned by the linked user
+    const { data: item, error: itemError } = await supabase
+        .from('items')
+        .select('id, owner_user_id, status')
+        .eq('id', itemId)
+        .single()
+
+    if (itemError || !item || item.owner_user_id !== contact.linked_user_id) {
+        return { error: 'Item not found or not owned by contact' }
+    }
+
+    if (item.status === 'unavailable') {
+        return { error: 'Item is currently unavailable' }
+    }
+
+    // Create borrow record with current user as borrower
+    const { data: record, error: insertError } = await supabase
+        .from('borrow_records')
+        .insert({
+            item_id: itemId,
+            contact_id: contactId,
+            lender_user_id: contact.linked_user_id,
+            borrower_user_id: user.id,
+            start_date: new Date().toISOString(),
+            due_date: dueDate ? new Date(dueDate).toISOString() : null,
+            status: 'borrowed' as const,
+        })
+        .select()
+        .single()
+
+    if (insertError) {
+        console.error('Error creating borrow request:', insertError)
+        return { error: insertError.message }
+    }
+
+    // Update item status to unavailable
+    const { error: updateError } = await supabase
+        .from('items')
+        .update({ status: 'unavailable' })
+        .eq('id', itemId)
+
+    if (updateError) {
+        console.error('Error updating item status:', updateError)
+        return { error: updateError.message }
+    }
+
+    revalidatePath('/dashboard')
+    revalidatePath('/items')
+    revalidatePath(`/contacts/${contactId}`)
+
+    return { data: record }
+}

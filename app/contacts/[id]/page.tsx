@@ -1,4 +1,4 @@
-import { getContactWithBorrowHistory } from '@/app/contacts/actions'
+import { getContactWithBorrowHistory, getPublicItemsForContact } from '@/app/contacts/actions'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ContactDetailContent from '@/components/contact-detail-content'
@@ -17,6 +17,9 @@ export default async function ContactDetailPage({ params }: ContactPageProps) {
 
   const { contact, currentlyBorrowed, borrowedFromContact, history, stats } = result
 
+  // Fetch public items if contact is a linked user
+  const publicItems = await getPublicItemsForContact(id)
+
   return (
     <div className="flex flex-col gap-6 w-full">
       <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -33,6 +36,7 @@ export default async function ContactDetailPage({ params }: ContactPageProps) {
         borrowedFromContact={borrowedFromContact}
         history={history}
         stats={stats}
+        publicItems={publicItems}
       />
     </div>
   )

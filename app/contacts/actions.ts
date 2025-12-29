@@ -327,3 +327,45 @@ export async function getContactWithBorrowHistory(contactId: string) {
     },
   }
 }
+
+export async function getPublicItemsForContact(contactId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return []
+
+  // Fetch contact to get linked_user_id
+  const { data: contact, error: contactError } = await supabase
+    .from('contacts')
+    .select('id, owner_user_id, linked_user_id')
+    .eq('id', contactId)
+    .single()
+
+  if (contactError || !contact) return []
+  if (contact.owner_user_id !== user.id) return []
+  if (!contact.linked_user_id) return []
+
+  // Fetch public items owned by the linked user
+  const { data: items, error: itemsError } = await supabase
+    .from('items')
+    .select(`
+      id,
+      name,
+      description,
+      category,
+      status,
+      privacy,
+      owner_user_id,
+      created_at
+    `)
+    .eq('owner_user_id', contact.linked_user_id)
+    .eq('privacy', 'public')
+    .order('name', { ascending: true })
+
+  if (itemsError) {
+    console.error('Error fetching public items:', itemsError)
+    return []
+  }
+
+  return items || []
+}

@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { returnItem, batchLendToContact } from '@/app/borrow/actions'
+import { returnItem, batchLendToContact, createBorrowRequest } from '@/app/borrow/actions'
 import LendToContactModal from './lend-to-contact-modal'
+import BorrowRequestModal from './borrow-request-modal'
+import { ItemCard } from './Card'
 
 interface Contact {
   id: string
@@ -39,12 +41,21 @@ interface Stats {
   totalCount: number
 }
 
+interface PublicItem {
+  id: string
+  name: string
+  description?: string | null
+  category?: string | null
+  status: string
+}
+
 interface ContactDetailContentProps {
   contact: Contact
   currentlyBorrowed: BorrowRecord[]
   borrowedFromContact: BorrowRecord[]
   history: BorrowRecord[]
   stats: Stats
+  publicItems: PublicItem[]
 }
 
 export default function ContactDetailContent({
@@ -53,6 +64,7 @@ export default function ContactDetailContent({
   borrowedFromContact,
   history,
   stats,
+  publicItems,
 }: ContactDetailContentProps) {
   const router = useRouter()
   const [isReturning, setIsReturning] = useState<string | null>(null)
@@ -60,6 +72,14 @@ export default function ContactDetailContent({
   const [isLending, setIsLending] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [confirmReturnRecord, setConfirmReturnRecord] = useState<BorrowRecord | null>(null)
+
+  // Public items filtering state
+  const [searchTerm, setSearchTerm] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [selectedItemForBorrow, setSelectedItemForBorrow] = useState<PublicItem | null>(null)
+  const [isBorrowModalOpen, setIsBorrowModalOpen] = useState(false)
+  const [isBorrowing, setIsBorrowing] = useState(false)
 
   const handleReturn = async (record: BorrowRecord) => {
     if (!record.item) return
@@ -102,6 +122,56 @@ export default function ContactDetailContent({
     } finally {
       setIsLending(false)
     }
+  }
+
+  const handleBorrowRequest = async (itemId: string, dueDate?: string, message?: string) => {
+    setIsBorrowing(true)
+    setFeedback(null)
+
+    try {
+      const result = await createBorrowRequest(itemId, contact.id, dueDate, message)
+      if (result.error) {
+        setFeedback({ type: 'error', text: result.error })
+      } else {
+        setFeedback({ type: 'success', text: `Borrow request sent for ${selectedItemForBorrow?.name}` })
+        setIsBorrowModalOpen(false)
+        setSelectedItemForBorrow(null)
+        router.refresh()
+        setTimeout(() => setFeedback(null), 5000)
+      }
+    } catch (err) {
+      setFeedback({ type: 'error', text: 'Failed to send borrow request' })
+    } finally {
+      setIsBorrowing(false)
+    }
+  }
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  // Get unique categories from public items
+  const categories = Array.from(new Set(publicItems.map(item => item.category).filter(Boolean))) as string[]
+
+  // Filter public items
+  const filteredPublicItems = publicItems.filter(item => {
+    const matchesSearch = !debouncedSearch ||
+      item.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      item.description?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      item.category?.toLowerCase().includes(debouncedSearch.toLowerCase())
+
+    const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter
+
+    return matchesSearch && matchesCategory
+  })
+
+  const handleRequestBorrow = (item: PublicItem) => {
+    setSelectedItemForBorrow(item)
+    setIsBorrowModalOpen(true)
   }
 
   const formatDate = (dateString: string) => {
@@ -266,6 +336,89 @@ export default function ContactDetailContent({
         </div>
       )}
 
+      {/* Contact's Public Items (only if contact is a linked user and has public items) */}
+      {contact.linked_user_id && publicItems.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            {contact.name}&apos;s Available Items ({filteredPublicItems.length})
+          </h2>
+
+          {/* Search and Filter Controls */}
+          <div className="mb-4 flex flex-col sm:flex-row gap-3">
+            {/* Search Input */}
+            <div className="flex-1 relative">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search items..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              />
+            </div>
+
+            {/* Category Filter */}
+            {categories.length > 0 && (
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              >
+                <option value="all">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {/* Items Grid */}
+          {filteredPublicItems.length === 0 ? (
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+              No items found
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredPublicItems.map((item) => (
+                <div key={item.id} className="relative">
+                  <ItemCard
+                    itemId={item.id}
+                    name={item.name}
+                    description={item.description}
+                    status={item.status}
+                    variant="compact"
+                    className="h-full"
+                  />
+                  {item.status === 'available' && (
+                    <button
+                      onClick={() => handleRequestBorrow(item)}
+                      className="absolute bottom-3 right-3 px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                    >
+                      Request to Borrow
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Borrow History */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
@@ -319,6 +472,19 @@ export default function ContactDetailContent({
         onConfirm={handleLendItems}
         contactName={contact.name}
         isSubmitting={isLending}
+      />
+
+      {/* Borrow Request Modal */}
+      <BorrowRequestModal
+        isOpen={isBorrowModalOpen}
+        onClose={() => {
+          setIsBorrowModalOpen(false)
+          setSelectedItemForBorrow(null)
+        }}
+        item={selectedItemForBorrow}
+        contactName={contact.name}
+        onConfirm={handleBorrowRequest}
+        isSubmitting={isBorrowing}
       />
 
       {/* Confirm Return Modal */}
