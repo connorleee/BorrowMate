@@ -49,19 +49,19 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
   if (typeof document === 'undefined') return null
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+    <div className="modal-overlay">
+      <div className="modal-content w-full max-w-md p-6">
         <h2 className="text-2xl font-bold mb-4">Add Contact</h2>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+          <div className="mb-4 p-3 bg-error-100 dark:bg-error-900 border border-error-200 dark:border-error-700 rounded text-error-700 dark:text-error-200 text-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
               Name *
             </label>
             <input
@@ -69,14 +69,14 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Contact name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+              className="input-field"
               required
               disabled={isLoading}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
               Email
             </label>
             <input
@@ -84,13 +84,13 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="contact@example.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+              className="input-field"
               disabled={isLoading}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
               Phone
             </label>
             <input
@@ -98,7 +98,7 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(555) 123-4567"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+              className="input-field"
               disabled={isLoading}
             />
           </div>
@@ -108,14 +108,15 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="btn-ghost flex-1 border dark:border-gray-600"
+              style={{ borderColor: 'var(--border)' }}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading || !name.trim()}
-              className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary flex-1"
             >
               {isLoading ? 'Adding...' : 'Add Contact'}
             </button>

@@ -55,13 +55,13 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {group.memberships.map((membership: any) => (
-                            <div key={membership.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+                            <div key={membership.id} className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700" style={{ backgroundColor: 'var(--bg-surface)' }}>
                                 <div className="flex-1">
                                     <p className="font-medium">{membership.user?.name || 'Unknown'}</p>
-                                    <p className="text-xs text-gray-500">{membership.user?.email || ''}</p>
+                                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{membership.user?.email || ''}</p>
                                 </div>
                                 {membership.role === 'owner' && (
-                                    <span className="text-xs px-2 py-1 bg-primary-100 text-primary-800 rounded-full">
+                                    <span className="text-xs px-2 py-1 bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 rounded-full">
                                         Owner
                                     </span>
                                 )}
