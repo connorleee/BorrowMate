@@ -39,16 +39,16 @@ export default function ItemsPageContent({ borrowedItems, userItems }: ItemsPage
   return (
     <>
       <div className="max-w-4xl mx-auto p-6 space-y-8">
-        <h1 className="text-3xl font-bold text-gray-900">My Items</h1>
+        <h1 className="text-3xl font-bold text-text-primary">My Items</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Main Content Area */}
           <div className="md:col-span-2 space-y-8">
             {/* Borrowed Items Section */}
             <section>
-              <h2 className="text-2xl font-semibold mb-4 text-gray-800">Borrowed Items</h2>
+              <h2 className="text-2xl font-semibold mb-4 text-text-primary">Borrowed Items</h2>
               {borrowedItems.length === 0 ? (
-                <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
+                <div className="bg-surface rounded-lg p-6 text-center text-text-tertiary">
                   You are not currently borrowing any items.
                 </div>
               ) : (
@@ -63,21 +63,21 @@ export default function ItemsPageContent({ borrowedItems, userItems }: ItemsPage
                     >
                       <div className="flex flex-col h-full justify-between">
                         <div className="min-w-0">
-                          <h3 className="font-semibold text-sm text-gray-900 mb-1 truncate">
+                          <h3 className="font-semibold text-sm text-text-primary mb-1 truncate">
                             {record.item?.name || 'Unknown Item'}
                           </h3>
-                          <p className="text-xs text-gray-600 mb-2 truncate">
+                          <p className="text-xs text-text-secondary mb-2 truncate">
                             from{' '}
-                            <span className="font-medium text-gray-700">
+                            <span className="font-medium text-text-primary">
                               {record.item?.owner?.name || 'Unknown'}
                             </span>
                           </p>
                         </div>
                         <div className="flex justify-between items-center mt-2">
-                          <p className="text-[10px] text-gray-400">
+                          <p className="text-[10px] text-text-tertiary">
                             Since {new Date(record.start_date).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}
                           </p>
-                          <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-[10px] font-medium rounded-full flex-shrink-0">
+                          <span className="px-2 py-0.5 bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200 text-[10px] font-medium rounded-full flex-shrink-0">
                             Borrowed
                           </span>
                         </div>

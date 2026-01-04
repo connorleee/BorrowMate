@@ -35,7 +35,7 @@ export default function AddItemPage({ params }: { params: Promise<{ id: string }
                         name="name"
                         required
                         placeholder="e.g. Cordless Drill"
-                        className="p-2 border rounded"
+                        className="p-3 border border-border rounded bg-base"
                     />
                 </div>
 
@@ -44,7 +44,7 @@ export default function AddItemPage({ params }: { params: Promise<{ id: string }
                     <input
                         name="category"
                         placeholder="e.g. Tools"
-                        className="p-2 border rounded"
+                        className="p-3 border border-border rounded bg-base"
                     />
                 </div>
 
@@ -53,13 +53,13 @@ export default function AddItemPage({ params }: { params: Promise<{ id: string }
                     <textarea
                         name="description"
                         placeholder="Optional details..."
-                        className="p-2 border rounded"
+                        className="p-3 border border-border rounded bg-base"
                     />
                 </div>
 
                 <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium">Privacy</label>
-                    <select name="privacy" className="p-2 border rounded">
+                    <select name="privacy" className="p-3 border border-border rounded bg-base">
                         <option value="public">Public (Visible to group members)</option>
                         <option value="private">Private (Only visible to me)</option>
                     </select>
@@ -69,14 +69,14 @@ export default function AddItemPage({ params }: { params: Promise<{ id: string }
                     <button
                         type="button"
                         onClick={() => router.back()}
-                        className="flex-1 p-2 border rounded text-gray-600"
+                        className="flex-1 p-3 border border-border rounded text-text-secondary hover:bg-surface"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="flex-1 bg-foreground text-background p-2 rounded font-medium disabled:opacity-50"
+                        className="flex-1 bg-foreground text-background p-3 rounded font-medium disabled:opacity-50"
                     >
                         {loading ? 'Adding...' : 'Add Item'}
                     </button>

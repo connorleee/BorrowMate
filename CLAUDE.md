@@ -198,6 +198,25 @@ export default function Modal({ isOpen }) {
 - Consistent badge colors: green (success/available), red (error/unavailable), yellow (warning/pending), blue (primary actions), gray (secondary)
 - Responsive: mobile-first with `md:` breakpoints
 
+**Spacing Hierarchy (use consistently):**
+- `gap-4` (16px) - Tightly related elements (form fields, card content)
+- `gap-6` (24px) - Related sections within a container
+- `gap-8` (32px) - Major page sections
+- `gap-12` (48px) - Distinct content blocks on long pages
+
+**Dark Mode Colors (use CSS variables, not hardcoded grays):**
+- `bg-base` - Primary background (white/dark)
+- `bg-surface` - Cards and elevated surfaces
+- `bg-elevated` - Hover states, tertiary surfaces
+- `text-text-primary` - Main text
+- `text-text-secondary` - Supporting text
+- `text-text-tertiary` - Muted/helper text
+- `border-border` - All borders
+
+**Form Inputs:**
+- Use `p-3` padding consistently
+- Include `border border-border rounded bg-base` for proper dark mode support
+
 ## Important Gotchas
 
 1. **Server/Client Boundary**: Never import server utilities in client components or vice versa

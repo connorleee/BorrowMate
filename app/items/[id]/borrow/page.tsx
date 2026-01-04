@@ -40,9 +40,9 @@ export default function BorrowItemPage({ params }: { params: Promise<{ id: strin
                     <input
                         name="borrowerName"
                         placeholder="Me (or enter name if external)"
-                        className="p-2 border rounded"
+                        className="p-3 border border-border rounded bg-base"
                     />
-                    <p className="text-xs text-gray-500">Leave blank if you are borrowing it yourself.</p>
+                    <p className="text-xs text-text-tertiary">Leave blank if you are borrowing it yourself.</p>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -52,7 +52,7 @@ export default function BorrowItemPage({ params }: { params: Promise<{ id: strin
                         type="date"
                         required
                         defaultValue={new Date().toISOString().split('T')[0]}
-                        className="p-2 border rounded"
+                        className="p-3 border border-border rounded bg-base"
                     />
                 </div>
 
@@ -61,7 +61,7 @@ export default function BorrowItemPage({ params }: { params: Promise<{ id: strin
                     <input
                         name="dueDate"
                         type="date"
-                        className="p-2 border rounded"
+                        className="p-3 border border-border rounded bg-base"
                     />
                 </div>
 
@@ -69,14 +69,14 @@ export default function BorrowItemPage({ params }: { params: Promise<{ id: strin
                     <button
                         type="button"
                         onClick={() => router.back()}
-                        className="flex-1 p-2 border rounded text-gray-600"
+                        className="flex-1 p-3 border border-border rounded text-text-secondary hover:bg-surface"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="flex-1 bg-foreground text-background p-2 rounded font-medium disabled:opacity-50"
+                        className="flex-1 bg-foreground text-background p-3 rounded font-medium disabled:opacity-50"
                     >
                         {loading ? 'Confirm Borrow' : 'Confirm'}
                     </button>

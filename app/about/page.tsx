@@ -7,7 +7,7 @@ export default function AboutPage() {
                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
                     Never lose track of shared stuff again
                 </h1>
-                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                <p className="text-xl text-text-secondary max-w-2xl mx-auto">
                     BorrowMate helps roommates and friend groups track shared inventory and borrowing.
                     Know who has what, when it's due back, and keep your household organized.
                 </p>
@@ -16,16 +16,16 @@ export default function AboutPage() {
             <section className="space-y-6">
                 <h2 className="text-3xl font-bold">The Problem</h2>
                 <div className="prose prose-lg">
-                    <p className="text-gray-600">
+                    <p className="text-text-secondary">
                         Roommates and friend groups constantly lose track of:
                     </p>
-                    <ul className="text-gray-600 space-y-2">
+                    <ul className="text-text-secondary space-y-2">
                         <li>Who owns which items (tools, games, kitchen gear, etc.)</li>
                         <li>Who borrowed what and when it's coming back</li>
                         <li>Shared vs personal items</li>
                         <li>Household inventory during move-in/move-out</li>
                     </ul>
-                    <p className="text-gray-600">
+                    <p className="text-text-secondary">
                         Existing roommate apps focus on <strong>bills and chores</strong>, not <strong>stuff</strong>.
                         BorrowMate fills that gap.
                     </p>
@@ -42,7 +42,7 @@ export default function AboutPage() {
                             </svg>
                         </div>
                         <h3 className="font-bold text-xl mb-2">Track Inventory</h3>
-                        <p className="text-gray-700">
+                        <p className="text-text-secondary">
                             Catalog shared items like tools, games, and kitchen gear in one place.
                             Mark items as personal or shared with your group.
                         </p>
@@ -55,7 +55,7 @@ export default function AboutPage() {
                             </svg>
                         </div>
                         <h3 className="font-bold text-xl mb-2">Log Borrowing</h3>
-                        <p className="text-gray-700">
+                        <p className="text-text-secondary">
                             Mark items as borrowed and set due dates. See at a glance who has what
                             and when things are coming back.
                         </p>
@@ -68,7 +68,7 @@ export default function AboutPage() {
                             </svg>
                         </div>
                         <h3 className="font-bold text-xl mb-2">Manage Groups</h3>
-                        <p className="text-gray-700">
+                        <p className="text-text-secondary">
                             Create multiple groups for your apartment, family, or friend circle.
                             Invite members with shareable links.
                         </p>
@@ -82,7 +82,7 @@ export default function AboutPage() {
                             </svg>
                         </div>
                         <h3 className="font-bold text-xl mb-2">Privacy Controls</h3>
-                        <p className="text-gray-700">
+                        <p className="text-text-secondary">
                             Control who sees what. Keep personal items private or share them with your groups.
                             Make groups public or private.
                         </p>
@@ -93,24 +93,24 @@ export default function AboutPage() {
             <section className="space-y-6">
                 <h2 className="text-3xl font-bold">Who is BorrowMate for?</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-6 bg-gray-50 rounded-xl text-center">
+                    <div className="p-6 bg-surface rounded-xl text-center">
                         <div className="text-4xl mb-3">🏠</div>
                         <h3 className="font-bold mb-2">Roommates</h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-text-secondary">
                             Keep track of household items and avoid those awkward "have you seen my..." conversations
                         </p>
                     </div>
-                    <div className="p-6 bg-gray-50 rounded-xl text-center">
+                    <div className="p-6 bg-surface rounded-xl text-center">
                         <div className="text-4xl mb-3">💑</div>
                         <h3 className="font-bold mb-2">Couples</h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-text-secondary">
                             Managing a shared household is easier when you know where everything is
                         </p>
                     </div>
-                    <div className="p-6 bg-gray-50 rounded-xl text-center">
+                    <div className="p-6 bg-surface rounded-xl text-center">
                         <div className="text-4xl mb-3">🎮</div>
                         <h3 className="font-bold mb-2">Friend Groups</h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-text-secondary">
                             Board games, tools, camping gear - never lose track of lent items again
                         </p>
                     </div>
@@ -126,7 +126,7 @@ export default function AboutPage() {
                         </div>
                         <div>
                             <h4 className="font-bold mb-1">Create or Join a Group</h4>
-                            <p className="text-gray-600">
+                            <p className="text-text-secondary">
                                 Start a group for your household or join an existing one with an invite link.
                             </p>
                         </div>
@@ -137,7 +137,7 @@ export default function AboutPage() {
                         </div>
                         <div>
                             <h4 className="font-bold mb-1">Add Your Items</h4>
-                            <p className="text-gray-600">
+                            <p className="text-text-secondary">
                                 Catalog items you own and choose whether to share them with the group or keep them personal.
                             </p>
                         </div>
@@ -148,7 +148,7 @@ export default function AboutPage() {
                         </div>
                         <div>
                             <h4 className="font-bold mb-1">Track Borrowing</h4>
-                            <p className="text-gray-600">
+                            <p className="text-text-secondary">
                                 When someone borrows an item, log it with an optional due date. Mark it returned when it comes back.
                             </p>
                         </div>
@@ -159,7 +159,7 @@ export default function AboutPage() {
                         </div>
                         <div>
                             <h4 className="font-bold mb-1">Stay Organized</h4>
-                            <p className="text-gray-600">
+                            <p className="text-text-secondary">
                                 View your dashboard to see what you're borrowing, what you've lent out, and your full inventory.
                             </p>
                         </div>
@@ -169,7 +169,7 @@ export default function AboutPage() {
 
             <div className="text-center space-y-4 py-8">
                 <h2 className="text-3xl font-bold">Ready to get organized?</h2>
-                <p className="text-gray-600 mb-6">
+                <p className="text-text-secondary mb-6">
                     Join BorrowMate today and never lose track of your stuff again.
                 </p>
                 <Link
