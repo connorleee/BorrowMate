@@ -1,3 +1,36 @@
+# Fix Duplicate Contact Bug - COMPLETED ✅
+
+## Problem
+When accepting a borrow request, the system can create duplicate contacts:
+1. User manually creates a contact with name/email/phone (no `linked_user_id`)
+2. That same person (who is a BorrowMate user) sends a borrow request
+3. When accepting, `acceptBorrowRequest()` only checks for contacts by `linked_user_id`
+4. Since the manual contact has no `linked_user_id`, it creates a NEW contact with just `name` and `linked_user_id`
+5. Result: Two contacts - one with email/phone data, one "linked" with just the user ID
+
+## Root Cause
+In `app/borrow/actions.ts`, `acceptBorrowRequest()` only checked for existing contacts by `linked_user_id`, not by email.
+
+## Fix Applied
+- [x] Updated `acceptBorrowRequest()` to fetch requester's email from users table
+- [x] Added secondary check for contacts by email if not found by linked_user_id
+- [x] If contact exists with matching email but no linked_user_id, update it to add the link
+- [x] Only create new contact if no existing match found
+
+## Files Modified
+- `app/borrow/actions.ts` - Modified `acceptBorrowRequest()` logic (lines 503-578)
+
+## Review
+The fix is minimal and targeted:
+1. Added `email` to the requester query (line 506)
+2. If no contact found by `linked_user_id`, check by email (lines 539-558)
+3. If email match found without link, update the contact to add the link
+4. Only create new contact if neither check finds a match
+
+This prevents duplicates while preserving existing contact data (name, email, phone) and automatically linking contacts when appropriate.
+
+---
+
 # Fix "Unknown Item" Bug - COMPLETED ✅
 
 ## Resolution Summary

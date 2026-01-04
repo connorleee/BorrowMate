@@ -503,7 +503,7 @@ export async function acceptBorrowRequest(requestId: string) {
     // Fetch requester separately to avoid circular RLS dependencies
     const { data: requester, error: requesterError } = await supabase
         .from('users')
-        .select('id, name')
+        .select('id, name, email')
         .eq('id', request.requester_user_id)
         .single()
 
@@ -526,17 +526,39 @@ export async function acceptBorrowRequest(requestId: string) {
     }
 
     // Find or create contact for the requester (from owner's perspective)
-    const { data: existingContact } = await supabase
+    // First, check if a contact already exists with the linked_user_id
+    const { data: linkedContact } = await supabase
         .from('contacts')
         .select('id')
         .eq('owner_user_id', user.id)
         .eq('linked_user_id', request.requester_user_id)
         .single()
 
-    let contactId = existingContact?.id
+    let contactId = linkedContact?.id
 
+    // If not found by linked_user_id, check by email (to avoid duplicates)
+    if (!contactId && requester.email) {
+        const { data: emailContact } = await supabase
+            .from('contacts')
+            .select('id, linked_user_id')
+            .eq('owner_user_id', user.id)
+            .eq('email', requester.email)
+            .single()
+
+        if (emailContact) {
+            contactId = emailContact.id
+            // If contact exists but isn't linked yet, link it now
+            if (!emailContact.linked_user_id) {
+                await supabase
+                    .from('contacts')
+                    .update({ linked_user_id: request.requester_user_id })
+                    .eq('id', emailContact.id)
+            }
+        }
+    }
+
+    // Only create new contact if no existing match found
     if (!contactId) {
-        // Create new contact for the requester
         const { data: newContact, error: contactError } = await supabase
             .from('contacts')
             .insert({
