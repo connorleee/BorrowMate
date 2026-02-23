@@ -48,7 +48,6 @@ export async function getUserPublicItems(userId: string) {
         .order('created_at', { ascending: false })
 
     if (error) {
-        console.error('Error fetching user public items:', error)
         return []
     }
 

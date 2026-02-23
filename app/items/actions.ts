@@ -18,7 +18,6 @@ export async function getGroupItems(groupId: string) {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching items:', error)
     return []
   }
 
@@ -36,8 +35,6 @@ export async function createItem(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
-  console.log('Creating item:', { groupId, name, description, category, privacy, owner_user_id: user.id })
-
   const { data, error } = await supabase
     .from('items')
     .insert({
@@ -50,10 +47,7 @@ export async function createItem(formData: FormData) {
     })
     .select()
 
-  console.log('Insert result:', { data, error })
-
   if (error) {
-    console.error('Error creating item:', error)
     return { error: error.message }
   }
 
@@ -105,7 +99,6 @@ export async function getUserItems() {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching user items:', error)
     return []
   }
 
@@ -134,7 +127,6 @@ export async function getBorrowedItems() {
     .order('start_date', { ascending: false })
 
   if (error) {
-    console.error('Error fetching borrowed items:', error)
     return []
   }
 
@@ -154,7 +146,6 @@ export async function deleteItem(itemId: string) {
     .eq('owner_user_id', user.id)
 
   if (error) {
-    console.error('Error deleting item:', error)
     return { error: error.message }
   }
 
@@ -298,7 +289,6 @@ export async function updateItem(itemId: string, updates: { name?: string; descr
     .eq('id', itemId)
 
   if (error) {
-    console.error('Error updating item:', error)
     return { error: error.message }
   }
 

@@ -69,7 +69,6 @@ export async function getUserGroups() {
         .eq('user_id', user.id)
 
     if (error) {
-        console.error('Error fetching groups:', error)
         return []
     }
 
@@ -265,7 +264,6 @@ export async function addItemsToGroup(groupId: string, itemIds: string[]) {
         .eq('owner_user_id', user.id) // Ensure user owns the items
 
     if (error) {
-        console.error('Error adding items to group:', error)
         return { error: 'Failed to add items to group' }
     }
 
@@ -292,7 +290,6 @@ export async function searchUsers(query: string) {
         .limit(10)
 
     if (error) {
-        console.error('Error searching users:', error)
         return []
     }
 
@@ -337,7 +334,6 @@ export async function addMembers(groupId: string, userIds: string[]) {
         if (error.code === '23505') { // unique_violation
             return { error: 'One or more users are already members of this group.' }
         }
-        console.error('Error adding members:', error)
         return { error: 'Failed to add members: ' + error.message }
     }
 

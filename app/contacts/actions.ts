@@ -25,7 +25,6 @@ export async function getContacts() {
     .order('name', { ascending: true })
 
   if (error) {
-    console.error('Error fetching contacts:', JSON.stringify(error, null, 2))
     return []
   }
 
@@ -59,7 +58,6 @@ export async function searchContacts(query: string) {
     .order('name', { ascending: true })
 
   if (error) {
-    console.error('Error searching contacts:', JSON.stringify(error, null, 2))
     return []
   }
 
@@ -94,7 +92,6 @@ export async function createContact(formData: FormData) {
     .single()
 
   if (error) {
-    console.error('Error creating contact:', error)
     return { error: error.message }
   }
 
@@ -141,7 +138,6 @@ export async function updateContact(contactId: string, formData: FormData) {
     .single()
 
   if (error) {
-    console.error('Error updating contact:', error)
     return { error: error.message }
   }
 
@@ -174,7 +170,6 @@ export async function deleteContact(contactId: string) {
     .eq('id', contactId)
 
   if (error) {
-    console.error('Error deleting contact:', error)
     return { error: error.message }
   }
 
@@ -211,7 +206,6 @@ export async function linkContactToUser(contactId: string, userId: string) {
     .single()
 
   if (error) {
-    console.error('Error linking contact to user:', error)
     return { error: error.message }
   }
 
@@ -268,7 +262,6 @@ export async function getContactWithBorrowHistory(contactId: string) {
     .order('created_at', { ascending: false })
 
   if (borrowError) {
-    console.error('Error fetching borrow history:', borrowError)
     return { error: borrowError.message }
   }
 
@@ -363,7 +356,6 @@ export async function getPublicItemsForContact(contactId: string) {
     .order('name', { ascending: true })
 
   if (itemsError) {
-    console.error('Error fetching public items:', itemsError)
     return []
   }
 

@@ -205,7 +205,6 @@ export async function batchLendToContact(itemIds: string[], contactId: string, d
         .select()
 
     if (insertError) {
-        console.error('Error creating borrow records:', insertError)
         return { error: insertError.message }
     }
 
@@ -216,7 +215,6 @@ export async function batchLendToContact(itemIds: string[], contactId: string, d
         .in('id', itemIds)
 
     if (updateError) {
-        console.error('Error updating item statuses:', updateError)
         return { error: updateError.message }
     }
 
@@ -274,7 +272,6 @@ export async function getOrCreateContactForGroupMember(groupMemberId: string, me
         .single()
 
     if (error) {
-        console.error('Error creating contact for group member:', error)
         return { error: error.message }
     }
 
@@ -318,7 +315,6 @@ export async function getActiveBorrowsGroupedByContact() {
         .order('created_at', { ascending: false })
 
     if (error) {
-        console.error('Error fetching active borrows:', JSON.stringify(error, null, 2))
         return []
     }
 
@@ -425,7 +421,6 @@ export async function createBorrowRequest(itemId: string, contactId: string, due
         .single()
 
     if (requestError) {
-        console.error('Error creating borrow request:', requestError)
         return { error: requestError.message }
     }
 
@@ -445,7 +440,6 @@ export async function createBorrowRequest(itemId: string, contactId: string, due
         })
 
     if (notificationError) {
-        console.error('Error creating notification:', notificationError)
         // Don't fail the request if notification fails - request is still created
     }
 
@@ -524,7 +518,6 @@ export async function acceptBorrowRequest(requestId: string) {
         .eq('id', requestId)
 
     if (updateRequestError) {
-        console.error('Error updating borrow request:', updateRequestError)
         return { error: updateRequestError.message }
     }
 
@@ -573,7 +566,6 @@ export async function acceptBorrowRequest(requestId: string) {
             .single()
 
         if (contactError || !newContact) {
-            console.error('Error creating contact:', contactError)
             return { error: 'Failed to create contact for requester' }
         }
 
@@ -596,7 +588,6 @@ export async function acceptBorrowRequest(requestId: string) {
         .single()
 
     if (borrowError) {
-        console.error('Error creating borrow record:', borrowError)
         return { error: borrowError.message }
     }
 
@@ -607,7 +598,6 @@ export async function acceptBorrowRequest(requestId: string) {
         .eq('id', request.item_id)
 
     if (updateItemError) {
-        console.error('Error updating item status:', updateItemError)
         return { error: updateItemError.message }
     }
 
@@ -628,7 +618,6 @@ export async function acceptBorrowRequest(requestId: string) {
         })
 
     if (notificationError) {
-        console.error('Error creating notification:', notificationError)
         // Don't fail if notification fails
     }
 
@@ -689,7 +678,6 @@ export async function rejectBorrowRequest(requestId: string, rejectionMessage?: 
         .eq('id', requestId)
 
     if (updateRequestError) {
-        console.error('Error updating borrow request:', updateRequestError)
         return { error: updateRequestError.message }
     }
 
@@ -709,7 +697,6 @@ export async function rejectBorrowRequest(requestId: string, rejectionMessage?: 
         })
 
     if (notificationError) {
-        console.error('Error creating notification:', notificationError)
         // Don't fail if notification fails
     }
 

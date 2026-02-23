@@ -57,7 +57,6 @@ export async function getNotifications(limit = 50) {
         .limit(limit)
 
     if (error) {
-        console.error('Error fetching notifications:', error)
         return []
     }
 
@@ -80,7 +79,6 @@ export async function getUnreadNotificationCount() {
         .eq('status', 'unread')
 
     if (error) {
-        console.error('Error fetching unread count:', error)
         return 0
     }
 
@@ -103,7 +101,6 @@ export async function markNotificationAsRead(notificationId: string) {
         .eq('recipient_user_id', user.id) // Ensure user owns this notification
 
     if (error) {
-        console.error('Error marking notification as read:', error)
         return { error: error.message }
     }
 
@@ -129,7 +126,6 @@ export async function markAllNotificationsAsRead() {
         .eq('status', 'unread')
 
     if (error) {
-        console.error('Error marking all notifications as read:', error)
         return { error: error.message }
     }
 
@@ -170,7 +166,6 @@ export async function getPendingBorrowRequests() {
         .order('created_at', { ascending: false })
 
     if (error) {
-        console.error('Error fetching pending borrow requests:', error)
         return []
     }
 
@@ -194,7 +189,6 @@ export async function getPendingRequestsForItems(itemIds: string[]) {
         .eq('status', 'pending')
 
     if (error) {
-        console.error('Error fetching pending requests for items:', error)
         return []
     }
 
@@ -217,7 +211,6 @@ export async function dismissNotification(notificationId: string) {
         .eq('recipient_user_id', user.id) // Ensure user owns this notification
 
     if (error) {
-        console.error('Error dismissing notification:', error)
         return { error: error.message }
     }
 
@@ -242,7 +235,6 @@ export async function dismissAllNotifications() {
         .eq('recipient_user_id', user.id)
 
     if (error) {
-        console.error('Error dismissing all notifications:', error)
         return { error: error.message }
     }
 
