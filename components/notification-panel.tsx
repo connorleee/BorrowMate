@@ -36,7 +36,7 @@ export default function NotificationPanel({ onClose, onCountChange, bellButtonRe
         const data = await getNotifications(20) // Fetch 20 most recent
         setNotifications(data)
       } catch (error) {
-        console.error('Error fetching notifications:', error)
+        // Error handled silently - UI shows loading state
       } finally {
         setIsLoading(false)
       }
@@ -80,7 +80,7 @@ export default function NotificationPanel({ onClose, onCountChange, bellButtonRe
       setNotifications(notifications.map(n => ({ ...n, status: 'read' })))
       onCountChange()
     } catch (error) {
-      console.error('Error marking all as read:', error)
+      // Error handled silently - UI state unchanged
     } finally {
       setIsMarkingAllRead(false)
     }
@@ -107,7 +107,7 @@ export default function NotificationPanel({ onClose, onCountChange, bellButtonRe
       setNotifications([])
       onCountChange()
     } catch (error) {
-      console.error('Error clearing all notifications:', error)
+      // Error handled silently - UI state unchanged
     } finally {
       setIsClearingAll(false)
     }

@@ -36,7 +36,6 @@ export default async function JoinGroupPage({ params }: { params: Promise<{ invi
         const joinResult = await joinGroupByInviteCode(inviteCode)
         if ('error' in joinResult) {
             // In a real app, we'd show this error to the user
-            console.error(joinResult.error)
             return
         }
         if (joinResult.groupId) {

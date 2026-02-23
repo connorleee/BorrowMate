@@ -27,7 +27,6 @@ export default function AddItemForm() {
         } catch (error) {
             setIsSubmitting(false)
             setMessage({ type: 'error', text: 'An unexpected error occurred' })
-            console.error('Form submission error:', error)
         }
     }
 

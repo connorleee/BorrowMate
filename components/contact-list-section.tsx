@@ -37,7 +37,7 @@ export default function ContactListSection({ initialContacts }: ContactListSecti
         const results = await searchContacts(query)
         setContacts(results as Contact[])
       } catch (err) {
-        console.error('Error searching contacts:', err)
+        // Error handled silently - search results unchanged
       } finally {
         setIsSearching(false)
       }
@@ -55,7 +55,7 @@ export default function ContactListSection({ initialContacts }: ContactListSecti
       setContacts(contacts.filter(c => c.id !== id))
       setConfirmId(null)
     } catch (err) {
-      console.error('Error deleting contact:', err)
+      // Error handled silently - UI state unchanged
     } finally {
       setDeletingId(null)
     }

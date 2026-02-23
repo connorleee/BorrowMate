@@ -55,7 +55,6 @@ export default function BatchLendModal({
         const results = await searchContacts(searchQuery)
         setSearchResults(results as Contact[])
       } catch (err) {
-        console.error('Error searching contacts:', err)
         setSearchResults([])
       } finally {
         setIsSearching(false)

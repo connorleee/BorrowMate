@@ -17,7 +17,7 @@ export default function ShareGroupLink({ inviteCode, groupId }: ShareGroupLinkPr
             setCopied(true)
             setTimeout(() => setCopied(false), 2000)
         } catch (err) {
-            console.error('Failed to copy:', err)
+            // Clipboard copy failed - user can manually copy from the input
         }
     }
 

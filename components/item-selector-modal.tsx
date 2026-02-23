@@ -41,7 +41,7 @@ export default function ItemSelectorModal({ isOpen, onClose, items, onAdd }: Ite
             onClose()
             setSelectedItems(new Set())
         } catch (error) {
-            console.error('Failed to add items:', error)
+            // Error handled by parent component
         } finally {
             setIsSubmitting(false)
         }

@@ -15,7 +15,7 @@ export default function NotificationBell() {
       const count = await getUnreadNotificationCount()
       setUnreadCount(count)
     } catch (error) {
-      console.error('Error fetching unread count:', error)
+      // Error handled silently - count stays at previous value
     } finally {
       setIsLoading(false)
     }

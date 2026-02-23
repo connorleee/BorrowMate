@@ -28,7 +28,7 @@ export default function ContactCard({
       await deleteContact(id)
       setShowConfirm(false)
     } catch (err) {
-      console.error('Error deleting contact:', err)
+      // Error handled silently - UI state unchanged
     } finally {
       setIsDeleting(false)
     }
