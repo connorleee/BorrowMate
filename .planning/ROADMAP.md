@@ -12,7 +12,7 @@ This milestone takes BorrowMate from a functional prototype to production-ready.
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Critical Security Fixes** - Fix disabled middleware auth, missing action auth checks, and console data leaks
+- [x] **Phase 1: Critical Security Fixes** - Fix disabled middleware auth, missing action auth checks, and console data leaks (completed 2026-02-23)
 - [ ] **Phase 2: Input Validation** - Add Zod schemas and next-safe-action to all server action mutations
 - [ ] **Phase 3: Design System Foundation** - Create primitive components (Button, Input, Card, Badge, Modal) with design tokens
 - [ ] **Phase 4: RLS Audit & Hardening** - Audit all RLS policies, tighten user data exposure, add security headers
@@ -28,7 +28,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Visiting any authenticated route while logged out redirects to the auth page
   2. Calling returnItem() without a valid session returns an auth error and does not modify data
   3. No sensitive user data (emails, IDs, tokens) appears in browser console during normal app usage
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 01-01-PLAN.md -- Fix middleware auth guard and returnItem auth check
@@ -97,7 +97,7 @@ Note: Phases 2 and 3 touch independent files and could be interleaved if desired
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Critical Security Fixes | 0/2 | Planned | - |
+| 1. Critical Security Fixes | 0/2 | Complete    | 2026-02-23 |
 | 2. Input Validation | 0/? | Not started | - |
 | 3. Design System Foundation | 0/? | Not started | - |
 | 4. RLS Audit & Hardening | 0/? | Not started | - |
