@@ -11,13 +11,16 @@ export default function AddItemPage({ params }: { params: Promise<{ id: string }
 
     async function handleSubmit(formData: FormData) {
         setLoading(true)
-        // Append groupId to formData
-        formData.append('groupId', groupId)
 
-        const result = await createItem(formData)
+        const name = formData.get('name') as string
+        const category = formData.get('category') as string || ''
+        const description = formData.get('description') as string || ''
+        const privacy = (formData.get('privacy') as 'private' | 'public') || 'public'
 
-        if (result?.error) {
-            alert(result.error)
+        const result = await createItem({ name, description, category, privacy, groupId })
+
+        if (result?.serverError) {
+            alert(result.serverError)
             setLoading(false)
         } else {
             router.push(`/groups/${groupId}`)

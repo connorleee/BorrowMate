@@ -133,7 +133,7 @@ export default function SidebarClientContent({ user }: SidebarClientContentProps
                   {user.user_metadata?.name || user.email}
                 </p>
               </div>
-              <form action={logout} className="w-full">
+              <form action={async () => { await logout() }} className="w-full">
                 <button
                   type="submit"
                   className="w-full px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface rounded-lg transition-colors"

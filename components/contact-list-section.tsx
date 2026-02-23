@@ -51,7 +51,7 @@ export default function ContactListSection({ initialContacts }: ContactListSecti
   const handleDelete = async (id: string) => {
     setDeletingId(id)
     try {
-      await deleteContact(id)
+      await deleteContact({ contactId: id })
       setContacts(contacts.filter(c => c.id !== id))
       setConfirmId(null)
     } catch (err) {

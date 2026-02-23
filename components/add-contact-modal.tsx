@@ -21,15 +21,14 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
     setError(null)
     setIsLoading(true)
 
-    const formData = new FormData()
-    formData.append('name', name)
-    formData.append('email', email)
-    formData.append('phone', phone)
-
     try {
-      const result = await createContact(formData)
-      if (result.error) {
-        setError(result.error)
+      const result = await createContact({
+        name,
+        email: email || null,
+        phone: phone || null,
+      })
+      if (result?.serverError) {
+        setError(result.serverError)
       } else {
         // Reset form and close modal on success
         setName('')

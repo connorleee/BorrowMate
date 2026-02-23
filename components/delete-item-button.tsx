@@ -9,10 +9,10 @@ export default function DeleteItemButton({ itemId }: { itemId: string }) {
 
     const handleDelete = async () => {
         setIsDeleting(true)
-        const result = await deleteItem(itemId)
+        const result = await deleteItem({ itemId })
 
-        if (result?.error) {
-            alert(result.error)
+        if (result?.serverError) {
+            alert(result.serverError)
             setIsDeleting(false)
             setShowConfirm(false)
         }

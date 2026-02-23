@@ -25,7 +25,7 @@ export default function ContactCard({
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
-      await deleteContact(id)
+      await deleteContact({ contactId: id })
       setShowConfirm(false)
     } catch (err) {
       // Error handled silently - UI state unchanged

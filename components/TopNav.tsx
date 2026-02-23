@@ -2,6 +2,11 @@ import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { logout } from '@/app/auth/actions'
 
+async function handleLogout() {
+    'use server'
+    await logout()
+}
+
 export default async function TopNav() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -21,7 +26,7 @@ export default async function TopNav() {
                             <Link href="/groups" className="hover:text-gray-600">Groups</Link>
                             <div className="flex items-center gap-4 ml-4 pl-4 border-l">
                                 <span className="text-gray-500 hidden sm:inline">{user.user_metadata.name || user.email}</span>
-                                <form action={logout}>
+                                <form action={handleLogout}>
                                     <button className="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-xs">
                                         Sign Out
                                     </button>

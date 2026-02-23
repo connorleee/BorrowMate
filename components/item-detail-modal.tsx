@@ -60,9 +60,9 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
     setError(null)
 
     try {
-      const result = await deleteItem(itemId)
-      if (result.error) {
-        setError(result.error)
+      const result = await deleteItem({ itemId })
+      if (result?.serverError) {
+        setError(result.serverError)
       } else {
         onClose()
       }
@@ -350,15 +350,16 @@ function ItemEditSubModal({ item, onClose, onSuccess }: { item: any; onClose: ()
 
     try {
       const { updateItem } = await import('@/app/items/actions')
-      const result = await updateItem(item.id, {
+      const result = await updateItem({
+        itemId: item.id,
         name: name || item.name,
         description: description || undefined,
         category: category || undefined,
         price_usd: price ? parseFloat(price) : undefined,
       })
 
-      if (result.error) {
-        setError(result.error)
+      if (result?.serverError) {
+        setError(result.serverError)
       } else {
         onSuccess()
       }

@@ -88,15 +88,15 @@ export default function BatchLendModal({
     setError(null)
 
     try {
-      const formData = new FormData()
-      formData.append('name', quickAddName)
-      formData.append('email', quickAddEmail)
-
-      const result = await createContact(formData)
-      if (result.error) {
-        setError(result.error)
-      } else if (result.data) {
-        setSelectedContactId(result.data.id)
+      const result = await createContact({
+        name: quickAddName,
+        email: quickAddEmail || null,
+        phone: null,
+      })
+      if (result?.serverError) {
+        setError(result.serverError)
+      } else if (result?.data?.data) {
+        setSelectedContactId(result.data.data.id)
         setQuickAddMode(false)
         setQuickAddName('')
         setQuickAddEmail('')

@@ -12,11 +12,16 @@ export default function AddItemForm() {
         setMessage(null)
 
         try {
-            const result = await createItem(formData)
+            const name = formData.get('name') as string
+            const description = formData.get('description') as string || ''
+            const category = formData.get('category') as string || ''
+            const privacy = (formData.get('privacy') as 'private' | 'public') || 'private'
+
+            const result = await createItem({ name, description, category, privacy })
             setIsSubmitting(false)
 
-            if (result?.error) {
-                setMessage({ type: 'error', text: result.error })
+            if (result?.serverError) {
+                setMessage({ type: 'error', text: result.serverError })
             } else {
                 setMessage({ type: 'success', text: 'Item added successfully!' })
                 const form = document.querySelector('form') as HTMLFormElement
