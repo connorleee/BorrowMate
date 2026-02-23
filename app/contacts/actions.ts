@@ -2,6 +2,8 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { authActionClient } from '@/lib/safe-action'
+import { createContactSchema, updateContactSchema, deleteContactSchema, linkContactToUserSchema } from './schemas'
 
 export async function getContacts() {
   const supabase = await createClient()
@@ -64,154 +66,118 @@ export async function searchContacts(query: string) {
   return data || []
 }
 
-export async function createContact(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export const createContact = authActionClient
+  .inputSchema(createContactSchema)
+  .action(async ({ parsedInput: { name, email, phone }, ctx: { user, supabase } }) => {
+    const { data, error } = await supabase
+      .from('contacts')
+      .insert({
+        owner_user_id: user.id,
+        name: name.trim(),
+        email: email ? email.trim() : null,
+        phone: phone ? phone.trim() : null,
+      })
+      .select()
+      .single()
 
-  if (!user) {
-    return { error: 'Not authenticated' }
-  }
+    if (error) {
+      throw new Error(error.message)
+    }
 
-  const name = formData.get('name') as string
-  const email = formData.get('email') as string | null
-  const phone = formData.get('phone') as string | null
+    revalidatePath('/contacts')
+    return { data }
+  })
 
-  if (!name || name.trim().length === 0) {
-    return { error: 'Contact name is required' }
-  }
+export const updateContact = authActionClient
+  .inputSchema(updateContactSchema)
+  .action(async ({ parsedInput: { contactId, name, email, phone }, ctx: { user, supabase } }) => {
+    // Verify ownership (RLS will enforce, but check client-side too)
+    const { data: existingContact, error: fetchError } = await supabase
+      .from('contacts')
+      .select('owner_user_id')
+      .eq('id', contactId)
+      .single()
 
-  const { data, error } = await supabase
-    .from('contacts')
-    .insert({
-      owner_user_id: user.id,
-      name: name.trim(),
-      email: email ? email.trim() : null,
-      phone: phone ? phone.trim() : null,
-    })
-    .select()
-    .single()
+    if (fetchError || !existingContact || existingContact.owner_user_id !== user.id) {
+      throw new Error('Unauthorized')
+    }
 
-  if (error) {
-    return { error: error.message }
-  }
+    const { data, error } = await supabase
+      .from('contacts')
+      .update({
+        name: name.trim(),
+        email: email ? email.trim() : null,
+        phone: phone ? phone.trim() : null,
+      })
+      .eq('id', contactId)
+      .select()
+      .single()
 
-  revalidatePath('/contacts')
-  return { data }
-}
+    if (error) {
+      throw new Error(error.message)
+    }
 
-export async function updateContact(contactId: string, formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+    revalidatePath('/contacts')
+    return { data }
+  })
 
-  if (!user) {
-    return { error: 'Not authenticated' }
-  }
+export const deleteContact = authActionClient
+  .inputSchema(deleteContactSchema)
+  .action(async ({ parsedInput: { contactId }, ctx: { user, supabase } }) => {
+    // Verify ownership
+    const { data: existingContact, error: fetchError } = await supabase
+      .from('contacts')
+      .select('owner_user_id')
+      .eq('id', contactId)
+      .single()
 
-  const name = formData.get('name') as string
-  const email = formData.get('email') as string | null
-  const phone = formData.get('phone') as string | null
+    if (fetchError || !existingContact || existingContact.owner_user_id !== user.id) {
+      throw new Error('Unauthorized')
+    }
 
-  if (!name || name.trim().length === 0) {
-    return { error: 'Contact name is required' }
-  }
+    const { error } = await supabase
+      .from('contacts')
+      .delete()
+      .eq('id', contactId)
 
-  // Verify ownership (RLS will enforce, but check client-side too)
-  const { data: existingContact, error: fetchError } = await supabase
-    .from('contacts')
-    .select('owner_user_id')
-    .eq('id', contactId)
-    .single()
+    if (error) {
+      throw new Error(error.message)
+    }
 
-  if (fetchError || !existingContact || existingContact.owner_user_id !== user.id) {
-    return { error: 'Unauthorized' }
-  }
+    revalidatePath('/contacts')
+    return { success: true }
+  })
 
-  const { data, error } = await supabase
-    .from('contacts')
-    .update({
-      name: name.trim(),
-      email: email ? email.trim() : null,
-      phone: phone ? phone.trim() : null,
-    })
-    .eq('id', contactId)
-    .select()
-    .single()
+export const linkContactToUser = authActionClient
+  .inputSchema(linkContactToUserSchema)
+  .action(async ({ parsedInput: { contactId, userId }, ctx: { user, supabase } }) => {
+    // Verify ownership
+    const { data: existingContact, error: fetchError } = await supabase
+      .from('contacts')
+      .select('owner_user_id')
+      .eq('id', contactId)
+      .single()
 
-  if (error) {
-    return { error: error.message }
-  }
+    if (fetchError || !existingContact || existingContact.owner_user_id !== user.id) {
+      throw new Error('Unauthorized')
+    }
 
-  revalidatePath('/contacts')
-  return { data }
-}
+    const { data, error } = await supabase
+      .from('contacts')
+      .update({
+        linked_user_id: userId,
+      })
+      .eq('id', contactId)
+      .select()
+      .single()
 
-export async function deleteContact(contactId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+    if (error) {
+      throw new Error(error.message)
+    }
 
-  if (!user) {
-    return { error: 'Not authenticated' }
-  }
-
-  // Verify ownership
-  const { data: existingContact, error: fetchError } = await supabase
-    .from('contacts')
-    .select('owner_user_id')
-    .eq('id', contactId)
-    .single()
-
-  if (fetchError || !existingContact || existingContact.owner_user_id !== user.id) {
-    return { error: 'Unauthorized' }
-  }
-
-  const { error } = await supabase
-    .from('contacts')
-    .delete()
-    .eq('id', contactId)
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  revalidatePath('/contacts')
-  return { success: true }
-}
-
-export async function linkContactToUser(contactId: string, userId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { error: 'Not authenticated' }
-  }
-
-  // Verify ownership
-  const { data: existingContact, error: fetchError } = await supabase
-    .from('contacts')
-    .select('owner_user_id')
-    .eq('id', contactId)
-    .single()
-
-  if (fetchError || !existingContact || existingContact.owner_user_id !== user.id) {
-    return { error: 'Unauthorized' }
-  }
-
-  const { data, error } = await supabase
-    .from('contacts')
-    .update({
-      linked_user_id: userId,
-    })
-    .eq('id', contactId)
-    .select()
-    .single()
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  revalidatePath('/contacts')
-  return { data }
-}
+    revalidatePath('/contacts')
+    return { data }
+  })
 
 export async function getContactWithBorrowHistory(contactId: string) {
   const supabase = await createClient()

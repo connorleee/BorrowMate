@@ -2,6 +2,8 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { authActionClient } from '@/lib/safe-action'
+import { createItemSchema, deleteItemSchema, updateItemSchema } from './schemas'
 
 export async function getGroupItems(groupId: string) {
   const supabase = await createClient()
@@ -24,39 +26,31 @@ export async function getGroupItems(groupId: string) {
   return data
 }
 
-export async function createItem(formData: FormData) {
-  const supabase = await createClient()
-  const groupId = formData.get('groupId') as string | null
-  const name = formData.get('name') as string
-  const description = formData.get('description') as string
-  const category = formData.get('category') as string
-  const privacy = formData.get('privacy') as 'private' | 'public'
+export const createItem = authActionClient
+  .inputSchema(createItemSchema)
+  .action(async ({ parsedInput: { name, description, category, privacy, groupId }, ctx: { user, supabase } }) => {
+    const { data, error } = await supabase
+      .from('items')
+      .insert({
+        group_id: groupId || null,
+        name,
+        description,
+        category,
+        privacy,
+        owner_user_id: user.id,
+      })
+      .select()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+    if (error) {
+      throw new Error(error.message)
+    }
 
-  const { data, error } = await supabase
-    .from('items')
-    .insert({
-      group_id: groupId || null,
-      name,
-      description,
-      category,
-      privacy,
-      owner_user_id: user.id,
-    })
-    .select()
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  if (groupId) {
-    revalidatePath(`/groups/${groupId}`)
-  }
-  revalidatePath('/items')
-  return { success: true }
-}
+    if (groupId) {
+      revalidatePath(`/groups/${groupId}`)
+    }
+    revalidatePath('/items')
+    return { success: true }
+  })
 
 export async function getItemDetails(itemId: string) {
   const supabase = await createClient()
@@ -133,25 +127,22 @@ export async function getBorrowedItems() {
   return data
 }
 
-export async function deleteItem(itemId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export const deleteItem = authActionClient
+  .inputSchema(deleteItemSchema)
+  .action(async ({ parsedInput: { itemId }, ctx: { user, supabase } }) => {
+    const { error } = await supabase
+      .from('items')
+      .delete()
+      .eq('id', itemId)
+      .eq('owner_user_id', user.id)
 
-  if (!user) return { error: 'Not authenticated' }
+    if (error) {
+      throw new Error(error.message)
+    }
 
-  const { error } = await supabase
-    .from('items')
-    .delete()
-    .eq('id', itemId)
-    .eq('owner_user_id', user.id)
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  revalidatePath('/items')
-  return { success: true }
-}
+    revalidatePath('/items')
+    return { success: true }
+  })
 
 export async function getItemDetailsWithBorrow(itemId: string) {
   const supabase = await createClient()
@@ -259,43 +250,40 @@ export async function getItemBorrowHistory(itemId: string) {
   }))
 }
 
-export async function updateItem(itemId: string, updates: { name?: string; description?: string; category?: string; price_usd?: number }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export const updateItem = authActionClient
+  .inputSchema(updateItemSchema)
+  .action(async ({ parsedInput: { itemId, name, description, category, price_usd }, ctx: { user, supabase } }) => {
+    // Check if user is the item owner
+    const { data: item } = await supabase
+      .from('items')
+      .select('owner_user_id')
+      .eq('id', itemId)
+      .single()
 
-  if (!user) return { error: 'Not authenticated' }
+    if (!item || item.owner_user_id !== user.id) {
+      throw new Error('Not authorized to update this item')
+    }
 
-  // Check if user is the item owner
-  const { data: item } = await supabase
-    .from('items')
-    .select('owner_user_id')
-    .eq('id', itemId)
-    .single()
+    // Update item
+    const { error } = await supabase
+      .from('items')
+      .update({
+        ...(name && { name }),
+        ...(description && { description }),
+        ...(category && { category }),
+        ...(price_usd !== undefined && { price_usd }),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', itemId)
 
-  if (!item || item.owner_user_id !== user.id) {
-    return { error: 'Not authorized to update this item' }
-  }
+    if (error) {
+      throw new Error(error.message)
+    }
 
-  // Update item
-  const { error } = await supabase
-    .from('items')
-    .update({
-      ...(updates.name && { name: updates.name }),
-      ...(updates.description && { description: updates.description }),
-      ...(updates.category && { category: updates.category }),
-      ...(updates.price_usd !== undefined && { price_usd: updates.price_usd }),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', itemId)
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  revalidatePath('/items')
-  revalidatePath(`/items/${itemId}`)
-  return { success: true }
-}
+    revalidatePath('/items')
+    revalidatePath(`/items/${itemId}`)
+    return { success: true }
+  })
 
 // DEPRECATED: These functions are replaced by contact-centric lending model
 // - getPotentialBorrowers() → Use contacts instead (app/contacts/actions.ts)
