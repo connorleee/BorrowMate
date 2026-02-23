@@ -98,6 +98,37 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
 }
 
+/* ═══════════ Design System Token Reference ═══════════
+ *
+ * SPACING SCALE (Tailwind v4 defaults, project conventions):
+ *   gap-1 (4px)  - Minimal spacing (icon gaps)
+ *   gap-2 (8px)  - Tight spacing (badge groups, inline elements)
+ *   gap-3 (12px) - Compact spacing (list items)
+ *   gap-4 (16px) - Standard spacing (form fields, card content)
+ *   gap-6 (24px) - Related sections within a container
+ *   gap-8 (32px) - Major page sections
+ *   gap-12 (48px) - Distinct content blocks
+ *
+ * TYPOGRAPHY SCALE (Tailwind v4 defaults):
+ *   text-xs (12px)  - Badges, tertiary labels
+ *   text-sm (14px)  - Body text, form labels, buttons
+ *   text-base (16px) - Large body, card titles
+ *   text-lg (18px)  - Section headers
+ *   text-xl (20px)  - Page subtitles
+ *   text-2xl (24px) - Page titles
+ *   text-3xl (30px) - Hero/dashboard headings
+ *
+ * COLOR PALETTE: Defined in @theme block above
+ *   primary-{50-900}, success-{50-900}, error-{50-900},
+ *   warning-{50-900}, info-{50-900}
+ *
+ * SURFACE COLORS: Defined as CSS custom properties
+ *   --bg-base, --bg-surface, --bg-elevated
+ *   --text-primary, --text-secondary, --text-tertiary
+ *   --border, --shadow-sm, --shadow-md, --shadow-lg
+ *
+ * ═══════════════════════════════════════════════════ */
+
 html {
   color-scheme: light dark;
 }
