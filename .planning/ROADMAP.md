@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Critical Security Fixes** - Fix disabled middleware auth, missing action auth checks, and console data leaks (completed 2026-02-23)
 - [ ] **Phase 2: Input Validation** - Add Zod schemas and next-safe-action to all server action mutations
 - [x] **Phase 3: Design System Foundation** - Create primitive components (Button, Input, Card, Badge, Modal) with design tokens (completed 2026-02-23)
-- [ ] **Phase 4: RLS Audit & Hardening** - Audit all RLS policies, tighten user data exposure, add security headers
+- [x] **Phase 4: RLS Audit & Hardening** - Audit all RLS policies, tighten user data exposure, add security headers (completed 2026-02-23)
 - [ ] **Phase 5: UI Migration & Production Polish** - Migrate all components to primitives, fix dark mode, add toast/empty/loading states
 
 ## Phase Details
@@ -72,7 +72,7 @@ Plans:
   1. A single audit document describes the effective RLS policy state for every table (consolidated from 37 migrations)
   2. An authenticated user querying the users table cannot see other users' email addresses or phone numbers
   3. Response headers include Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, and Referrer-Policy on every page load
-**Plans:** 3 plans (2 complete, 1 gap closure)
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 04-01-PLAN.md -- Create RLS audit document and add security headers to next.config.ts
@@ -105,5 +105,5 @@ Note: Phases 2 and 3 touch independent files and could be interleaved if desired
 | 1. Critical Security Fixes | 0/2 | Complete    | 2026-02-23 |
 | 2. Input Validation | 1/3 | In Progress | - |
 | 3. Design System Foundation | 0/2 | Complete    | 2026-02-23 |
-| 4. RLS Audit & Hardening | 2/3 | In Progress (gap closure) | - |
+| 4. RLS Audit & Hardening | 2/3 | Complete    | 2026-02-23 |
 | 5. UI Migration & Production Polish | 0/? | Not started | - |
