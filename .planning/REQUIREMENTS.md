@@ -25,13 +25,13 @@
 
 ### Design System
 
-- [ ] **DSN-01**: `cn()` utility function created using clsx + tailwind-merge
-- [ ] **DSN-02**: Button primitive component built with CVA variants (primary, secondary, destructive, ghost, sizes)
-- [ ] **DSN-03**: Input primitive component built with CVA variants (consistent styling, error states, labels)
+- [x] **DSN-01**: `cn()` utility function created using clsx + tailwind-merge
+- [x] **DSN-02**: Button primitive component built with CVA variants (primary, secondary, destructive, ghost, sizes)
+- [x] **DSN-03**: Input primitive component built with CVA variants (consistent styling, error states, labels)
 - [ ] **DSN-04**: Card primitive component built with CVA variants (consistent surface styling)
 - [ ] **DSN-05**: Badge primitive component built with CVA variants (status colors, sizes)
 - [ ] **DSN-06**: Modal primitive component built with shared portal/overlay/escape logic
-- [ ] **DSN-07**: Design tokens established in globals.css (spacing scale, color palette, typography)
+- [x] **DSN-07**: Design tokens established in globals.css (spacing scale, color palette, typography)
 
 ### UI Migration
 
@@ -81,13 +81,13 @@
 | VAL-01 | Phase 2 | Complete |
 | VAL-02 | Phase 2 | Complete |
 | VAL-03 | Phase 2 | Complete |
-| DSN-01 | Phase 3 | Pending |
-| DSN-02 | Phase 3 | Pending |
-| DSN-03 | Phase 3 | Pending |
+| DSN-01 | Phase 3 | Complete |
+| DSN-02 | Phase 3 | Complete |
+| DSN-03 | Phase 3 | Complete |
 | DSN-04 | Phase 3 | Pending |
 | DSN-05 | Phase 3 | Pending |
 | DSN-06 | Phase 3 | Pending |
-| DSN-07 | Phase 3 | Pending |
+| DSN-07 | Phase 3 | Complete |
 | RLS-01 | Phase 4 | Pending |
 | RLS-02 | Phase 4 | Pending |
 | RLS-03 | Phase 4 | Pending |
