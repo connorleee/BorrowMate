@@ -28,10 +28,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Visiting any authenticated route while logged out redirects to the auth page
   2. Calling returnItem() without a valid session returns an auth error and does not modify data
   3. No sensitive user data (emails, IDs, tokens) appears in browser console during normal app usage
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 01-01: TBD
+- [ ] 01-01-PLAN.md -- Fix middleware auth guard and returnItem auth check
+- [ ] 01-02-PLAN.md -- Audit and remove all sensitive console statements
 
 ### Phase 2: Input Validation
 **Goal**: All server action inputs are validated against schemas before any database operation executes
@@ -96,7 +97,7 @@ Note: Phases 2 and 3 touch independent files and could be interleaved if desired
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Critical Security Fixes | 0/? | Not started | - |
+| 1. Critical Security Fixes | 0/2 | Planned | - |
 | 2. Input Validation | 0/? | Not started | - |
 | 3. Design System Foundation | 0/? | Not started | - |
 | 4. RLS Audit & Hardening | 0/? | Not started | - |
