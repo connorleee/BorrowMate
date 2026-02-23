@@ -15,7 +15,7 @@
 
 - [x] **VAL-01**: Zod schemas defined for all server action inputs (items, contacts, borrow, groups, users, auth, notifications)
 - [x] **VAL-02**: next-safe-action client configured with auth middleware pattern
-- [ ] **VAL-03**: All mutation server actions migrated to use Zod-validated inputs via next-safe-action
+- [x] **VAL-03**: All mutation server actions migrated to use Zod-validated inputs via next-safe-action
 
 ### RLS & Hardening
 
@@ -80,7 +80,7 @@
 | SEC-03 | Phase 1 | Complete |
 | VAL-01 | Phase 2 | Complete |
 | VAL-02 | Phase 2 | Complete |
-| VAL-03 | Phase 2 | Pending |
+| VAL-03 | Phase 2 | Complete |
 | DSN-01 | Phase 3 | Pending |
 | DSN-02 | Phase 3 | Pending |
 | DSN-03 | Phase 3 | Pending |
