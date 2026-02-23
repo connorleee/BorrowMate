@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Users can quickly lend items to contacts and always know who has what
-**Current focus:** Phase 3 - Design System Foundation
+**Current focus:** Phase 4 - RLS Audit & Hardening
 
 ## Current Position
 
-Phase: 3 of 5 (Design System Foundation) -- COMPLETE
-Plan: 2 of 2 in current phase (all plans complete)
-Status: Phase 3 Complete
-Last activity: 2026-02-23 -- Completed 03-02-PLAN.md
+Phase: 4 of 5 (RLS Audit & Hardening)
+Plan: 1 of 2 in current phase
+Status: Executing Phase 4
+Last activity: 2026-02-23 -- Completed 04-01-PLAN.md
 
 Progress: [████████░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: 4min
-- Total execution time: 0.4 hours
+- Total execution time: 0.5 hours
 
 **By Phase:**
 
@@ -30,9 +30,10 @@ Progress: [████████░░] 80%
 | 01-critical-security-fixes | 2 | 7min | 3.5min |
 | 02-input-validation | 3 | 13min | 4.3min |
 | 03-design-system-foundation | 2 | 4min | 2min |
+| 04-rls-audit-hardening | 1 | 3min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (6min), 02-03 (5min), 03-01 (2min), 03-02 (2min)
+- Last 5 plans: 02-03 (5min), 03-01 (2min), 03-02 (2min), 04-01 (3min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -61,6 +62,9 @@ Recent decisions affecting current work:
 - 03-02: Modal uses composable sub-components (ModalHeader/ModalBody/ModalFooter) rather than prop-based sections
 - 03-02: Added type exports to button.tsx and input.tsx to enable barrel re-exports
 - 03-02: Badge palette shifts use dark: prefix; neutral/surface variants use CSS custom properties
+- 04-01: Static CSP with unsafe-inline instead of nonce-based CSP (avoids forcing dynamic rendering on all pages)
+- 04-01: Conditional unsafe-eval only in development mode for Next.js HMR support
+- 04-01: frame-ancestors 'none' in CSP plus X-Frame-Options DENY for legacy browser fallback
 
 ### Pending Todos
 
@@ -69,10 +73,10 @@ None yet.
 ### Blockers/Concerns
 
 - ~~Middleware auth guard is effectively disabled (pathname.startsWith('/') is always true) -- Phase 1 blocker for production~~ RESOLVED in 01-01
-- RLS effective policy state unknown until audit in Phase 4
+- ~~RLS effective policy state unknown until audit in Phase 4~~ RESOLVED in 04-01 (RLS-AUDIT.md created)
 
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 03-02-PLAN.md (Phase 3 complete)
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
