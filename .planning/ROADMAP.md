@@ -58,10 +58,11 @@ Plans:
   2. All primitive components support variant props (e.g., Button variant="destructive") that map to the design token color palette
   3. Design tokens in globals.css define the spacing scale, color palette, and typography -- and all primitives reference these tokens (not hardcoded values)
   4. The cn() utility correctly merges conditional Tailwind classes without conflicts
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 03-01: TBD
+- [ ] 03-01-PLAN.md -- Install CVA/clsx/tailwind-merge, create cn() utility, enhance design tokens, build Button and Input primitives
+- [ ] 03-02-PLAN.md -- Build Card, Badge, and Modal primitives, create barrel export
 
 ### Phase 4: RLS Audit & Hardening
 **Goal**: Every database table has documented, minimal-privilege RLS policies and the app sends proper security headers
@@ -101,6 +102,6 @@ Note: Phases 2 and 3 touch independent files and could be interleaved if desired
 |-------|----------------|--------|-----------|
 | 1. Critical Security Fixes | 0/2 | Complete    | 2026-02-23 |
 | 2. Input Validation | 1/3 | In Progress | - |
-| 3. Design System Foundation | 0/? | Not started | - |
+| 3. Design System Foundation | 0/2 | Not started | - |
 | 4. RLS Audit & Hardening | 0/? | Not started | - |
 | 5. UI Migration & Production Polish | 0/? | Not started | - |
