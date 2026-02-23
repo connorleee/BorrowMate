@@ -30,9 +30,9 @@ export default function GroupItemsManager({ groupId, userItems }: GroupItemsMana
     const availableItems = userItems.filter(item => item.group_id !== groupId)
 
     const handleAddItems = async (selectedItemIds: string[]) => {
-        const result = await addItemsToGroup(groupId, selectedItemIds)
-        if (result.error) {
-            alert(result.error)
+        const result = await addItemsToGroup({ groupId, itemIds: selectedItemIds })
+        if (result?.serverError) {
+            alert(result.serverError)
         }
     }
 

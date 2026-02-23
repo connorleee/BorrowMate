@@ -3,50 +3,50 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { authActionClient } from '@/lib/safe-action'
+import {
+  createGroupSchema,
+  joinGroupByInviteCodeSchema,
+  regenerateInviteCodeSchema,
+  addItemsToGroupSchema,
+  addMembersSchema,
+} from './schemas'
 
-export async function createGroup(formData: FormData) {
-    const supabase = await createClient()
-    const name = formData.get('name') as string
-    const description = formData.get('description') as string
-
-    const { data: userData, error: userError } = await supabase.auth.getUser()
-    if (userError || !userData.user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const createGroup = authActionClient
+  .inputSchema(createGroupSchema)
+  .action(async ({ parsedInput: { name, description }, ctx: { user, supabase } }) => {
     // 1. Create Group
     const { data: group, error: groupError } = await supabase
         .from('groups')
         .insert({
             name,
             description,
-            created_by: userData.user.id,
+            created_by: user.id,
         })
         .select()
         .single()
 
     if (groupError) {
-        return { error: groupError.message }
+        throw new Error(groupError.message)
     }
 
-    // 2. Add Creator as Owner (Trigger might handle this? No, I didn't add a trigger for this in migration)
-    // I added a policy "Group creators can insert membership for themselves", so I should do it here.
+    // 2. Add Creator as Owner
     const { error: membershipError } = await supabase
         .from('group_memberships')
         .insert({
             group_id: group.id,
-            user_id: userData.user.id,
+            user_id: user.id,
             role: 'owner',
         })
 
     if (membershipError) {
         // Ideally rollback group creation, but for MVP just return error
-        return { error: 'Group created but membership failed: ' + membershipError.message }
+        throw new Error('Group created but membership failed: ' + membershipError.message)
     }
 
     revalidatePath('/groups')
     redirect(`/groups/${group.id}`)
-}
+  })
 
 export async function getUserGroups() {
     const supabase = await createClient()
@@ -146,14 +146,9 @@ export async function getGroupByInviteCode(inviteCode: string) {
     }
 }
 
-export async function joinGroupByInviteCode(inviteCode: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const joinGroupByInviteCode = authActionClient
+  .inputSchema(joinGroupByInviteCodeSchema)
+  .action(async ({ parsedInput: { inviteCode }, ctx: { user, supabase } }) => {
     // First, get the group by invite code
     const { data: group, error: groupError } = await supabase
         .from('groups')
@@ -162,7 +157,7 @@ export async function joinGroupByInviteCode(inviteCode: string) {
         .single()
 
     if (groupError) {
-        return { error: 'Invalid invite code' }
+        throw new Error('Invalid invite code')
     }
 
     // Check if already a member
@@ -174,7 +169,7 @@ export async function joinGroupByInviteCode(inviteCode: string) {
         .single()
 
     if (existingMembership) {
-        return { error: 'Already a member of this group', groupId: group.id }
+        throw new Error('Already a member of this group')
     }
 
     // Add user as a member
@@ -187,22 +182,17 @@ export async function joinGroupByInviteCode(inviteCode: string) {
         })
 
     if (membershipError) {
-        return { error: 'Failed to join group: ' + membershipError.message }
+        throw new Error('Failed to join group: ' + membershipError.message)
     }
 
     revalidatePath('/groups')
     revalidatePath(`/groups/${group.id}`)
-    return { success: true, groupId: group.id }
-}
+    return { groupId: group.id }
+  })
 
-export async function regenerateInviteCode(groupId: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const regenerateInviteCode = authActionClient
+  .inputSchema(regenerateInviteCodeSchema)
+  .action(async ({ parsedInput: { groupId }, ctx: { user, supabase } }) => {
     // Check if user is the owner
     const { data: membership } = await supabase
         .from('group_memberships')
@@ -212,14 +202,14 @@ export async function regenerateInviteCode(groupId: string) {
         .single()
 
     if (!membership || membership.role !== 'owner') {
-        return { error: 'Only group owners can regenerate invite codes' }
+        throw new Error('Only group owners can regenerate invite codes')
     }
 
     // Generate new invite code using the database function
     const { data, error } = await supabase.rpc('generate_invite_code')
 
     if (error) {
-        return { error: 'Failed to generate invite code' }
+        throw new Error('Failed to generate invite code')
     }
 
     // Update the group with new invite code
@@ -229,21 +219,16 @@ export async function regenerateInviteCode(groupId: string) {
         .eq('id', groupId)
 
     if (updateError) {
-        return { error: 'Failed to update invite code' }
+        throw new Error('Failed to update invite code')
     }
 
     revalidatePath(`/groups/${groupId}`)
-    return { success: true, inviteCode: data }
-}
+    return { inviteCode: data }
+  })
 
-export async function addItemsToGroup(groupId: string, itemIds: string[]) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const addItemsToGroup = authActionClient
+  .inputSchema(addItemsToGroupSchema)
+  .action(async ({ parsedInput: { groupId, itemIds }, ctx: { user, supabase } }) => {
     // Verify user is a member of the group
     const { data: membership } = await supabase
         .from('group_memberships')
@@ -253,7 +238,7 @@ export async function addItemsToGroup(groupId: string, itemIds: string[]) {
         .single()
 
     if (!membership) {
-        return { error: 'You must be a member of the group to add items' }
+        throw new Error('You must be a member of the group to add items')
     }
 
     // Update items to belong to the group
@@ -264,12 +249,12 @@ export async function addItemsToGroup(groupId: string, itemIds: string[]) {
         .eq('owner_user_id', user.id) // Ensure user owns the items
 
     if (error) {
-        return { error: 'Failed to add items to group' }
+        throw new Error('Failed to add items to group')
     }
 
     revalidatePath(`/groups/${groupId}`)
     return { success: true }
-}
+  })
 
 export async function searchUsers(query: string) {
     const supabase = await createClient()
@@ -296,14 +281,9 @@ export async function searchUsers(query: string) {
     return data
 }
 
-export async function addMembers(groupId: string, userIds: string[]) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const addMembers = authActionClient
+  .inputSchema(addMembersSchema)
+  .action(async ({ parsedInput: { groupId, userIds }, ctx: { user, supabase } }) => {
     // Verify user is a member of the group (enforced by RLS, but good to check)
     const { data: membership } = await supabase
         .from('group_memberships')
@@ -313,7 +293,7 @@ export async function addMembers(groupId: string, userIds: string[]) {
         .single()
 
     if (!membership) {
-        return { error: 'You must be a member of the group to add others' }
+        throw new Error('You must be a member of the group to add others')
     }
 
     const newMembers = userIds.map(userId => ({
@@ -330,13 +310,12 @@ export async function addMembers(groupId: string, userIds: string[]) {
 
     if (error) {
         // If it's a unique constraint violation, it means some users are already members.
-        // We can probably ignore that for now or handle it more gracefully.
         if (error.code === '23505') { // unique_violation
-            return { error: 'One or more users are already members of this group.' }
+            throw new Error('One or more users are already members of this group.')
         }
-        return { error: 'Failed to add members: ' + error.message }
+        throw new Error('Failed to add members: ' + error.message)
     }
 
     revalidatePath(`/groups/${groupId}`)
     return { success: true }
-}
+  })

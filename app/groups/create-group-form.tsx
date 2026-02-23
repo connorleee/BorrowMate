@@ -31,9 +31,11 @@ export default function CreateGroupForm() {
                 action={async (formData) => {
                     setLoading(true)
                     setError(null)
-                    const result = await createGroup(formData)
-                    if (result?.error) {
-                        setError(result.error)
+                    const name = formData.get('name') as string
+                    const description = formData.get('description') as string
+                    const result = await createGroup({ name, description })
+                    if (result?.serverError) {
+                        setError(result.serverError)
                     }
                     setLoading(false)
                 }}

@@ -2,6 +2,8 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { authActionClient } from '@/lib/safe-action'
+import { markNotificationAsReadSchema, dismissNotificationSchema } from './schemas'
 
 export async function getNotifications(limit = 50) {
     const supabase = await createClient()
@@ -85,14 +87,9 @@ export async function getUnreadNotificationCount() {
     return count || 0
 }
 
-export async function markNotificationAsRead(notificationId: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const markNotificationAsRead = authActionClient
+  .inputSchema(markNotificationAsReadSchema)
+  .action(async ({ parsedInput: { notificationId }, ctx: { user, supabase } }) => {
     // Update notification status to read
     const { error } = await supabase
         .from('notifications')
@@ -101,23 +98,17 @@ export async function markNotificationAsRead(notificationId: string) {
         .eq('recipient_user_id', user.id) // Ensure user owns this notification
 
     if (error) {
-        return { error: error.message }
+        throw new Error(error.message)
     }
 
     revalidatePath('/dashboard')
     revalidatePath('/notifications')
 
     return { success: true }
-}
+  })
 
-export async function markAllNotificationsAsRead() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const markAllNotificationsAsRead = authActionClient
+  .action(async ({ ctx: { user, supabase } }) => {
     // Update all unread notifications to read
     const { error } = await supabase
         .from('notifications')
@@ -126,14 +117,14 @@ export async function markAllNotificationsAsRead() {
         .eq('status', 'unread')
 
     if (error) {
-        return { error: error.message }
+        throw new Error(error.message)
     }
 
     revalidatePath('/dashboard')
     revalidatePath('/notifications')
 
     return { success: true }
-}
+  })
 
 export async function getPendingBorrowRequests() {
     const supabase = await createClient()
@@ -195,14 +186,9 @@ export async function getPendingRequestsForItems(itemIds: string[]) {
     return requests || []
 }
 
-export async function dismissNotification(notificationId: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const dismissNotification = authActionClient
+  .inputSchema(dismissNotificationSchema)
+  .action(async ({ parsedInput: { notificationId }, ctx: { user, supabase } }) => {
     // Delete the notification
     const { error } = await supabase
         .from('notifications')
@@ -211,23 +197,17 @@ export async function dismissNotification(notificationId: string) {
         .eq('recipient_user_id', user.id) // Ensure user owns this notification
 
     if (error) {
-        return { error: error.message }
+        throw new Error(error.message)
     }
 
     revalidatePath('/dashboard')
     revalidatePath('/notifications')
 
     return { success: true }
-}
+  })
 
-export async function dismissAllNotifications() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const dismissAllNotifications = authActionClient
+  .action(async ({ ctx: { user, supabase } }) => {
     // Delete all notifications for this user
     const { error } = await supabase
         .from('notifications')
@@ -235,11 +215,11 @@ export async function dismissAllNotifications() {
         .eq('recipient_user_id', user.id)
 
     if (error) {
-        return { error: error.message }
+        throw new Error(error.message)
     }
 
     revalidatePath('/dashboard')
     revalidatePath('/notifications')
 
     return { success: true }
-}
+  })

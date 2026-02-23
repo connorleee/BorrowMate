@@ -3,25 +3,20 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { authActionClient } from '@/lib/safe-action'
+import {
+  borrowItemSchema,
+  returnItemSchema,
+  batchLendToContactSchema,
+  createBorrowRequestSchema,
+  acceptBorrowRequestSchema,
+  rejectBorrowRequestSchema,
+  getOrCreateContactForGroupMemberSchema,
+} from './schemas'
 
-export async function borrowItem(formData: FormData) {
-    const supabase = await createClient()
-    const itemId = formData.get('itemId') as string
-    const groupId = formData.get('groupId') as string
-    const startDate = formData.get('startDate') as string
-    const dueDate = formData.get('dueDate') as string
-    const borrowerName = formData.get('borrowerName') as string // Optional if external
-    // For MVP, we assume the logged-in user is the borrower if they are borrowing it themselves.
-    // But the spec says "Mark item as borrowed: borrower (member of group or free-form name)".
-    // So we need to handle "I am borrowing" vs "Someone else is borrowing".
-    // For simplicity, let's assume the logged-in user is marking it.
-    // If they are the owner, they are lending it to someone.
-    // If they are NOT the owner, they are borrowing it (requesting? or just taking?).
-    // Spec says: "As a member, I can mark an item as borrowed by someone".
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: 'Not authenticated' }
-
+export const borrowItem = authActionClient
+  .inputSchema(borrowItemSchema)
+  .action(async ({ parsedInput: { itemId, groupId, startDate, dueDate, borrowerName }, ctx: { user, supabase } }) => {
     // Fetch item to check owner
     const { data: item } = await supabase.from('items').select('owner_user_id').eq('id', itemId).single()
 
@@ -31,13 +26,10 @@ export async function borrowItem(formData: FormData) {
 
     if (lenderId === user.id) {
         // I am the owner, I am lending it to someone
-        // borrowerId could be selected from a list (not implemented yet) or null (external)
-        // For MVP, let's just use borrowerName for external, or if we had a user picker...
-        // Let's stick to borrowerName for simplicity if not self.
     } else {
         // I am borrowing it
         borrowerId = user.id
-        lenderId = item?.owner_user_id // The owner is the lender
+        lenderId = item?.owner_user_id
     }
 
     // Insert Borrow Record
@@ -54,7 +46,7 @@ export async function borrowItem(formData: FormData) {
             status: 'borrowed',
         })
 
-    if (borrowError) return { error: borrowError.message }
+    if (borrowError) throw new Error(borrowError.message)
 
     // Update Item Status
     const { error: itemError } = await supabase
@@ -62,21 +54,18 @@ export async function borrowItem(formData: FormData) {
         .update({ status: 'unavailable' })
         .eq('id', itemId)
 
-    if (itemError) return { error: itemError.message }
+    if (itemError) throw new Error(itemError.message)
 
     if (groupId) {
         revalidatePath(`/groups/${groupId}`)
     }
     revalidatePath(`/items/${itemId}`)
     redirect(`/groups/${groupId}`)
-}
+  })
 
-export async function returnItem(recordId: string, itemId: string, groupId: string) {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: 'Not authenticated' }
-
+export const returnItem = authActionClient
+  .inputSchema(returnItemSchema)
+  .action(async ({ parsedInput: { recordId, itemId, groupId }, ctx: { user, supabase } }) => {
     // Update Borrow Record
     const { error: borrowError } = await supabase
         .from('borrow_records')
@@ -86,7 +75,7 @@ export async function returnItem(recordId: string, itemId: string, groupId: stri
         })
         .eq('id', recordId)
 
-    if (borrowError) return { error: borrowError.message }
+    if (borrowError) throw new Error(borrowError.message)
 
     // Update Item Status
     const { error: itemError } = await supabase
@@ -94,14 +83,14 @@ export async function returnItem(recordId: string, itemId: string, groupId: stri
         .update({ status: 'available' })
         .eq('id', itemId)
 
-    if (itemError) return { error: itemError.message }
+    if (itemError) throw new Error(itemError.message)
 
     if (groupId) {
         revalidatePath(`/groups/${groupId}`)
     }
     revalidatePath(`/items/${itemId}`)
     revalidatePath('/dashboard')
-}
+  })
 
 export async function getActiveBorrows() {
     const supabase = await createClient()
@@ -155,14 +144,9 @@ export async function getActiveBorrows() {
 
 // Contact-centric lending functions (new, per CLAUDE.md)
 
-export async function batchLendToContact(itemIds: string[], contactId: string, dueDate?: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const batchLendToContact = authActionClient
+  .inputSchema(batchLendToContactSchema)
+  .action(async ({ parsedInput: { itemIds, contactId, dueDate }, ctx: { user, supabase } }) => {
     // Verify contact ownership
     const { data: contact, error: contactError } = await supabase
         .from('contacts')
@@ -171,7 +155,7 @@ export async function batchLendToContact(itemIds: string[], contactId: string, d
         .single()
 
     if (contactError || !contact || contact.owner_user_id !== user.id) {
-        return { error: 'Contact not found or unauthorized' }
+        throw new Error('Contact not found or unauthorized')
     }
 
     // Verify all items are owned by user
@@ -181,11 +165,11 @@ export async function batchLendToContact(itemIds: string[], contactId: string, d
         .in('id', itemIds)
 
     if (itemsError || !items || items.length !== itemIds.length) {
-        return { error: 'Some items not found' }
+        throw new Error('Some items not found')
     }
 
     if (items.some(item => item.status === 'unavailable')) {
-        return { error: 'Some items are already unavailable' }
+        throw new Error('Some items are already unavailable')
     }
 
     // Create borrow records for each item
@@ -205,7 +189,7 @@ export async function batchLendToContact(itemIds: string[], contactId: string, d
         .select()
 
     if (insertError) {
-        return { error: insertError.message }
+        throw new Error(insertError.message)
     }
 
     // Update item statuses to unavailable
@@ -215,23 +199,18 @@ export async function batchLendToContact(itemIds: string[], contactId: string, d
         .in('id', itemIds)
 
     if (updateError) {
-        return { error: updateError.message }
+        throw new Error(updateError.message)
     }
 
     revalidatePath('/dashboard')
     revalidatePath('/items')
 
     return { data: records }
-}
+  })
 
-export async function getOrCreateContactForGroupMember(groupMemberId: string, memberName?: string, memberEmail?: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const getOrCreateContactForGroupMember = authActionClient
+  .inputSchema(getOrCreateContactForGroupMemberSchema)
+  .action(async ({ parsedInput: { groupMemberId, memberName, memberEmail }, ctx: { user, supabase } }) => {
     // Check if a contact already exists linking this user to the group member
     const { data: existingContact } = await supabase
         .from('contacts')
@@ -272,11 +251,11 @@ export async function getOrCreateContactForGroupMember(groupMemberId: string, me
         .single()
 
     if (error) {
-        return { error: error.message }
+        throw new Error(error.message)
     }
 
     return { data: newContact }
-}
+  })
 
 export async function getActiveBorrowsGroupedByContact() {
     const supabase = await createClient()
@@ -361,14 +340,9 @@ export async function getActiveBorrowsGroupedByContact() {
     return result
 }
 
-export async function createBorrowRequest(itemId: string, contactId: string, dueDate?: string, message?: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const createBorrowRequest = authActionClient
+  .inputSchema(createBorrowRequestSchema)
+  .action(async ({ parsedInput: { itemId, contactId, dueDate, message }, ctx: { user, supabase } }) => {
     // Verify contact ownership and get linked_user_id
     const { data: contact, error: contactError } = await supabase
         .from('contacts')
@@ -377,11 +351,11 @@ export async function createBorrowRequest(itemId: string, contactId: string, due
         .single()
 
     if (contactError || !contact || contact.owner_user_id !== user.id) {
-        return { error: 'Contact not found or unauthorized' }
+        throw new Error('Contact not found or unauthorized')
     }
 
     if (!contact.linked_user_id) {
-        return { error: 'Contact is not linked to a user' }
+        throw new Error('Contact is not linked to a user')
     }
 
     // Verify item exists and is owned by the linked user
@@ -392,11 +366,11 @@ export async function createBorrowRequest(itemId: string, contactId: string, due
         .single()
 
     if (itemError || !item || item.owner_user_id !== contact.linked_user_id) {
-        return { error: 'Item not found or not owned by contact' }
+        throw new Error('Item not found or not owned by contact')
     }
 
     if (item.status === 'unavailable') {
-        return { error: 'Item is currently unavailable' }
+        throw new Error('Item is currently unavailable')
     }
 
     // Get requester's name for notification
@@ -421,7 +395,7 @@ export async function createBorrowRequest(itemId: string, contactId: string, due
         .single()
 
     if (requestError) {
-        return { error: requestError.message }
+        throw new Error(requestError.message)
     }
 
     // Create notification for item owner
@@ -450,16 +424,11 @@ export async function createBorrowRequest(itemId: string, contactId: string, due
     revalidatePath(`/contacts/${contactId}`)
 
     return { data: request }
-}
+  })
 
-export async function acceptBorrowRequest(requestId: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const acceptBorrowRequest = authActionClient
+  .inputSchema(acceptBorrowRequestSchema)
+  .action(async ({ parsedInput: { requestId }, ctx: { user, supabase } }) => {
     // Fetch the borrow request (without joins to avoid RLS recursion)
     const { data: request, error: requestError } = await supabase
         .from('borrow_requests')
@@ -468,17 +437,17 @@ export async function acceptBorrowRequest(requestId: string) {
         .single()
 
     if (requestError || !request) {
-        return { error: 'Borrow request not found' }
+        throw new Error('Borrow request not found')
     }
 
     // Verify user is the owner
     if (request.owner_user_id !== user.id) {
-        return { error: 'Unauthorized - you are not the item owner' }
+        throw new Error('Unauthorized - you are not the item owner')
     }
 
     // Verify request is still pending
     if (request.status !== 'pending') {
-        return { error: `Request is already ${request.status}` }
+        throw new Error(`Request is already ${request.status}`)
     }
 
     // Fetch item separately to avoid circular RLS dependencies
@@ -489,12 +458,12 @@ export async function acceptBorrowRequest(requestId: string) {
         .single()
 
     if (itemError || !item) {
-        return { error: 'Item not found' }
+        throw new Error('Item not found')
     }
 
     // Verify item is still available
     if (item.status === 'unavailable') {
-        return { error: 'Item is no longer available' }
+        throw new Error('Item is no longer available')
     }
 
     // Fetch requester separately to avoid circular RLS dependencies
@@ -505,7 +474,7 @@ export async function acceptBorrowRequest(requestId: string) {
         .single()
 
     if (requesterError || !requester) {
-        return { error: 'Requester not found' }
+        throw new Error('Requester not found')
     }
 
     // Update request status to accepted
@@ -518,7 +487,7 @@ export async function acceptBorrowRequest(requestId: string) {
         .eq('id', requestId)
 
     if (updateRequestError) {
-        return { error: updateRequestError.message }
+        throw new Error(updateRequestError.message)
     }
 
     // Find or create contact for the requester (from owner's perspective)
@@ -566,7 +535,7 @@ export async function acceptBorrowRequest(requestId: string) {
             .single()
 
         if (contactError || !newContact) {
-            return { error: 'Failed to create contact for requester' }
+            throw new Error('Failed to create contact for requester')
         }
 
         contactId = newContact.id
@@ -588,7 +557,7 @@ export async function acceptBorrowRequest(requestId: string) {
         .single()
 
     if (borrowError) {
-        return { error: borrowError.message }
+        throw new Error(borrowError.message)
     }
 
     // Mark item as unavailable
@@ -598,7 +567,7 @@ export async function acceptBorrowRequest(requestId: string) {
         .eq('id', request.item_id)
 
     if (updateItemError) {
-        return { error: updateItemError.message }
+        throw new Error(updateItemError.message)
     }
 
     // Create notification for requester
@@ -626,16 +595,11 @@ export async function acceptBorrowRequest(requestId: string) {
     revalidatePath('/requests')
 
     return { data: borrowRecord }
-}
+  })
 
-export async function rejectBorrowRequest(requestId: string, rejectionMessage?: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
-    }
-
+export const rejectBorrowRequest = authActionClient
+  .inputSchema(rejectBorrowRequestSchema)
+  .action(async ({ parsedInput: { requestId, rejectionMessage }, ctx: { user, supabase } }) => {
     // Fetch the borrow request (without joins to avoid RLS recursion)
     const { data: request, error: requestError } = await supabase
         .from('borrow_requests')
@@ -644,17 +608,17 @@ export async function rejectBorrowRequest(requestId: string, rejectionMessage?: 
         .single()
 
     if (requestError || !request) {
-        return { error: 'Borrow request not found' }
+        throw new Error('Borrow request not found')
     }
 
     // Verify user is the owner
     if (request.owner_user_id !== user.id) {
-        return { error: 'Unauthorized - you are not the item owner' }
+        throw new Error('Unauthorized - you are not the item owner')
     }
 
     // Verify request is still pending
     if (request.status !== 'pending') {
-        return { error: `Request is already ${request.status}` }
+        throw new Error(`Request is already ${request.status}`)
     }
 
     // Fetch item separately to avoid circular RLS dependencies
@@ -665,7 +629,7 @@ export async function rejectBorrowRequest(requestId: string, rejectionMessage?: 
         .single()
 
     if (itemError || !item) {
-        return { error: 'Item not found' }
+        throw new Error('Item not found')
     }
 
     // Update request status to rejected
@@ -678,7 +642,7 @@ export async function rejectBorrowRequest(requestId: string, rejectionMessage?: 
         .eq('id', requestId)
 
     if (updateRequestError) {
-        return { error: updateRequestError.message }
+        throw new Error(updateRequestError.message)
     }
 
     // Create notification for requester
@@ -705,4 +669,4 @@ export async function rejectBorrowRequest(requestId: string, rejectionMessage?: 
     revalidatePath('/requests')
 
     return { success: true }
-}
+  })
