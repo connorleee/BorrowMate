@@ -42,10 +42,12 @@ Plans:
   1. Submitting a form with missing or malformed fields returns a descriptive validation error (not a database error or silent failure)
   2. Every mutation server action rejects invalid input types (e.g., string where number expected, missing required fields) before reaching Supabase
   3. A shared auth middleware pattern automatically rejects unauthenticated calls to all protected actions
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 02-01: TBD
+- [ ] 02-01-PLAN.md -- Install Zod + next-safe-action, create action client with auth middleware, define all Zod schemas
+- [ ] 02-02-PLAN.md -- Migrate auth/items/contacts actions and update client components
+- [ ] 02-03-PLAN.md -- Migrate borrow/groups/notifications actions and update remaining client components
 
 ### Phase 3: Design System Foundation
 **Goal**: A complete set of primitive UI components exists that enforces visual consistency by default
@@ -98,7 +100,7 @@ Note: Phases 2 and 3 touch independent files and could be interleaved if desired
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Critical Security Fixes | 0/2 | Complete    | 2026-02-23 |
-| 2. Input Validation | 0/? | Not started | - |
+| 2. Input Validation | 0/3 | Not started | - |
 | 3. Design System Foundation | 0/? | Not started | - |
 | 4. RLS Audit & Hardening | 0/? | Not started | - |
 | 5. UI Migration & Production Polish | 0/? | Not started | - |
