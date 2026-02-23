@@ -34,7 +34,9 @@ export default async function UserProfilePage({ params }: { params: { id: string
                 <div className="flex items-start justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-text-primary mb-2">{profile.name}</h1>
-                        <p className="text-text-secondary">{profile.email}</p>
+                        {'email' in profile && profile.email && (
+                            <p className="text-text-secondary">{profile.email}</p>
+                        )}
                     </div>
 
                     {!isOwnProfile && (

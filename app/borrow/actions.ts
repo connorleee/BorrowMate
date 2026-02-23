@@ -229,13 +229,13 @@ export const getOrCreateContactForGroupMember = authActionClient
 
     if (!contactName) {
         const { data: member } = await supabase
-            .from('users')
-            .select('name, email')
+            .from('user_profiles')
+            .select('name')
             .eq('id', groupMemberId)
             .single()
 
         contactName = member?.name || 'Unknown'
-        contactEmail = member?.email
+        contactEmail = undefined
     }
 
     // Create new contact
@@ -466,10 +466,10 @@ export const acceptBorrowRequest = authActionClient
         throw new Error('Item is no longer available')
     }
 
-    // Fetch requester separately to avoid circular RLS dependencies
+    // Fetch requester via user_profiles view (does not expose email/phone)
     const { data: requester, error: requesterError } = await supabase
-        .from('users')
-        .select('id, name, email')
+        .from('user_profiles')
+        .select('id, name')
         .eq('id', request.requester_user_id)
         .single()
 
@@ -501,26 +501,8 @@ export const acceptBorrowRequest = authActionClient
 
     let contactId = linkedContact?.id
 
-    // If not found by linked_user_id, check by email (to avoid duplicates)
-    if (!contactId && requester.email) {
-        const { data: emailContact } = await supabase
-            .from('contacts')
-            .select('id, linked_user_id')
-            .eq('owner_user_id', user.id)
-            .eq('email', requester.email)
-            .single()
-
-        if (emailContact) {
-            contactId = emailContact.id
-            // If contact exists but isn't linked yet, link it now
-            if (!emailContact.linked_user_id) {
-                await supabase
-                    .from('contacts')
-                    .update({ linked_user_id: request.requester_user_id })
-                    .eq('id', emailContact.id)
-            }
-        }
-    }
+    // Email-based contact dedup removed: user_profiles view does not expose email (PII protection).
+    // Contact dedup relies on linked_user_id lookup above.
 
     // Only create new contact if no existing match found
     if (!contactId) {

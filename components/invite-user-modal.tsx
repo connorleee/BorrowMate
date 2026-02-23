@@ -6,7 +6,6 @@ import { searchUsers, addMembers } from '@/app/groups/actions'
 interface User {
     id: string
     name: string
-    email: string
 }
 
 interface InviteUserModalProps {
@@ -80,7 +79,7 @@ export default function InviteUserModal({ groupId, isOpen, onClose }: InviteUser
                 <div className="mb-4">
                     <input
                         type="text"
-                        placeholder="Search by name or email..."
+                        placeholder="Search by name..."
                         className="w-full p-2 border rounded-md"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
@@ -113,7 +112,6 @@ export default function InviteUserModal({ groupId, isOpen, onClose }: InviteUser
                                     />
                                     <div>
                                         <div className="font-medium">{user.name}</div>
-                                        <div className="text-xs text-gray-500">{user.email}</div>
                                     </div>
                                 </div>
                             ))}

@@ -269,9 +269,9 @@ export async function searchUsers(query: string) {
     }
 
     const { data, error } = await supabase
-        .from('users')
-        .select('id, name, email')
-        .or(`name.ilike.%${query}%,email.ilike.%${query}%`)
+        .from('user_profiles')
+        .select('id, name')
+        .ilike('name', `%${query}%`)
         .limit(10)
 
     if (error) {

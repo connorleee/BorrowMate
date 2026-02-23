@@ -14,13 +14,28 @@ import { revalidatePath } from 'next/cache'
 
 /**
  * Get user profile by ID
+ * Returns full profile (with email) for own profile, limited profile (id + name only) for others
  */
 export async function getUserProfile(userId: string) {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
+    if (user && user.id === userId) {
+        // Own profile: query users table directly (RLS allows own row)
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single()
+
+        if (error) return null
+        return data
+    }
+
+    // Other user: query user_profiles view (id + name only, no email/phone)
     const { data, error } = await supabase
-        .from('users')
-        .select('*')
+        .from('user_profiles')
+        .select('id, name')
         .eq('id', userId)
         .single()
 
