@@ -20,7 +20,7 @@
 ### RLS & Hardening
 
 - [x] **RLS-01**: All RLS policies across 37 migrations audited and documented in single effective-state document
-- [ ] **RLS-02**: Users table SELECT policy tightened to not expose email/phone to all authenticated users
+- [x] **RLS-02**: Users table SELECT policy tightened to not expose email/phone to all authenticated users
 - [x] **RLS-03**: Security headers added (Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy)
 
 ### Design System
@@ -89,7 +89,7 @@
 | DSN-06 | Phase 3 | Complete |
 | DSN-07 | Phase 3 | Complete |
 | RLS-01 | Phase 4 | Complete |
-| RLS-02 | Phase 4 | Pending |
+| RLS-02 | Phase 4 | Complete |
 | RLS-03 | Phase 4 | Complete |
 | UIM-01 | Phase 5 | Pending |
 | UIM-02 | Phase 5 | Pending |

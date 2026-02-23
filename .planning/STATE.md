@@ -9,17 +9,17 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 4 of 5 (RLS Audit & Hardening)
-Plan: 1 of 2 in current phase
-Status: Executing Phase 4
-Last activity: 2026-02-23 -- Completed 04-01-PLAN.md
+Phase: 4 of 5 (RLS Audit & Hardening) -- COMPLETE
+Plan: 2 of 2 in current phase (all plans complete)
+Status: Phase 4 Complete
+Last activity: 2026-02-23 -- Completed 04-02-PLAN.md
 
-Progress: [████████░░] 80%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: 4min
 - Total execution time: 0.5 hours
 
@@ -30,10 +30,10 @@ Progress: [████████░░] 80%
 | 01-critical-security-fixes | 2 | 7min | 3.5min |
 | 02-input-validation | 3 | 13min | 4.3min |
 | 03-design-system-foundation | 2 | 4min | 2min |
-| 04-rls-audit-hardening | 1 | 3min | 3min |
+| 04-rls-audit-hardening | 2 | 8min | 4min |
 
 **Recent Trend:**
-- Last 5 plans: 02-03 (5min), 03-01 (2min), 03-02 (2min), 04-01 (3min)
+- Last 5 plans: 03-01 (2min), 03-02 (2min), 04-01 (3min), 04-02 (5min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -65,6 +65,10 @@ Recent decisions affecting current work:
 - 04-01: Static CSP with unsafe-inline instead of nonce-based CSP (avoids forcing dynamic rendering on all pages)
 - 04-01: Conditional unsafe-eval only in development mode for Next.js HMR support
 - 04-01: frame-ancestors 'none' in CSP plus X-Frame-Options DENY for legacy browser fallback
+- 04-02: user_profiles view over SECURITY DEFINER function for cross-user lookups (simpler, standard SQL)
+- 04-02: searchUsers searches by name only, not email (email is PII)
+- 04-02: Email-based contact dedup removed in acceptBorrowRequest; linked_user_id dedup is sufficient
+- 04-02: getUserProfile returns full profile for self, limited (id + name) for others
 
 ### Pending Todos
 
@@ -78,5 +82,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 04-01-PLAN.md
+Stopped at: Completed 04-02-PLAN.md (Phase 4 complete)
 Resume file: None
