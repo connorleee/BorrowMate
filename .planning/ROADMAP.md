@@ -104,5 +104,5 @@ Note: Phases 2 and 3 touch independent files and could be interleaved if desired
 | 1. Critical Security Fixes | 0/2 | Complete    | 2026-02-23 |
 | 2. Input Validation | 1/3 | In Progress | - |
 | 3. Design System Foundation | 0/2 | Complete    | 2026-02-23 |
-| 4. RLS Audit & Hardening | 0/2 | Not started | - |
+| 4. RLS Audit & Hardening | 0/2 | Planned | - |
 | 5. UI Migration & Production Polish | 0/? | Not started | - |
