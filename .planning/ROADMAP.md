@@ -72,10 +72,11 @@ Plans:
   1. A single audit document describes the effective RLS policy state for every table (consolidated from 37 migrations)
   2. An authenticated user querying the users table cannot see other users' email addresses or phone numbers
   3. Response headers include Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, and Referrer-Policy on every page load
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 04-01: TBD
+- [ ] 04-01-PLAN.md -- Create RLS audit document and add security headers to next.config.ts
+- [ ] 04-02-PLAN.md -- Fix users table RLS policy, create user_profiles view, update server actions
 
 ### Phase 5: UI Migration & Production Polish
 **Goal**: Every page uses the design system primitives, dark mode works everywhere, and users get clear feedback on all actions
@@ -103,5 +104,5 @@ Note: Phases 2 and 3 touch independent files and could be interleaved if desired
 | 1. Critical Security Fixes | 0/2 | Complete    | 2026-02-23 |
 | 2. Input Validation | 1/3 | In Progress | - |
 | 3. Design System Foundation | 0/2 | Complete    | 2026-02-23 |
-| 4. RLS Audit & Hardening | 0/? | Not started | - |
+| 4. RLS Audit & Hardening | 0/2 | Not started | - |
 | 5. UI Migration & Production Polish | 0/? | Not started | - |
