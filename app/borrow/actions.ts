@@ -74,6 +74,9 @@ export async function borrowItem(formData: FormData) {
 export async function returnItem(recordId: string, itemId: string, groupId: string) {
     const supabase = await createClient()
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Not authenticated' }
+
     // Update Borrow Record
     const { error: borrowError } = await supabase
         .from('borrow_records')
