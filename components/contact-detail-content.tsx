@@ -97,9 +97,9 @@ export default function ContactDetailContent({
     setFeedback(null)
 
     try {
-      const result = await returnItem(record.id, record.item.id, '')
-      if (result?.error) {
-        setFeedback({ type: 'error', text: result.error })
+      const result = await returnItem({ recordId: record.id, itemId: record.item.id, groupId: '' })
+      if (result?.serverError) {
+        setFeedback({ type: 'error', text: result.serverError })
       } else {
         setFeedback({ type: 'success', text: `${record.item.name} marked as returned` })
         router.refresh()
@@ -117,9 +117,9 @@ export default function ContactDetailContent({
     setFeedback(null)
 
     try {
-      const result = await batchLendToContact(itemIds, contact.id, dueDate)
-      if (result.error) {
-        setFeedback({ type: 'error', text: result.error })
+      const result = await batchLendToContact({ itemIds, contactId: contact.id, dueDate })
+      if (result?.serverError) {
+        setFeedback({ type: 'error', text: result.serverError })
       } else {
         setFeedback({ type: 'success', text: `Lent ${itemIds.length} item${itemIds.length !== 1 ? 's' : ''} to ${contact.name}` })
         setIsLendModalOpen(false)
@@ -138,9 +138,9 @@ export default function ContactDetailContent({
     setFeedback(null)
 
     try {
-      const result = await createBorrowRequest(itemId, contact.id, dueDate, message)
-      if (result.error) {
-        setFeedback({ type: 'error', text: result.error })
+      const result = await createBorrowRequest({ itemId, contactId: contact.id, dueDate, message })
+      if (result?.serverError) {
+        setFeedback({ type: 'error', text: result.serverError })
       } else {
         setFeedback({ type: 'success', text: `Request sent! Waiting for ${contact.name} to accept your request for ${selectedItemForBorrow?.name}` })
         setIsBorrowModalOpen(false)

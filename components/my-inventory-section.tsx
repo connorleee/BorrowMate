@@ -60,17 +60,17 @@ export default function MyInventorySection({ items }: MyInventorySectionProps) {
 
   const handleLendItems = async (contactId: string, dueDate?: string) => {
     try {
-      const result = await batchLendToContact(Array.from(selectedItems), contactId, dueDate)
+      const result = await batchLendToContact({ itemIds: Array.from(selectedItems), contactId, dueDate })
 
-      if (result.error) {
+      if (result?.serverError) {
         setFeedbackMessage({
           type: 'error',
-          text: result.error
+          text: result.serverError
         })
         return
       }
 
-      const itemCount = result.data?.length || selectedItems.size
+      const itemCount = result?.data?.data?.length || selectedItems.size
       const successText = `Successfully lent ${itemCount} item${itemCount !== 1 ? 's' : ''}`
 
       setFeedbackMessage({

@@ -24,8 +24,8 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
     e.stopPropagation()
     setIsDismissing(true)
 
-    const result = await dismissNotification(notification.id)
-    if (!result.error) {
+    const result = await dismissNotification({ notificationId: notification.id })
+    if (!result?.serverError) {
       onDismiss(notification.id)
     }
     setIsDismissing(false)
@@ -38,7 +38,7 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
 
       // Mark as read if unread
       if (notification.status === 'unread') {
-        await markNotificationAsRead(notification.id)
+        await markNotificationAsRead({ notificationId: notification.id })
         onRead(notification.id)
       }
       return
@@ -46,7 +46,7 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
 
     // For other notifications, navigate as before
     if (notification.status === 'unread') {
-      await markNotificationAsRead(notification.id)
+      await markNotificationAsRead({ notificationId: notification.id })
       onRead(notification.id)
     }
 
@@ -62,9 +62,9 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
     setFeedback(null)
 
     try {
-      const result = await acceptBorrowRequest(notification.related_request_id)
-      if (result.error) {
-        setFeedback({ type: 'error', text: result.error })
+      const result = await acceptBorrowRequest({ requestId: notification.related_request_id })
+      if (result?.serverError) {
+        setFeedback({ type: 'error', text: result.serverError })
       } else {
         setFeedback({ type: 'success', text: 'Request accepted!' })
         router.refresh()
@@ -85,9 +85,9 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
     setFeedback(null)
 
     try {
-      const result = await rejectBorrowRequest(notification.related_request_id)
-      if (result.error) {
-        setFeedback({ type: 'error', text: result.error })
+      const result = await rejectBorrowRequest({ requestId: notification.related_request_id })
+      if (result?.serverError) {
+        setFeedback({ type: 'error', text: result.serverError })
       } else {
         setFeedback({ type: 'success', text: 'Request declined' })
         router.refresh()

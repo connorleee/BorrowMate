@@ -80,7 +80,7 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
     setError(null)
 
     try {
-      await returnItem(data.activeBorrow.id, itemId, data.item.group_id || '')
+      await returnItem({ recordId: data.activeBorrow.id, itemId, groupId: data.item.group_id || '' })
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to return item')

@@ -33,13 +33,13 @@ export default async function JoinGroupPage({ params }: { params: Promise<{ invi
 
     async function handleJoin() {
         'use server'
-        const joinResult = await joinGroupByInviteCode(inviteCode)
-        if ('error' in joinResult) {
+        const joinResult = await joinGroupByInviteCode({ inviteCode })
+        if (joinResult?.serverError) {
             // In a real app, we'd show this error to the user
             return
         }
-        if (joinResult.groupId) {
-            redirect(`/groups/${joinResult.groupId}`)
+        if (joinResult?.data?.groupId) {
+            redirect(`/groups/${joinResult.data.groupId}`)
         }
     }
 

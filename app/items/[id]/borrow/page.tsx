@@ -17,13 +17,14 @@ export default function BorrowItemPage({ params }: { params: Promise<{ id: strin
 
     async function handleSubmit(formData: FormData) {
         setLoading(true)
-        formData.append('itemId', itemId)
-        formData.append('groupId', item.group_id)
+        const startDate = formData.get('startDate') as string
+        const dueDate = (formData.get('dueDate') as string) || undefined
+        const borrowerName = (formData.get('borrowerName') as string) || undefined
 
-        const result = await borrowItem(formData)
+        const result = await borrowItem({ itemId, groupId: item.group_id, startDate, dueDate, borrowerName })
 
-        if (result?.error) {
-            alert(result.error)
+        if (result?.serverError) {
+            alert(result.serverError)
             setLoading(false)
         }
         // Redirect handled in action

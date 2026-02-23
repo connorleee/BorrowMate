@@ -37,9 +37,9 @@ export default function BorrowRequestCard({ request, onActionComplete }: BorrowR
     setFeedback(null)
 
     try {
-      const result = await acceptBorrowRequest(request.id)
-      if (result.error) {
-        setFeedback({ type: 'error', text: result.error })
+      const result = await acceptBorrowRequest({ requestId: request.id })
+      if (result?.serverError) {
+        setFeedback({ type: 'error', text: result.serverError })
       } else {
         setFeedback({ type: 'success', text: `Request accepted! ${request.item.name} is now lent to ${request.requester.name}` })
         router.refresh()
@@ -59,9 +59,9 @@ export default function BorrowRequestCard({ request, onActionComplete }: BorrowR
     setFeedback(null)
 
     try {
-      const result = await rejectBorrowRequest(request.id)
-      if (result.error) {
-        setFeedback({ type: 'error', text: result.error })
+      const result = await rejectBorrowRequest({ requestId: request.id })
+      if (result?.serverError) {
+        setFeedback({ type: 'error', text: result.serverError })
       } else {
         setFeedback({ type: 'success', text: 'Request declined' })
         router.refresh()

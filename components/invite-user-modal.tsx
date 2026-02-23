@@ -52,10 +52,10 @@ export default function InviteUserModal({ groupId, isOpen, onClose }: InviteUser
         setIsSubmitting(true)
         setError(null)
 
-        const result = await addMembers(groupId, selectedUsers.map(u => u.id))
+        const result = await addMembers({ groupId, userIds: selectedUsers.map(u => u.id) })
 
-        if (result.error) {
-            setError(result.error)
+        if (result?.serverError) {
+            setError(result.serverError)
         } else {
             onClose()
             setQuery('')
