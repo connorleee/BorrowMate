@@ -9,29 +9,29 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 2 of 5 (Input Validation)
-Plan: 2 of 3 in current phase
-Status: Executing Phase 2
-Last activity: 2026-02-23 -- Completed 02-02-PLAN.md
+Phase: 2 of 5 (Input Validation) -- COMPLETE
+Plan: 3 of 3 in current phase
+Status: Phase 2 Complete
+Last activity: 2026-02-23 -- Completed 02-03-PLAN.md
 
-Progress: [████░░░░░░] 40%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: 4min
-- Total execution time: 0.25 hours
+- Total execution time: 0.3 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-critical-security-fixes | 2 | 7min | 3.5min |
-| 02-input-validation | 2 | 8min | 4min |
+| 02-input-validation | 3 | 13min | 4.3min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (1min), 01-02 (6min), 02-01 (2min), 02-02 (6min)
+- Last 5 plans: 01-02 (6min), 02-01 (2min), 02-02 (6min), 02-03 (5min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -51,6 +51,9 @@ Recent decisions affecting current work:
 - 02-01: No console.error in handleServerError -- per Phase 1 decision, errors propagated via return values only
 - 02-02: logout uses authActionClient with no inputSchema -- requires wrapper for form action usage
 - 02-02: Query actions intentionally left as plain server actions, not migrated
+- 02-03: Query actions left as plain server functions -- only mutations use next-safe-action
+- 02-03: markAllNotificationsAsRead/dismissAllNotifications use authActionClient with no inputSchema
+- 02-03: joinGroupByInviteCode return simplified from { success, groupId } to { groupId }
 
 ### Pending Todos
 
@@ -64,5 +67,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 02-02-PLAN.md
+Stopped at: Completed 02-03-PLAN.md (Phase 2 Complete)
 Resume file: None
