@@ -46,15 +46,15 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    if (
-        !user &&
-        !request.nextUrl.pathname.startsWith('/auth') &&
-        !request.nextUrl.pathname.startsWith('/') // Landing page is public? Maybe. Let's assume / is public, but dashboard is private.
-        // Actually, let's make / redirect to dashboard if logged in, or stay public.
-        // But for now, protect everything else.
-        && request.nextUrl.pathname !== '/'
-    ) {
-        // no user, potentially respond by redirecting the user to the login page
+    const publicRoutes = ['/auth', '/about']
+    const isPublicRoute =
+        request.nextUrl.pathname === '/' ||
+        publicRoutes.some(
+            route => request.nextUrl.pathname === route ||
+                     request.nextUrl.pathname.startsWith(route + '/')
+        )
+
+    if (!user && !isPublicRoute) {
         const url = request.nextUrl.clone()
         url.pathname = '/auth'
         return NextResponse.redirect(url)
