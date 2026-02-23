@@ -18,11 +18,6 @@ export async function getNotifications(limit = 50) {
         .from('notifications')
         .select(`
             *,
-            sender:users!notifications_sender_user_id_fkey (
-                id,
-                name,
-                email
-            ),
             sender_contact:contacts!notifications_sender_contact_id_fkey (
                 id,
                 name
@@ -40,11 +35,7 @@ export async function getNotifications(limit = 50) {
                 message,
                 requested_due_date,
                 created_at,
-                requester:users!borrow_requests_requester_user_id_fkey (
-                    id,
-                    name,
-                    email
-                ),
+                requester_user_id,
                 item:items (
                     id,
                     name,
@@ -62,7 +53,47 @@ export async function getNotifications(limit = 50) {
         return []
     }
 
-    return notifications || []
+    if (!notifications || notifications.length === 0) {
+        return []
+    }
+
+    // Collect unique user IDs from sender_user_id and related_request.requester_user_id
+    const userIds = [
+        ...new Set([
+            ...notifications.map((n: any) => n.sender_user_id),
+            ...notifications
+                .map((n: any) => n.related_request?.requester_user_id)
+                .filter(Boolean),
+        ].filter(Boolean))
+    ]
+
+    // Batch fetch names from user_profiles
+    let usersMap: Record<string, { id: string; name: string }> = {}
+    if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+            .from('user_profiles')
+            .select('id, name')
+            .in('id', userIds)
+        if (profiles) {
+            usersMap = Object.fromEntries(profiles.map(p => [p.id, p]))
+        }
+    }
+
+    // Attach sender and requester info
+    return notifications.map((n: any) => ({
+        ...n,
+        sender: n.sender_user_id
+            ? usersMap[n.sender_user_id] || { id: n.sender_user_id, name: 'Unknown' }
+            : null,
+        related_request: n.related_request
+            ? {
+                ...n.related_request,
+                requester: n.related_request.requester_user_id
+                    ? usersMap[n.related_request.requester_user_id] || { id: n.related_request.requester_user_id, name: 'Unknown' }
+                    : null,
+            }
+            : null,
+    }))
 }
 
 export async function getUnreadNotificationCount() {
@@ -145,11 +176,6 @@ export async function getPendingBorrowRequests() {
                 description,
                 category,
                 status
-            ),
-            requester:users!borrow_requests_requester_user_id_fkey (
-                id,
-                name,
-                email
             )
         `)
         .eq('owner_user_id', user.id)
@@ -160,7 +186,30 @@ export async function getPendingBorrowRequests() {
         return []
     }
 
-    return requests || []
+    if (!requests || requests.length === 0) {
+        return []
+    }
+
+    // Collect unique requester user IDs
+    const requesterIds = [...new Set(requests.map(r => r.requester_user_id).filter(Boolean))]
+
+    // Batch fetch names from user_profiles
+    let usersMap: Record<string, { id: string; name: string }> = {}
+    if (requesterIds.length > 0) {
+        const { data: profiles } = await supabase
+            .from('user_profiles')
+            .select('id, name')
+            .in('id', requesterIds)
+        if (profiles) {
+            usersMap = Object.fromEntries(profiles.map(p => [p.id, p]))
+        }
+    }
+
+    // Attach requester info
+    return requests.map(r => ({
+        ...r,
+        requester: usersMap[r.requester_user_id] || { id: r.requester_user_id, name: 'Unknown' }
+    }))
 }
 
 export async function getPendingRequestsForItems(itemIds: string[]) {

@@ -108,11 +108,6 @@ export async function getActiveBorrows() {
                 description,
                 status,
                 category
-            ),
-            lender:users!borrow_records_lender_user_id_fkey (
-                id,
-                name,
-                email
             )
         `)
         .eq('borrower_user_id', user.id)
@@ -129,17 +124,45 @@ export async function getActiveBorrows() {
                 description,
                 status,
                 category
-            ),
-            borrower:users!borrow_records_borrower_user_id_fkey (
-                id,
-                name,
-                email
             )
         `)
         .eq('lender_user_id', user.id)
         .eq('status', 'borrowed')
 
-    return { borrowed: borrowed || [], lent: lent || [] }
+    // Collect all unique user IDs for batch fetch
+    const userIds = [
+        ...new Set([
+            ...(borrowed || []).map(r => r.lender_user_id),
+            ...(lent || []).map(r => r.borrower_user_id),
+        ].filter(Boolean))
+    ]
+
+    // Batch fetch names from user_profiles
+    let usersMap: Record<string, { id: string; name: string }> = {}
+    if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+            .from('user_profiles')
+            .select('id, name')
+            .in('id', userIds)
+        if (profiles) {
+            usersMap = Object.fromEntries(profiles.map(p => [p.id, p]))
+        }
+    }
+
+    // Attach lender/borrower info
+    const borrowedWithUsers = (borrowed || []).map(r => ({
+        ...r,
+        lender: usersMap[r.lender_user_id] || { id: r.lender_user_id, name: 'Unknown' }
+    }))
+
+    const lentWithUsers = (lent || []).map(r => ({
+        ...r,
+        borrower: r.borrower_user_id
+            ? usersMap[r.borrower_user_id] || { id: r.borrower_user_id, name: 'Unknown' }
+            : null
+    }))
+
+    return { borrowed: borrowedWithUsers, lent: lentWithUsers }
 }
 
 // Contact-centric lending functions (new, per CLAUDE.md)

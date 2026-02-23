@@ -86,11 +86,10 @@ export async function getGroupDetails(groupId: string) {
         .from('groups')
         .select(`
             *,
-            owner:created_by(id, name, email),
             memberships:group_memberships(
                 id,
-                role,
-                user:users(id, name, email)
+                user_id,
+                role
             )
         `)
         .eq('id', groupId)
@@ -98,13 +97,41 @@ export async function getGroupDetails(groupId: string) {
 
     if (error) return null
 
+    // Collect all user IDs (owner + members) for batch fetch
+    const userIds = [
+        ...new Set([
+            data.created_by,
+            ...(data.memberships?.map((m: any) => m.user_id) || [])
+        ].filter(Boolean))
+    ]
+
+    // Batch fetch names from user_profiles view
+    let usersMap: Record<string, { id: string; name: string }> = {}
+    if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+            .from('user_profiles')
+            .select('id, name')
+            .in('id', userIds)
+        if (profiles) {
+            usersMap = Object.fromEntries(profiles.map(p => [p.id, p]))
+        }
+    }
+
+    // Attach owner and user info
+    const membershipsWithUsers = data.memberships?.map((m: any) => ({
+        ...m,
+        user: usersMap[m.user_id] || { id: m.user_id, name: 'Unknown' }
+    })) || []
+
     // Get current user's role in the group
-    const userMembership = user ? data.memberships?.find((m: any) => m.user.id === user.id) : null
+    const userMembership = user ? membershipsWithUsers.find((m: any) => m.user_id === user.id) : null
 
     return {
         ...data,
+        owner: usersMap[data.created_by] || { id: data.created_by, name: 'Unknown' },
+        memberships: membershipsWithUsers,
         userRole: userMembership?.role || null,
-        memberCount: data.memberships?.length || 0
+        memberCount: membershipsWithUsers.length
     }
 }
 
@@ -124,7 +151,7 @@ export async function getGroupByInviteCode(inviteCode: string) {
             description,
             privacy,
             created_at,
-            owner:created_by(name),
+            created_by,
             memberships:group_memberships(id)
         `)
         .eq('invite_code', inviteCode.toUpperCase())
@@ -134,12 +161,26 @@ export async function getGroupByInviteCode(inviteCode: string) {
         return { error: 'Invalid invite code' }
     }
 
+    // Fetch owner name from user_profiles
+    let ownerName = 'Unknown'
+    if (data.created_by) {
+        const { data: ownerProfile } = await supabase
+            .from('user_profiles')
+            .select('name')
+            .eq('id', data.created_by)
+            .single()
+        if (ownerProfile) {
+            ownerName = ownerProfile.name
+        }
+    }
+
     // Check if user is already a member
     const isMember = data.memberships?.some((m: any) => m.user_id === user.id)
 
     return {
         group: {
             ...data,
+            owner: { name: ownerName },
             memberCount: data.memberships?.length || 0
         },
         isMember

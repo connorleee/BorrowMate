@@ -10,12 +10,7 @@ export async function getGroupItems(groupId: string) {
 
   const { data, error } = await supabase
     .from('items')
-    .select(`
-      *,
-      users:owner_user_id (
-        name
-      )
-    `)
+    .select('*')
     .eq('group_id', groupId)
     .order('created_at', { ascending: false })
 
@@ -23,7 +18,30 @@ export async function getGroupItems(groupId: string) {
     return []
   }
 
-  return data
+  if (!data || data.length === 0) {
+    return []
+  }
+
+  // Collect unique owner user IDs
+  const ownerIds = [...new Set(data.map(item => item.owner_user_id).filter(Boolean))]
+
+  // Batch fetch names from user_profiles
+  let usersMap: Record<string, { name: string }> = {}
+  if (ownerIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('user_profiles')
+      .select('id, name')
+      .in('id', ownerIds)
+    if (profiles) {
+      usersMap = Object.fromEntries(profiles.map(p => [p.id, { name: p.name }]))
+    }
+  }
+
+  // Attach users info (preserve property name for backward compat)
+  return data.map(item => ({
+    ...item,
+    users: usersMap[item.owner_user_id] || { name: 'Unknown' }
+  }))
 }
 
 export const createItem = authActionClient
@@ -59,9 +77,6 @@ export async function getItemDetails(itemId: string) {
     .from('items')
     .select(`
       *,
-      users:owner_user_id (
-        name
-      ),
       groups (
         id,
         name
@@ -71,7 +86,21 @@ export async function getItemDetails(itemId: string) {
     .single()
 
   if (error) return null
-  return data
+
+  // Fetch owner name from user_profiles
+  let ownerInfo: { name: string } = { name: 'Unknown' }
+  if (data.owner_user_id) {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('name')
+      .eq('id', data.owner_user_id)
+      .single()
+    if (profile) {
+      ownerInfo = { name: profile.name }
+    }
+  }
+
+  return { ...data, users: ownerInfo }
 }
 
 export async function getUserItems() {
@@ -110,10 +139,7 @@ export async function getBorrowedItems() {
     .select(`
             *,
             item:items (
-                *,
-                owner:users!items_owner_user_id_fkey (
-                    name
-                )
+                *
             )
         `)
     .eq('borrower_user_id', user.id)
@@ -124,7 +150,33 @@ export async function getBorrowedItems() {
     return []
   }
 
-  return data
+  if (!data || data.length === 0) {
+    return []
+  }
+
+  // Collect unique owner user IDs from items
+  const ownerIds = [...new Set(data.map((r: any) => r.item?.owner_user_id).filter(Boolean))]
+
+  // Batch fetch names from user_profiles
+  let usersMap: Record<string, { name: string }> = {}
+  if (ownerIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('user_profiles')
+      .select('id, name')
+      .in('id', ownerIds)
+    if (profiles) {
+      usersMap = Object.fromEntries(profiles.map(p => [p.id, { name: p.name }]))
+    }
+  }
+
+  // Attach owner info to each item
+  return data.map((r: any) => ({
+    ...r,
+    item: r.item ? {
+      ...r.item,
+      owner: usersMap[r.item.owner_user_id] || { name: 'Unknown' }
+    } : r.item
+  }))
 }
 
 export const deleteItem = authActionClient
@@ -148,15 +200,11 @@ export async function getItemDetailsWithBorrow(itemId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Fetch item details with owner and group info
+  // Fetch item details with group info
   const { data: item, error: itemError } = await supabase
     .from('items')
     .select(`
       *,
-      users:owner_user_id (
-        id,
-        name
-      ),
       groups (
         id,
         name
@@ -166,6 +214,22 @@ export async function getItemDetailsWithBorrow(itemId: string) {
     .single()
 
   if (itemError || !item) return null
+
+  // Fetch owner name from user_profiles
+  let ownerInfo: { id: string; name: string } = { id: item.owner_user_id, name: 'Unknown' }
+  if (item.owner_user_id) {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('id, name')
+      .eq('id', item.owner_user_id)
+      .single()
+    if (profile) {
+      ownerInfo = profile
+    }
+  }
+
+  // Attach users info to item
+  const itemWithOwner = { ...item, users: ownerInfo }
 
   // Fetch active borrow record if item is borrowed
   let activeBorrow = null
@@ -194,7 +258,7 @@ export async function getItemDetailsWithBorrow(itemId: string) {
   }
 
   return {
-    item,
+    item: itemWithOwner,
     activeBorrow,
     contact,
     isOwner: user?.id === item.owner_user_id,
