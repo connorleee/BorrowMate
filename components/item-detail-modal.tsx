@@ -5,6 +5,10 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { getItemDetailsWithBorrow, getItemBorrowHistory, deleteItem } from '@/app/items/actions'
 import { returnItem } from '@/app/borrow/actions'
+import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/modal'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface ItemDetailModalProps {
   isOpen: boolean
@@ -89,33 +93,30 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
     }
   }
 
-  if (!isOpen) return null
-  if (typeof document === 'undefined') return null
-
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+      <div className="p-6 overflow-y-auto max-h-[85vh]">
         {/* Header */}
-        <div className="flex items-start justify-between mb-6 pb-4 border-b">
+        <div className="flex items-start justify-between mb-6 pb-4 border-b border-[var(--border)]">
           <div className="flex-1">
             {loading ? (
-              <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
+              <div className="h-8 bg-[var(--bg-elevated)] rounded w-48 animate-pulse"></div>
             ) : (
-              <h2 className="text-2xl font-bold text-gray-900">{data?.item?.name}</h2>
+              <h2 className="text-2xl font-bold text-[var(--text-primary)]">{data?.item?.name}</h2>
             )}
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+            className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] text-2xl leading-none"
             aria-label="Close"
           >
-            ✕
+            &#x2715;
           </button>
         </div>
 
         {/* Error message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+          <div className="mb-4 p-3 bg-error-100 border border-error-200 rounded text-error-800 dark:bg-error-900 dark:border-error-800 dark:text-error-200 text-sm">
             {error}
           </div>
         )}
@@ -123,59 +124,54 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
         {/* Content */}
         {loading ? (
           <div className="space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+            <div className="h-4 bg-[var(--bg-elevated)] rounded w-full animate-pulse"></div>
+            <div className="h-4 bg-[var(--bg-elevated)] rounded w-3/4 animate-pulse"></div>
           </div>
         ) : data ? (
           <div className="space-y-6">
             {/* Status Badge */}
             <div className="flex gap-2">
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${data.item.status === 'available'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-red-100 text-red-800'
-                  }`}
-              >
+              <Badge variant={data.item.status === 'available' ? 'success' : 'error'} size="md">
                 {data.item.status === 'available' ? 'Available' : 'Unavailable'}
-              </span>
+              </Badge>
               {data.item.privacy && (
-                <span className="px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
+                <Badge variant="info" size="md">
                   {data.item.privacy === 'private' ? 'Private' : 'Public'}
-                </span>
+                </Badge>
               )}
             </div>
 
             {/* Description */}
             {data.item.description && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-1">Description</h3>
-                <p className="text-gray-600">{data.item.description}</p>
+                <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-1">Description</h3>
+                <p className="text-[var(--text-secondary)]">{data.item.description}</p>
               </div>
             )}
 
             {/* Category */}
             {data.item.category && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-1">Category</h3>
-                <p className="text-gray-600">{data.item.category}</p>
+                <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-1">Category</h3>
+                <p className="text-[var(--text-secondary)]">{data.item.category}</p>
               </div>
             )}
 
             {/* Owner Info */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Owner</h3>
-              <p className="text-gray-900">{data.item.users?.name || 'Unknown'}</p>
+            <div className="bg-[var(--bg-surface)] p-4 rounded-lg">
+              <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-2">Owner</h3>
+              <p className="text-[var(--text-primary)]">{data.item.users?.name || 'Unknown'}</p>
               {data.item.groups && (
-                <p className="text-sm text-gray-600 mt-1">Group: {data.item.groups.name}</p>
+                <p className="text-sm text-[var(--text-secondary)] mt-1">Group: {data.item.groups.name}</p>
               )}
             </div>
 
             {/* Current Borrow Status */}
             {data.activeBorrow && data.contact ? (
-              <div className="bg-primary-50 p-4 rounded-lg border border-primary-200">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">Currently Borrowed By</h3>
+              <div className="bg-primary-50 dark:bg-primary-900/30 p-4 rounded-lg border border-primary-200 dark:border-primary-800">
+                <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-3">Currently Borrowed By</h3>
                 <div className="space-y-2">
-                  <p className="text-gray-900 font-medium">
+                  <p className="text-[var(--text-primary)] font-medium">
                     <Link
                       href={`/contacts/${data.contact.id}`}
                       className="text-primary-600 hover:underline"
@@ -185,13 +181,13 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
                     </Link>
                   </p>
                   {data.contact.email && (
-                    <p className="text-sm text-gray-600">Email: {data.contact.email}</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Email: {data.contact.email}</p>
                   )}
                   {data.contact.phone && (
-                    <p className="text-sm text-gray-600">Phone: {data.contact.phone}</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Phone: {data.contact.phone}</p>
                   )}
                   {data.activeBorrow.due_date && (
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-[var(--text-secondary)]">
                       Due: {new Date(data.activeBorrow.due_date).toLocaleDateString()}
                     </p>
                   )}
@@ -199,8 +195,8 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
               </div>
             ) : (
               data.item.status === 'unavailable' && (
-                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                  <p className="text-yellow-800 text-sm">This item is currently unavailable but borrow details could not be loaded.</p>
+                <div className="bg-warning-50 dark:bg-warning-900/30 p-4 rounded-lg border border-warning-200 dark:border-warning-800">
+                  <p className="text-warning-800 dark:text-warning-200 text-sm">This item is currently unavailable but borrow details could not be loaded.</p>
                 </div>
               )
             )}
@@ -209,14 +205,14 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
             <div className="grid grid-cols-2 gap-4">
               {data.item.price_usd && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-1">Price</h3>
-                  <p className="text-gray-600">${data.item.price_usd}</p>
+                  <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-1">Price</h3>
+                  <p className="text-[var(--text-secondary)]">${data.item.price_usd}</p>
                 </div>
               )}
               {data.item.qr_slug && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-1">QR Slug</h3>
-                  <p className="text-gray-600 text-sm break-all">{data.item.qr_slug}</p>
+                  <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-1">QR Slug</h3>
+                  <p className="text-[var(--text-secondary)] text-sm break-all">{data.item.qr_slug}</p>
                 </div>
               )}
             </div>
@@ -224,13 +220,13 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
             {/* Borrow History (Owner Only) */}
             {data.isOwner && history.length > 0 && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">Borrow History</h3>
+                <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-3">Borrow History</h3>
                 <div className="space-y-3 max-h-48 overflow-y-auto">
                   {history.map((record, idx) => (
-                    <div key={record.id || idx} className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <div key={record.id || idx} className="p-3 bg-[var(--bg-surface)] rounded border border-[var(--border)]">
                       <div className="flex justify-between items-start gap-2">
                         <div className="flex-1">
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-[var(--text-primary)]">
                             {record.contact?.id ? (
                               <Link
                                 href={`/contacts/${record.contact.id}`}
@@ -243,26 +239,28 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
                               record.contact?.name || 'Unknown'
                             )}
                           </p>
-                          <p className="text-xs text-gray-600 mt-1">
+                          <p className="text-xs text-[var(--text-secondary)] mt-1">
                             {new Date(record.start_date).toLocaleDateString()}
                             {record.due_date && ` - Due: ${new Date(record.due_date).toLocaleDateString()}`}
                           </p>
                           {record.returned_at && (
-                            <p className="text-xs text-gray-600">
+                            <p className="text-xs text-[var(--text-secondary)]">
                               Returned: {new Date(record.returned_at).toLocaleDateString()}
                             </p>
                           )}
                         </div>
-                        <span
-                          className={`text-xs px-2 py-1 rounded whitespace-nowrap ${record.status === 'returned'
-                            ? 'bg-success-100 text-success-800'
-                            : record.status === 'borrowed'
-                              ? 'bg-info-100 text-info-800'
-                              : 'bg-gray-100 text-gray-800'
-                            }`}
+                        <Badge
+                          variant={
+                            record.status === 'returned'
+                              ? 'success'
+                              : record.status === 'borrowed'
+                                ? 'info'
+                                : 'neutral'
+                          }
+                          size="sm"
                         >
                           {record.status}
-                        </span>
+                        </Badge>
                       </div>
                     </div>
                   ))}
@@ -273,47 +271,48 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
         ) : null}
 
         {/* Footer - Action Buttons */}
-        <div className="flex gap-3 mt-8 pt-4 border-t">
+        <div className="flex gap-3 mt-8 pt-4 border-t border-[var(--border)]">
           {data?.isOwner ? (
             <>
               {data.item.status === 'unavailable' && data.activeBorrow && (
-                <button
+                <Button
                   onClick={handleReturn}
                   disabled={isReturning}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-success-600 hover:bg-success-700"
                 >
                   {isReturning ? 'Marking...' : 'Mark as Returned'}
-                </button>
+                </Button>
               )}
-              <button
+              <Button
                 onClick={() => setShowEditModal(true)}
-                className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors"
+                className="flex-1"
               >
                 Edit Item
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
-              </button>
+              </Button>
             </>
           ) : (
             <>
               {data?.item?.status === 'available' && (
-                <button className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors">
+                <Button className="flex-1">
                   Lend This Item
-                </button>
+                </Button>
               )}
             </>
           )}
-          <button
+          <Button
+            variant="secondary"
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+            className="flex-1"
           >
             Close
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -329,8 +328,7 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
           }}
         />
       )}
-    </div>,
-    document.body
+    </Modal>
   )
 }
 
@@ -374,77 +372,69 @@ function ItemEditSubModal({ item, onClose, onSuccess }: { item: any; onClose: ()
 
   return createPortal(
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-        <h3 className="text-xl font-bold mb-4">Edit Item</h3>
+      <div className="bg-[var(--bg-base)] rounded-lg shadow-lg w-full max-w-md p-6">
+        <h3 className="text-xl font-bold mb-4 text-[var(--text-primary)]">Edit Item</h3>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+          <div className="mb-4 p-3 bg-error-100 border border-error-200 rounded text-error-800 dark:bg-error-900 dark:border-error-800 dark:text-error-200 text-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-              disabled={isSubmitting}
-            />
-          </div>
+          <Input
+            label="Name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={isSubmitting}
+          />
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+              className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--bg-base)] text-[var(--text-primary)] focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               rows={3}
               disabled={isSubmitting}
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <input
-              type="text"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-              disabled={isSubmitting}
-            />
-          </div>
+          <Input
+            label="Category"
+            type="text"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            disabled={isSubmitting}
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Price (USD)</label>
-            <input
-              type="number"
-              step="0.01"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-              disabled={isSubmitting}
-            />
-          </div>
+          <Input
+            label="Price (USD)"
+            type="number"
+            step="0.01"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            disabled={isSubmitting}
+          />
 
           <div className="flex gap-3 mt-6">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="flex-1"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1"
             >
               {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

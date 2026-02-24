@@ -33,8 +33,8 @@ export default async function ItemDetailsPage({ params }: { params: Promise<{ id
                         <span
                             className={`px-3 py-1 rounded-full text-sm font-medium ${
                                 item.status === 'available'
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-red-100 text-red-800'
+                                    ? 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200'
+                                    : 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200'
                             }`}
                         >
                             {item.status === 'available' ? 'Available' : 'Unavailable'}
@@ -169,7 +169,7 @@ export default async function ItemDetailsPage({ params }: { params: Promise<{ id
                         {item.status === 'available' ? (
                             <Link
                                 href={`/items/${item.id}/borrow`}
-                                className="block w-full text-center bg-foreground text-background py-3 rounded-lg font-medium hover:opacity-90"
+                                className="block w-full text-center bg-primary-500 text-white py-3 rounded-lg font-medium hover:bg-primary-600 transition-colors"
                             >
                                 Borrow This Item
                             </Link>

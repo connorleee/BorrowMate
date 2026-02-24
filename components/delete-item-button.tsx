@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { deleteItem } from '@/app/items/actions'
+import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/modal'
+import { Button } from '@/components/ui/button'
 
 export default function DeleteItemButton({ itemId }: { itemId: string }) {
     const [isDeleting, setIsDeleting] = useState(false)
@@ -24,47 +26,46 @@ export default function DeleteItemButton({ itemId }: { itemId: string }) {
             <button
                 onClick={() => setShowConfirm(true)}
                 disabled={isDeleting}
-                className="text-red-600 hover:text-red-800 text-sm font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
+                className="text-error-600 hover:text-error-800 text-sm font-medium px-2 py-1 rounded hover:bg-error-50 transition-colors disabled:opacity-50"
             >
                 Delete
             </button>
 
-            {showConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
-                        <div className="space-y-2">
-                            <h3 className="text-lg font-semibold text-gray-900">Delete Item</h3>
-                            <p className="text-gray-500">
-                                Are you sure you want to delete this item? This action cannot be undone.
-                            </p>
-                        </div>
-
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setShowConfirm(false)}
-                                disabled={isDeleting}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                disabled={isDeleting}
-                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors flex items-center gap-2"
-                            >
-                                {isDeleting ? (
-                                    <>
-                                        <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                        Deleting...
-                                    </>
-                                ) : (
-                                    'Delete Item'
-                                )}
-                            </button>
-                        </div>
+            <Modal isOpen={showConfirm} onClose={() => setShowConfirm(false)} size="sm">
+                <ModalBody className="p-6 space-y-4">
+                    <div className="space-y-2">
+                        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Delete Item</h3>
+                        <p className="text-[var(--text-secondary)]">
+                            Are you sure you want to delete this item? This action cannot be undone.
+                        </p>
                     </div>
-                </div>
-            )}
+                </ModalBody>
+                <ModalFooter>
+                    <div className="flex justify-end gap-3">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setShowConfirm(false)}
+                            disabled={isDeleting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? (
+                                <>
+                                    <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                    Deleting...
+                                </>
+                            ) : (
+                                'Delete Item'
+                            )}
+                        </Button>
+                    </div>
+                </ModalFooter>
+            </Modal>
         </>
     )
 }

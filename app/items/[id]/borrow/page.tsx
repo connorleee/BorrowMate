@@ -77,7 +77,7 @@ export default function BorrowItemPage({ params }: { params: Promise<{ id: strin
                     <button
                         type="submit"
                         disabled={loading}
-                        className="flex-1 bg-foreground text-background p-3 rounded font-medium disabled:opacity-50"
+                        className="flex-1 bg-primary-500 text-white p-3 rounded font-medium hover:bg-primary-600 transition-colors disabled:opacity-50"
                     >
                         {loading ? 'Confirm Borrow' : 'Confirm'}
                     </button>

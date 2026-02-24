@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import ItemDetailModal from './item-detail-modal'
 import { Card, ItemCard } from './Card'
+import { Badge } from '@/components/ui/badge'
 
 interface BorrowRecord {
   id: string
@@ -58,7 +59,7 @@ export default function DashboardContent({
         <section>
           <h2 className="text-xl font-bold mb-4">Items I'm Borrowing</h2>
           {borrowed.length === 0 ? (
-            <p className="text-gray-500">You aren't borrowing anything right now.</p>
+            <p className="text-[var(--text-tertiary)]">You aren't borrowing anything right now.</p>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {borrowed.map((record) => (
@@ -72,9 +73,9 @@ export default function DashboardContent({
                   <div className="flex flex-col h-full justify-between">
                     <div>
                       <h3 className="font-semibold text-sm truncate">{record.item?.name || 'Unknown Item'}</h3>
-                      <p className="text-xs text-gray-600 truncate">From: {record.lender?.name || 'Unknown'}</p>
+                      <p className="text-xs text-[var(--text-secondary)] truncate">From: {record.lender?.name || 'Unknown'}</p>
                     </div>
-                    <p className="text-[10px] text-gray-400 mt-2">
+                    <p className="text-[10px] text-[var(--text-tertiary)] mt-2">
                       Due: {record.due_date ? new Date(record.due_date).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' }) : 'No due date'}
                     </p>
                   </div>
@@ -93,7 +94,7 @@ export default function DashboardContent({
             </Link>
           </div>
           {lentGroupedByContact.length === 0 ? (
-            <p className="text-gray-500">You haven't lent anything out.</p>
+            <p className="text-[var(--text-tertiary)]">You haven't lent anything out.</p>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {lentGroupedByContact.flatMap(group =>
@@ -114,7 +115,7 @@ export default function DashboardContent({
                   <div className="flex flex-col h-full justify-between">
                     <div>
                       <h3 className="font-semibold text-sm truncate">{record.item?.name || 'Unknown Item'}</h3>
-                      <p className="text-xs text-gray-600 truncate">
+                      <p className="text-xs text-[var(--text-secondary)] truncate">
                         To:{' '}
                         <Link
                           href={`/contacts/${record.contactId}`}
@@ -126,13 +127,12 @@ export default function DashboardContent({
                       </p>
                     </div>
                     <div className="flex justify-between items-center mt-2">
-                      <p className="text-[10px] text-gray-400">
+                      <p className="text-[10px] text-[var(--text-tertiary)]">
                         Due: {record.due_date ? new Date(record.due_date).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' }) : 'No due date'}
                       </p>
-                      <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full flex-shrink-0 ${record.status === 'overdue' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
-                        }`}>
+                      <Badge variant={record.status === 'overdue' ? 'error' : 'info'} size="sm">
                         {record.status === 'overdue' ? 'Overdue' : 'Lent'}
-                      </span>
+                      </Badge>
                     </div>
                   </div>
                 </Card>
@@ -150,7 +150,7 @@ export default function DashboardContent({
             </Link>
           </div>
           {userItems.length === 0 ? (
-            <p className="text-gray-500">You haven't added any items yet.</p>
+            <p className="text-[var(--text-tertiary)]">You haven't added any items yet.</p>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {userItems.map((item) => (
