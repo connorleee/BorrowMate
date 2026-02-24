@@ -2,6 +2,8 @@
 
 import { ReactNode } from 'react'
 import Link from 'next/link'
+import { Card as UICard } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 
 // ============= BASE CARD COMPONENT =============
 
@@ -20,21 +22,15 @@ export function Card({
   interactive = false,
   onClick
 }: BaseCardProps) {
-  const baseStyles = 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg transition-all'
-  const padding = variant === 'compact' ? 'p-3' : 'p-4'
-  const interactiveStyles = interactive
-    ? 'cursor-pointer hover:border-primary-300 hover:shadow-md'
-    : ''
-
   return (
-    <div
-      className={`${baseStyles} ${padding} ${interactiveStyles} ${className}`}
+    <UICard
+      variant={variant}
+      interactive={interactive}
       onClick={onClick}
-      role={interactive ? 'button' : undefined}
-      tabIndex={interactive ? 0 : undefined}
+      className={className}
     >
       {children}
-    </div>
+    </UICard>
   )
 }
 
@@ -82,12 +78,12 @@ export function ItemCard({
   const cardStyles = isMultiSelectMode
     ? isSelected
       ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 dark:border-primary-500 cursor-pointer'
-      : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'
-    : 'border-gray-200 dark:border-gray-700 cursor-pointer hover:border-primary-300 dark:hover:border-primary-500 hover:shadow-md'
+      : 'border-[var(--border)] hover:bg-[var(--bg-surface)] cursor-pointer'
+    : 'border-[var(--border)] cursor-pointer hover:border-primary-300 hover:shadow-md'
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 ${padding} rounded-lg transition-colors border ${cardStyles} ${className}`}
+      className={`bg-[var(--bg-surface)] ${padding} rounded-lg transition-colors border ${cardStyles} ${className}`}
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -98,7 +94,7 @@ export function ItemCard({
             <div
               className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 mt-0.5 ${isSelected
                 ? 'bg-primary-500 border-primary-500'
-                : 'border-gray-300 bg-white'
+                : 'border-[var(--border)] bg-[var(--bg-base)]'
                 }`}
             >
               {isSelected && (
@@ -119,29 +115,23 @@ export function ItemCard({
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h3 className={`font-semibold ${titleSize} leading-snug text-gray-900 dark:text-gray-100 mb-1 truncate`}>
+            <h3 className={`font-semibold ${titleSize} leading-snug text-[var(--text-primary)] mb-1 truncate`}>
               {name}
             </h3>
             {description && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">
+              <p className="text-xs text-[var(--text-tertiary)] mb-3 line-clamp-2">
                 {description}
               </p>
             )}
             {(status || groupName) && (
               <div className="flex flex-wrap gap-1.5">
                 {groupName ? (
-                  <span className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded text-xs font-medium">
-                    {groupName}
-                  </span>
+                  <Badge variant="neutral">{groupName}</Badge>
                 ) : (
-                  <span className="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2.5 py-1 rounded border border-yellow-200 dark:border-yellow-800 text-xs font-medium">
-                    Unassigned
-                  </span>
+                  <Badge variant="warning">Unassigned</Badge>
                 )}
                 {status === 'unavailable' && (
-                  <span className="px-2.5 py-1 rounded bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 text-xs font-medium">
-                    Unavailable
-                  </span>
+                  <Badge variant="error">Unavailable</Badge>
                 )}
               </div>
             )}
@@ -179,7 +169,7 @@ export function ContactCard({
       <div className="flex justify-between items-start">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-semibold text-base text-gray-900 dark:text-gray-100 truncate">
+            <h3 className="font-semibold text-base text-[var(--text-primary)] truncate">
               {id ? (
                 <Link href={`/contacts/${id}`} className="hover:text-primary-600 hover:underline">
                   {name}
@@ -189,24 +179,24 @@ export function ContactCard({
               )}
             </h3>
             {linkedUser && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 flex-shrink-0">
+              <Badge variant="info" size="sm" className="flex-shrink-0">
                 Linked
-              </span>
+              </Badge>
             )}
           </div>
           <div className="space-y-1 text-xs">
             {email && (
-              <p className="text-gray-600 dark:text-gray-400 truncate">
-                <span className="text-gray-400 dark:text-gray-500">Email:</span> {email}
+              <p className="text-[var(--text-secondary)] truncate">
+                <span className="text-[var(--text-tertiary)]">Email:</span> {email}
               </p>
             )}
             {phone && (
-              <p className="text-gray-600 dark:text-gray-400 truncate">
-                <span className="text-gray-400 dark:text-gray-500">Phone:</span> {phone}
+              <p className="text-[var(--text-secondary)] truncate">
+                <span className="text-[var(--text-tertiary)]">Phone:</span> {phone}
               </p>
             )}
             {!email && !phone && (
-              <p className="text-gray-400 dark:text-gray-500 italic">No info</p>
+              <p className="text-[var(--text-tertiary)] italic">No info</p>
             )}
           </div>
         </div>
@@ -242,12 +232,12 @@ export function GroupCard({
       onClick={onClick}
       className={className}
     >
-      <h2 className="font-semibold text-base text-gray-900 dark:text-gray-100 mb-2">{name}</h2>
+      <h2 className="font-semibold text-base text-[var(--text-primary)] mb-2">{name}</h2>
       {description && (
-        <p className="text-gray-600 dark:text-gray-400 text-xs mb-3 line-clamp-2">{description}</p>
+        <p className="text-[var(--text-secondary)] text-xs mb-3 line-clamp-2">{description}</p>
       )}
       {(role || createdAt) && (
-        <div className="flex justify-between items-center text-xs text-gray-400 dark:text-gray-500">
+        <div className="flex justify-between items-center text-xs text-[var(--text-tertiary)]">
           {role && <span>{role === 'owner' ? 'Owner' : 'Member'}</span>}
           {createdAt && <span>{new Date(createdAt).toLocaleDateString()}</span>}
         </div>
@@ -277,16 +267,15 @@ export function BorrowRecordCard({
   actions,
   className = ''
 }: BorrowRecordCardProps) {
-  const getStatusColor = (status: string) => {
+  const getStatusVariant = (status: string): 'success' | 'error' | 'info' => {
     switch (status) {
       case 'returned':
-        return 'bg-green-100 text-green-800'
+        return 'success'
       case 'overdue':
-        return 'bg-red-100 text-red-800'
       case 'lost':
-        return 'bg-red-100 text-red-800'
+        return 'error'
       default:
-        return 'bg-blue-100 text-blue-800'
+        return 'info'
     }
   }
 
@@ -294,23 +283,23 @@ export function BorrowRecordCard({
     <Card variant="default" className={className}>
       <div className="flex justify-between items-start">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-base text-gray-900 dark:text-gray-100 mb-1 truncate">
+          <h3 className="font-semibold text-base text-[var(--text-primary)] mb-1 truncate">
             {itemName}
           </h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 truncate">
-            <span className="text-gray-400 dark:text-gray-500">From:</span> {contactName}
+          <p className="text-xs text-[var(--text-secondary)] mb-2 truncate">
+            <span className="text-[var(--text-tertiary)]">From:</span> {contactName}
           </p>
           <div className="flex flex-wrap gap-1.5">
-            <span className={`px-2.5 py-1 rounded text-xs font-medium ${getStatusColor(status)}`}>
+            <Badge variant={getStatusVariant(status)} size="sm">
               {status.charAt(0).toUpperCase() + status.slice(1)}
-            </span>
+            </Badge>
             {dueDate && (
-              <span className="px-2.5 py-1 rounded border border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-400">
+              <span className="px-2.5 py-1 rounded border border-[var(--border)] text-xs font-medium text-[var(--text-secondary)]">
                 Due: {new Date(dueDate).toLocaleDateString()}
               </span>
             )}
             {returnedDate && (
-              <span className="px-2.5 py-1 rounded border border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-400">
+              <span className="px-2.5 py-1 rounded border border-[var(--border)] text-xs font-medium text-[var(--text-secondary)]">
                 Returned: {new Date(returnedDate).toLocaleDateString()}
               </span>
             )}
