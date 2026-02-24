@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 5 of 5 (UI Migration & Production Polish)
-Plan: 1 of 4 in current phase (1 complete)
+Plan: 3 of 4 in current phase (3 complete)
 Status: Executing
-Last activity: 2026-02-24 -- Completed 05-01-PLAN.md (UI infrastructure)
+Last activity: 2026-02-24 -- Completed 05-03-PLAN.md (Remaining components CSS variable migration)
 
-Progress: [██████░░░░] 55%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
-- Average duration: 3.6min
-- Total execution time: 0.6 hours
+- Total plans completed: 13
+- Average duration: 4.1min
+- Total execution time: 0.9 hours
 
 **By Phase:**
 
@@ -31,10 +31,10 @@ Progress: [██████░░░░] 55%
 | 02-input-validation | 3 | 13min | 4.3min |
 | 03-design-system-foundation | 2 | 4min | 2min |
 | 04-rls-audit-hardening | 3 | 11min | 3.7min |
-| 05-ui-migration-production-polish | 1 | 2min | 2min |
+| 05-ui-migration-production-polish | 3 | 17min | 5.7min |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (3min), 04-02 (5min), 04-03 (3min), 05-01 (2min)
+- Last 5 plans: 04-03 (3min), 05-01 (2min), 05-02 (7min), 05-03 (8min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -75,6 +75,13 @@ Recent decisions affecting current work:
 - 05-01: Toast uses inline SVG icons rather than icon library dependency
 - 05-01: EmptyState uses Link component for href-based CTAs for client-side navigation
 - 05-01: Toast entry animation via CSS @keyframes in globals.css
+- 05-02: Card.tsx base Card wraps ui/Card via import alias (Card as UICard) to avoid naming collision
+- 05-02: BorrowRecordCard maps status strings to Badge variants via getStatusVariant helper
+- 05-02: Server component pages use semantic palette tokens directly rather than client-side Button
+- 05-02: bg-foreground/text-background replaced with bg-primary-500/text-white for explicit primary buttons
+- 05-03: buttonVariants() for Link-as-button styling (Button primitive lacks asChild)
+- 05-03: Notification panel stays as portal dropdown (not Modal) -- positioned panel, not dialog
+- 05-03: 5 page files already used CSS variable utility classes -- no changes needed
 
 ### Pending Todos
 
@@ -88,5 +95,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 05-01-PLAN.md (UI infrastructure - toast, empty state, skeletons)
+Stopped at: Completed 05-03-PLAN.md (Remaining components CSS variable migration)
 Resume file: None
