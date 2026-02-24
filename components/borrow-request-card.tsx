@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { acceptBorrowRequest, rejectBorrowRequest } from '@/app/borrow/actions'
+import { Button, Badge } from '@/components/ui'
 
 interface BorrowRequestCardProps {
   request: {
@@ -98,33 +99,33 @@ export default function BorrowRequestCard({ request, onActionComplete }: BorrowR
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-4">
+    <div className="bg-[var(--bg-base)] rounded-lg border border-[var(--border)] p-4 space-y-4">
       {/* Requester Info */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-[var(--text-secondary)]">
             {request.requester.name} wants to borrow:
           </p>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-1">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)] mt-1">
             {request.item.name}
           </h3>
         </div>
-        <span className="text-xs text-gray-500 dark:text-gray-500">
+        <span className="text-xs text-[var(--text-tertiary)]">
           {getRelativeTime(request.created_at)}
         </span>
       </div>
 
       {/* Item Details */}
       {request.item.description && (
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-[var(--text-secondary)]">
           {request.item.description}
         </p>
       )}
 
       {request.item.category && (
-        <span className="inline-block text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">
+        <Badge variant="neutral">
           {request.item.category}
-        </span>
+        </Badge>
       )}
 
       {/* Request Details */}
@@ -141,22 +142,22 @@ export default function BorrowRequestCard({ request, onActionComplete }: BorrowR
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-gray-500"
+              className="text-[var(--text-secondary)]"
             >
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <span className="text-gray-600 dark:text-gray-400">
+            <span className="text-[var(--text-secondary)]">
               Requested return date: {formatDate(request.requested_due_date)}
             </span>
           </div>
         )}
 
         {request.message && (
-          <div className="bg-gray-50 dark:bg-gray-900 rounded p-3">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
+          <div className="bg-[var(--bg-surface)] rounded p-3">
+            <p className="text-sm text-[var(--text-primary)]">
               &quot;{request.message}&quot;
             </p>
           </div>
@@ -168,8 +169,8 @@ export default function BorrowRequestCard({ request, onActionComplete }: BorrowR
         <div
           className={`p-3 rounded-lg text-sm ${
             feedback.type === 'success'
-              ? 'bg-green-50 border border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300'
-              : 'bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300'
+              ? 'bg-success-50 border border-success-200 text-success-800 dark:bg-success-900/20 dark:border-success-800 dark:text-success-300'
+              : 'bg-error-50 border border-error-200 text-error-800 dark:bg-error-900/20 dark:border-error-800 dark:text-error-300'
           }`}
         >
           {feedback.text}
@@ -179,28 +180,21 @@ export default function BorrowRequestCard({ request, onActionComplete }: BorrowR
       {/* Action Buttons */}
       {!feedback && (
         <div className="flex gap-3">
-          <button
+          <Button
+            className="flex-1 bg-success-500 hover:bg-success-600 text-white"
             onClick={handleAccept}
             disabled={isAccepting || isRejecting}
-            className={`flex-1 px-4 py-2 rounded-lg font-medium text-white transition-colors ${
-              isAccepting || isRejecting
-                ? 'bg-green-300 cursor-not-allowed'
-                : 'bg-green-500 hover:bg-green-600'
-            }`}
           >
             {isAccepting ? 'Accepting...' : 'Accept'}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="destructive"
+            className="flex-1"
             onClick={handleReject}
             disabled={isAccepting || isRejecting}
-            className={`flex-1 px-4 py-2 rounded-lg font-medium text-white transition-colors ${
-              isAccepting || isRejecting
-                ? 'bg-red-300 cursor-not-allowed'
-                : 'bg-red-500 hover:bg-red-600'
-            }`}
           >
             {isRejecting ? 'Declining...' : 'Decline'}
-          </button>
+          </Button>
         </div>
       )}
     </div>

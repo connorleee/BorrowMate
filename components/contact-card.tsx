@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { deleteContact } from '@/app/contacts/actions'
+import { Button } from '@/components/ui'
 
 interface ContactCardProps {
   id: string
@@ -35,7 +36,7 @@ export default function ContactCard({
   }
 
   return (
-    <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+    <div className="p-4 border border-[var(--border)] rounded-lg bg-[var(--bg-base)] hover:bg-[var(--bg-surface)] transition-colors">
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -53,51 +54,54 @@ export default function ContactCard({
 
           <div className="space-y-1 text-sm">
             {email && (
-              <p className="text-gray-600 dark:text-gray-400">
-                <span className="text-gray-400 dark:text-gray-500">Email:</span> {email}
+              <p className="text-[var(--text-secondary)]">
+                <span className="text-[var(--text-tertiary)]">Email:</span> {email}
               </p>
             )}
             {phone && (
-              <p className="text-gray-600 dark:text-gray-400">
-                <span className="text-gray-400 dark:text-gray-500">Phone:</span> {phone}
+              <p className="text-[var(--text-secondary)]">
+                <span className="text-[var(--text-tertiary)]">Phone:</span> {phone}
               </p>
             )}
           </div>
 
           {!email && !phone && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 italic">No additional info</p>
+            <p className="text-xs text-[var(--text-tertiary)] italic">No additional info</p>
           )}
         </div>
 
         <div className="flex gap-2 ml-4">
-          <button
+          <Button
+            variant="destructive"
+            size="sm"
             onClick={() => setShowConfirm(true)}
             disabled={isDeleting}
-            className="px-3 py-1 text-sm rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
           >
             Delete
-          </button>
+          </Button>
         </div>
       </div>
 
       {showConfirm && (
-        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded flex items-center justify-between gap-3">
-          <p className="text-sm text-red-700">Delete this contact?</p>
+        <div className="mt-3 p-3 bg-error-50 border border-error-200 rounded flex items-center justify-between gap-3">
+          <p className="text-sm text-error-700">Delete this contact?</p>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setShowConfirm(false)}
               disabled={isDeleting}
-              className="px-3 py-1 text-xs rounded border border-red-300 text-red-600 hover:bg-red-100 disabled:opacity-50"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
             >
               {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
+            </Button>
           </div>
         </div>
       )}

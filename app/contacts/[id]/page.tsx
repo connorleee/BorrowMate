@@ -27,12 +27,12 @@ export default async function ContactDetailPage({ params }: ContactPageProps) {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
         <Link href="/contacts" className="hover:text-primary-600">
           Contacts
         </Link>
         <span>/</span>
-        <span className="text-gray-900 dark:text-gray-100">{contact.name}</span>
+        <span className="text-[var(--text-primary)]">{contact.name}</span>
       </div>
 
       <ContactDetailContent

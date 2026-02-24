@@ -6,9 +6,9 @@ export default function BorrowPage() {
                 <input
                     type="text"
                     placeholder="Search for items..."
-                    className="p-3 border rounded w-full"
+                    className="p-3 border border-[var(--border)] rounded w-full bg-[var(--bg-base)] text-[var(--text-primary)]"
                 />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-[var(--text-secondary)]">
                     Scan a QR code or search for an item to borrow.
                 </p>
                 <button className="bg-foreground text-background p-3 rounded font-semibold">

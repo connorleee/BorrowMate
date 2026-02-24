@@ -7,6 +7,7 @@ import { returnItem, batchLendToContact, createBorrowRequest } from '@/app/borro
 import LendToContactModal from './lend-to-contact-modal'
 import BorrowRequestModal from './borrow-request-modal'
 import { ItemCard } from './Card'
+import { Button, Input, Badge, Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/ui'
 
 interface Contact {
   id: string
@@ -203,13 +204,13 @@ export default function ContactDetailContent({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-[var(--bg-base)] rounded-lg border border-[var(--border)] p-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">
               {contact.name}
             </h1>
-            <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+            <div className="mt-2 space-y-1 text-sm text-[var(--text-secondary)]">
               {contact.email && <p>{contact.email}</p>}
               {contact.phone && <p>{contact.phone}</p>}
             </div>
@@ -219,12 +220,9 @@ export default function ContactDetailContent({
               </span>
             )}
           </div>
-          <button
-            onClick={() => setIsLendModalOpen(true)}
-            className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 font-medium transition-colors"
-          >
+          <Button onClick={() => setIsLendModalOpen(true)}>
             Lend Items
-          </button>
+          </Button>
         </div>
 
         {/* Stats */}
@@ -233,21 +231,21 @@ export default function ContactDetailContent({
             <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
               {stats.currentCount}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Your Items with {contact.name}</div>
+            <div className="text-sm text-[var(--text-secondary)]">Your Items with {contact.name}</div>
           </div>
           {contact.linked_user_id && (
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {stats.borrowedFromCount}
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">{contact.name}&apos;s Items with You</div>
+              <div className="text-sm text-[var(--text-secondary)]">{contact.name}&apos;s Items with You</div>
             </div>
           )}
           <div className="text-center">
-            <div className="text-2xl font-bold text-gray-700 dark:text-gray-300">
+            <div className="text-2xl font-bold text-[var(--text-primary)]">
               {stats.totalCount}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Total Transactions</div>
+            <div className="text-sm text-[var(--text-secondary)]">Total Transactions</div>
           </div>
         </div>
       </div>
@@ -257,8 +255,8 @@ export default function ContactDetailContent({
         <div
           className={`p-4 rounded-lg ${
             feedback.type === 'success'
-              ? 'bg-green-50 border border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300'
-              : 'bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300'
+              ? 'bg-success-50 border border-success-200 text-success-800 dark:bg-success-900/20 dark:border-success-800 dark:text-success-300'
+              : 'bg-error-50 border border-error-200 text-error-800 dark:bg-error-900/20 dark:border-error-800 dark:text-error-300'
           }`}
         >
           {feedback.text}
@@ -267,11 +265,11 @@ export default function ContactDetailContent({
 
       {/* Items with Contact */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
           Your Items with {contact.name} ({currentlyBorrowed.length})
         </h2>
         {currentlyBorrowed.length === 0 ? (
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+          <div className="bg-[var(--bg-surface)] rounded-lg p-6 text-center text-[var(--text-secondary)]">
             {contact.name} doesn&apos;t have any of your items
           </div>
         ) : (
@@ -279,32 +277,33 @@ export default function ContactDetailContent({
             {currentlyBorrowed.map((record) => (
               <div
                 key={record.id}
-                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center"
+                className="bg-[var(--bg-base)] rounded-lg border border-[var(--border)] p-4 flex justify-between items-center"
               >
                 <div className="flex-1 min-w-0">
                   <Link
                     href={`/items/${record.item?.id}`}
-                    className="font-medium text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400"
+                    className="font-medium text-[var(--text-primary)] hover:text-primary-600 dark:hover:text-primary-400"
                   >
                     {record.item?.name || 'Unknown Item'}
                   </Link>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <div className="text-sm text-[var(--text-secondary)] mt-1">
                     Lent {formatDate(record.start_date)}
                     {record.due_date && (
-                      <span className={isOverdue(record.due_date) ? 'text-red-600 dark:text-red-400 font-medium' : ''}>
+                      <span className={isOverdue(record.due_date) ? 'text-error-600 dark:text-error-400 font-medium' : ''}>
                         {' '}&middot; Due {formatDate(record.due_date)}
                         {isOverdue(record.due_date) && ' (Overdue)'}
                       </span>
                     )}
                   </div>
                 </div>
-                <button
+                <Button
+                  size="sm"
                   onClick={() => setConfirmReturnRecord(record)}
                   disabled={isReturning === record.id}
-                  className="ml-4 px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors"
+                  className="ml-4 bg-success-500 hover:bg-success-600 text-white"
                 >
                   {isReturning === record.id ? 'Marking...' : 'Mark Returned'}
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -314,11 +313,11 @@ export default function ContactDetailContent({
       {/* Items Borrowed FROM Contact (only if contact is a linked user) */}
       {contact.linked_user_id && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
             {contact.name}&apos;s Items with You ({borrowedFromContact.length})
           </h2>
           {borrowedFromContact.length === 0 ? (
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+            <div className="bg-[var(--bg-surface)] rounded-lg p-6 text-center text-[var(--text-secondary)]">
               You don&apos;t have any of {contact.name}&apos;s items
             </div>
           ) : (
@@ -326,16 +325,16 @@ export default function ContactDetailContent({
               {borrowedFromContact.map((record) => (
                 <div
                   key={record.id}
-                  className="bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700 p-4"
+                  className="bg-[var(--bg-base)] rounded-lg border border-blue-200 dark:border-blue-700 p-4"
                 >
                   <div className="flex-1 min-w-0">
-                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                    <span className="font-medium text-[var(--text-primary)]">
                       {record.item?.name || 'Unknown Item'}
                     </span>
-                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <div className="text-sm text-[var(--text-secondary)] mt-1">
                       Borrowed {formatDate(record.start_date)}
                       {record.due_date && (
-                        <span className={isOverdue(record.due_date) ? 'text-red-600 dark:text-red-400 font-medium' : ''}>
+                        <span className={isOverdue(record.due_date) ? 'text-error-600 dark:text-error-400 font-medium' : ''}>
                           {' '}&middot; Due {formatDate(record.due_date)}
                           {isOverdue(record.due_date) && ' (Overdue)'}
                         </span>
@@ -352,7 +351,7 @@ export default function ContactDetailContent({
       {/* Contact's Public Items (only if contact is a linked user and has public items) */}
       {contact.linked_user_id && publicItems.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
             {contact.name}&apos;s Available Items ({filteredPublicItems.length})
           </h2>
 
@@ -361,7 +360,7 @@ export default function ContactDetailContent({
             {/* Search Input */}
             <div className="flex-1 relative">
               <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -374,12 +373,12 @@ export default function ContactDetailContent({
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-              <input
+              <Input
                 type="text"
                 placeholder="Search items..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="pl-10"
               />
             </div>
 
@@ -388,7 +387,7 @@ export default function ContactDetailContent({
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="px-3 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-[var(--bg-base)] text-[var(--text-primary)]"
               >
                 <option value="all">All Categories</option>
                 {categories.map((category) => (
@@ -402,7 +401,7 @@ export default function ContactDetailContent({
 
           {/* Items Grid */}
           {filteredPublicItems.length === 0 ? (
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+            <div className="bg-[var(--bg-surface)] rounded-lg p-6 text-center text-[var(--text-secondary)]">
               No items found
             </div>
           ) : (
@@ -419,19 +418,22 @@ export default function ContactDetailContent({
                   />
                   {item.status === 'available' && (
                     hasPendingRequest(item.id) ? (
-                      <button
+                      <Button
                         disabled
-                        className="absolute bottom-3 right-3 px-3 py-1.5 text-sm bg-gray-400 text-white rounded-lg cursor-not-allowed"
+                        size="sm"
+                        variant="secondary"
+                        className="absolute bottom-3 right-3"
                       >
                         Request Sent
-                      </button>
+                      </Button>
                     ) : (
-                      <button
+                      <Button
+                        size="sm"
                         onClick={() => handleRequestBorrow(item)}
-                        className="absolute bottom-3 right-3 px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                        className="absolute bottom-3 right-3"
                       >
                         Request to Borrow
-                      </button>
+                      </Button>
                     )
                   )}
                 </div>
@@ -443,11 +445,11 @@ export default function ContactDetailContent({
 
       {/* Borrow History */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
           History ({history.length})
         </h2>
         {history.length === 0 ? (
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+          <div className="bg-[var(--bg-surface)] rounded-lg p-6 text-center text-[var(--text-secondary)]">
             No lending history yet
           </div>
         ) : (
@@ -455,31 +457,31 @@ export default function ContactDetailContent({
             {history.map((record) => (
               <div
                 key={record.id}
-                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+                className="bg-[var(--bg-base)] rounded-lg border border-[var(--border)] p-4"
               >
                 <div className="flex justify-between items-start">
                   <div>
                     <Link
                       href={`/items/${record.item?.id}`}
-                      className="font-medium text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400"
+                      className="font-medium text-[var(--text-primary)] hover:text-primary-600 dark:hover:text-primary-400"
                     >
                       {record.item?.name || 'Unknown Item'}
                     </Link>
-                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <div className="text-sm text-[var(--text-secondary)] mt-1">
                       {formatDate(record.start_date)} &rarr; {record.returned_at ? formatDate(record.returned_at) : 'N/A'}
                     </div>
                   </div>
-                  <span
-                    className={`text-xs px-2 py-1 rounded ${
+                  <Badge
+                    variant={
                       record.status === 'returned'
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        ? 'success'
                         : record.status === 'lost'
-                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                    }`}
+                        ? 'error'
+                        : 'neutral'
+                    }
                   >
                     {record.status}
-                  </span>
+                  </Badge>
                 </div>
               </div>
             ))}
@@ -510,37 +512,40 @@ export default function ContactDetailContent({
       />
 
       {/* Confirm Return Modal */}
-      {confirmReturnRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Confirm Return
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Mark <span className="font-medium text-gray-900 dark:text-gray-100">{confirmReturnRecord.item?.name}</span> as returned from {contact.name}?
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setConfirmReturnRecord(null)}
-                disabled={isReturning === confirmReturnRecord.id}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  await handleReturn(confirmReturnRecord)
-                  setConfirmReturnRecord(null)
-                }}
-                disabled={isReturning === confirmReturnRecord.id}
-                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
-              >
-                {isReturning === confirmReturnRecord.id ? 'Marking...' : 'Confirm'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal isOpen={!!confirmReturnRecord} onClose={() => setConfirmReturnRecord(null)} size="sm">
+        <ModalHeader>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+            Confirm Return
+          </h3>
+        </ModalHeader>
+        <ModalBody>
+          <p className="text-[var(--text-secondary)]">
+            Mark <span className="font-medium text-[var(--text-primary)]">{confirmReturnRecord?.item?.name}</span> as returned from {contact.name}?
+          </p>
+        </ModalBody>
+        <ModalFooter className="flex gap-3">
+          <Button
+            variant="secondary"
+            className="flex-1"
+            onClick={() => setConfirmReturnRecord(null)}
+            disabled={!!confirmReturnRecord && isReturning === confirmReturnRecord.id}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="flex-1 bg-success-500 hover:bg-success-600 text-white"
+            onClick={async () => {
+              if (confirmReturnRecord) {
+                await handleReturn(confirmReturnRecord)
+                setConfirmReturnRecord(null)
+              }
+            }}
+            disabled={!!confirmReturnRecord && isReturning === confirmReturnRecord.id}
+          >
+            {confirmReturnRecord && isReturning === confirmReturnRecord.id ? 'Marking...' : 'Confirm'}
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   )
 }

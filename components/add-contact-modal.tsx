@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { createPortal } from 'react-dom'
 import { createContact } from '@/app/contacts/actions'
+import { Modal, ModalHeader, ModalBody, ModalFooter, Input, Button } from '@/components/ui'
 
 interface AddContactModalProps {
   isOpen: boolean
@@ -43,86 +43,71 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
     }
   }
 
-  if (!isOpen) return null
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="sm">
+      <form onSubmit={handleSubmit}>
+        <ModalHeader>
+          <h2 className="text-2xl font-bold text-[var(--text-primary)]">Add Contact</h2>
+        </ModalHeader>
 
-  if (typeof document === 'undefined') return null
+        <ModalBody className="space-y-4">
+          {error && (
+            <div className="p-3 bg-error-100 dark:bg-error-900 border border-error-200 dark:border-error-700 rounded text-error-700 dark:text-error-200 text-sm">
+              {error}
+            </div>
+          )}
 
-  return createPortal(
-    <div className="modal-overlay">
-      <div className="modal-content w-full max-w-md p-6">
-        <h2 className="text-2xl font-bold mb-4">Add Contact</h2>
+          <Input
+            label="Name *"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Contact name"
+            required
+            disabled={isLoading}
+            inputSize="lg"
+          />
 
-        {error && (
-          <div className="mb-4 p-3 bg-error-100 dark:bg-error-900 border border-error-200 dark:border-error-700 rounded text-error-700 dark:text-error-200 text-sm">
-            {error}
-          </div>
-        )}
+          <Input
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="contact@example.com"
+            disabled={isLoading}
+            inputSize="lg"
+          />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
-              Name *
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Contact name"
-              className="input-field"
-              required
-              disabled={isLoading}
-            />
-          </div>
+          <Input
+            label="Phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="(555) 123-4567"
+            disabled={isLoading}
+            inputSize="lg"
+          />
+        </ModalBody>
 
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="contact@example.com"
-              className="input-field"
-              disabled={isLoading}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
-              Phone
-            </label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="(555) 123-4567"
-              className="input-field"
-              disabled={isLoading}
-            />
-          </div>
-
-          <div className="flex gap-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isLoading}
-              className="btn-ghost flex-1 border dark:border-gray-600"
-              style={{ borderColor: 'var(--border)' }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading || !name.trim()}
-              className="btn-primary flex-1"
-            >
-              {isLoading ? 'Adding...' : 'Add Contact'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>,
-    document.body
+        <ModalFooter className="flex gap-3">
+          <Button
+            type="button"
+            variant="secondary"
+            className="flex-1"
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            className="flex-1"
+            disabled={isLoading || !name.trim()}
+          >
+            {isLoading ? 'Adding...' : 'Add Contact'}
+          </Button>
+        </ModalFooter>
+      </form>
+    </Modal>
   )
 }

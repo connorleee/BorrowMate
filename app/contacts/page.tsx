@@ -15,15 +15,15 @@ export default async function ContactsPage() {
 
       {contacts.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">You haven't created any contacts yet.</p>
-          <p className="text-sm text-gray-400 mb-6">
+          <p className="text-[var(--text-secondary)] mb-4">You haven't created any contacts yet.</p>
+          <p className="text-sm text-[var(--text-tertiary)] mb-6">
             Add contacts to lend items to friends and family.
           </p>
           <AddContactButton />
         </div>
       ) : (
         <div>
-          <p className="text-gray-600 mb-4">{contacts.length} contact{contacts.length !== 1 ? 's' : ''}</p>
+          <p className="text-[var(--text-secondary)] mb-4">{contacts.length} contact{contacts.length !== 1 ? 's' : ''}</p>
           <ContactListSection initialContacts={contacts} />
         </div>
       )}
