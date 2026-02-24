@@ -227,3 +227,15 @@ body {
   @apply rounded-xl shadow-xl max-w-lg w-full max-h-[85vh] flex flex-col overflow-hidden;
   background-color: var(--bg-base);
 }
+
+/* Toast Animation */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
