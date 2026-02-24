@@ -4,19 +4,23 @@ import { useState } from 'react'
 import { deleteItem } from '@/app/items/actions'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
+import { useToast } from '@/components/toast-provider'
 
 export default function DeleteItemButton({ itemId }: { itemId: string }) {
     const [isDeleting, setIsDeleting] = useState(false)
     const [showConfirm, setShowConfirm] = useState(false)
+    const { addToast } = useToast()
 
     const handleDelete = async () => {
         setIsDeleting(true)
         const result = await deleteItem({ itemId })
 
         if (result?.serverError) {
-            alert(result.serverError)
+            addToast('error', result.serverError)
             setIsDeleting(false)
             setShowConfirm(false)
+        } else {
+            addToast('success', 'Item deleted')
         }
         // If success, the page will revalidate and this component will unmount
     }

@@ -5,6 +5,7 @@ import AddItemForm from './add-item-form'
 import MyInventorySection from './my-inventory-section'
 import ItemDetailModal from './item-detail-modal'
 import { Card } from './Card'
+import { EmptyState } from '@/components/empty-state'
 
 interface BorrowRecord {
   id: string
@@ -48,9 +49,11 @@ export default function ItemsPageContent({ borrowedItems, userItems }: ItemsPage
             <section>
               <h2 className="text-2xl font-semibold mb-4 text-text-primary">Borrowed Items</h2>
               {borrowedItems.length === 0 ? (
-                <div className="bg-surface rounded-lg p-6 text-center text-text-tertiary">
-                  You are not currently borrowing any items.
-                </div>
+                <EmptyState
+                  message="You're not borrowing any items"
+                  ctaLabel="Browse Items"
+                  ctaHref="/discover"
+                />
               ) : (
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                   {borrowedItems.map((record) => (

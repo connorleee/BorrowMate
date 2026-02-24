@@ -2,6 +2,7 @@ import { getUserGroups } from './actions'
 import CreateGroupForm from './create-group-form'
 import { GroupCard } from '@/components/Card'
 import Link from 'next/link'
+import { EmptyState } from '@/components/empty-state'
 
 export default async function GroupsPage() {
     const groups = await getUserGroups()
@@ -14,10 +15,11 @@ export default async function GroupsPage() {
             </div>
 
             {groups.length === 0 ? (
-                <div className="text-center py-12 bg-surface rounded-lg border border-dashed border-border">
-                    <p className="text-text-secondary mb-4">You haven't joined any groups yet.</p>
-                    <p className="text-sm text-text-tertiary">Create one above or ask a friend for an invite link.</p>
-                </div>
+                <EmptyState
+                    message="No groups yet — create one to share items!"
+                    ctaLabel="Create Group"
+                    ctaHref="/groups"
+                />
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {groups.map((group: any) => (

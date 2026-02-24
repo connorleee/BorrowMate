@@ -8,6 +8,8 @@ import LendToContactModal from './lend-to-contact-modal'
 import BorrowRequestModal from './borrow-request-modal'
 import { ItemCard } from './Card'
 import { Button, Input, Badge, Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/ui'
+import { useToast } from '@/components/toast-provider'
+import { EmptyState } from '@/components/empty-state'
 
 interface Contact {
   id: string
@@ -77,10 +79,10 @@ export default function ContactDetailContent({
   pendingRequests,
 }: ContactDetailContentProps) {
   const router = useRouter()
+  const { addToast } = useToast()
   const [isReturning, setIsReturning] = useState<string | null>(null)
   const [isLendModalOpen, setIsLendModalOpen] = useState(false)
   const [isLending, setIsLending] = useState(false)
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [confirmReturnRecord, setConfirmReturnRecord] = useState<BorrowRecord | null>(null)
 
   // Public items filtering state
@@ -95,19 +97,17 @@ export default function ContactDetailContent({
     if (!record.item) return
 
     setIsReturning(record.id)
-    setFeedback(null)
 
     try {
       const result = await returnItem({ recordId: record.id, itemId: record.item.id, groupId: '' })
       if (result?.serverError) {
-        setFeedback({ type: 'error', text: result.serverError })
+        addToast('error', result.serverError)
       } else {
-        setFeedback({ type: 'success', text: `${record.item.name} marked as returned` })
+        addToast('success', `${record.item.name} marked as returned`)
         router.refresh()
-        setTimeout(() => setFeedback(null), 3000)
       }
     } catch (err) {
-      setFeedback({ type: 'error', text: 'Failed to mark as returned' })
+      addToast('error', 'Failed to mark as returned')
     } finally {
       setIsReturning(null)
     }
@@ -115,20 +115,18 @@ export default function ContactDetailContent({
 
   const handleLendItems = async (itemIds: string[], dueDate?: string) => {
     setIsLending(true)
-    setFeedback(null)
 
     try {
       const result = await batchLendToContact({ itemIds, contactId: contact.id, dueDate })
       if (result?.serverError) {
-        setFeedback({ type: 'error', text: result.serverError })
+        addToast('error', result.serverError)
       } else {
-        setFeedback({ type: 'success', text: `Lent ${itemIds.length} item${itemIds.length !== 1 ? 's' : ''} to ${contact.name}` })
+        addToast('success', `Lent ${itemIds.length} item${itemIds.length !== 1 ? 's' : ''} to ${contact.name}`)
         setIsLendModalOpen(false)
         router.refresh()
-        setTimeout(() => setFeedback(null), 5000)
       }
     } catch (err) {
-      setFeedback({ type: 'error', text: 'Failed to lend items' })
+      addToast('error', 'Failed to lend items')
     } finally {
       setIsLending(false)
     }
@@ -136,21 +134,19 @@ export default function ContactDetailContent({
 
   const handleBorrowRequest = async (itemId: string, dueDate?: string, message?: string) => {
     setIsBorrowing(true)
-    setFeedback(null)
 
     try {
       const result = await createBorrowRequest({ itemId, contactId: contact.id, dueDate, message })
       if (result?.serverError) {
-        setFeedback({ type: 'error', text: result.serverError })
+        addToast('error', result.serverError)
       } else {
-        setFeedback({ type: 'success', text: `Request sent! Waiting for ${contact.name} to accept your request for ${selectedItemForBorrow?.name}` })
+        addToast('success', `Borrow request sent to ${contact.name}`)
         setIsBorrowModalOpen(false)
         setSelectedItemForBorrow(null)
         router.refresh()
-        setTimeout(() => setFeedback(null), 5000)
       }
     } catch (err) {
-      setFeedback({ type: 'error', text: 'Failed to send borrow request' })
+      addToast('error', 'Failed to send borrow request')
     } finally {
       setIsBorrowing(false)
     }
@@ -249,19 +245,6 @@ export default function ContactDetailContent({
           </div>
         </div>
       </div>
-
-      {/* Feedback */}
-      {feedback && (
-        <div
-          className={`p-4 rounded-lg ${
-            feedback.type === 'success'
-              ? 'bg-success-50 border border-success-200 text-success-800 dark:bg-success-900/20 dark:border-success-800 dark:text-success-300'
-              : 'bg-error-50 border border-error-200 text-error-800 dark:bg-error-900/20 dark:border-error-800 dark:text-error-300'
-          }`}
-        >
-          {feedback.text}
-        </div>
-      )}
 
       {/* Items with Contact */}
       <div>
@@ -449,9 +432,11 @@ export default function ContactDetailContent({
           History ({history.length})
         </h2>
         {history.length === 0 ? (
-          <div className="bg-[var(--bg-surface)] rounded-lg p-6 text-center text-[var(--text-secondary)]">
-            No lending history yet
-          </div>
+          <EmptyState
+            message="No lending history with this contact yet"
+            ctaLabel="Lend Something"
+            onCtaClick={() => setIsLendModalOpen(true)}
+          />
         ) : (
           <div className="space-y-3">
             {history.map((record) => (

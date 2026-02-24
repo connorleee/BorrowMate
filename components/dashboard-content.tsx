@@ -5,6 +5,7 @@ import Link from 'next/link'
 import ItemDetailModal from './item-detail-modal'
 import { Card, ItemCard } from './Card'
 import { Badge } from '@/components/ui/badge'
+import { EmptyState } from '@/components/empty-state'
 
 interface BorrowRecord {
   id: string
@@ -59,7 +60,11 @@ export default function DashboardContent({
         <section>
           <h2 className="text-xl font-bold mb-4">Items I'm Borrowing</h2>
           {borrowed.length === 0 ? (
-            <p className="text-[var(--text-tertiary)]">You aren't borrowing anything right now.</p>
+            <EmptyState
+              message="You're not borrowing anything right now"
+              ctaLabel="Browse Items"
+              ctaHref="/discover"
+            />
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {borrowed.map((record) => (
@@ -94,7 +99,11 @@ export default function DashboardContent({
             </Link>
           </div>
           {lentGroupedByContact.length === 0 ? (
-            <p className="text-[var(--text-tertiary)]">You haven't lent anything out.</p>
+            <EmptyState
+              message="You haven't lent anything yet"
+              ctaLabel="Lend Something"
+              ctaHref="/contacts"
+            />
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {lentGroupedByContact.flatMap(group =>
@@ -150,7 +159,11 @@ export default function DashboardContent({
             </Link>
           </div>
           {userItems.length === 0 ? (
-            <p className="text-[var(--text-tertiary)]">You haven't added any items yet.</p>
+            <EmptyState
+              message="No items in your inventory yet"
+              ctaLabel="Add Your First Item"
+              ctaHref="/items"
+            />
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {userItems.map((item) => (

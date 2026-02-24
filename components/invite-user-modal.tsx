@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { searchUsers, addMembers } from '@/app/groups/actions'
 import { Modal, ModalHeader, ModalBody, ModalFooter, Input, Button } from '@/components/ui'
+import { useToast } from '@/components/toast-provider'
 
 interface User {
     id: string
@@ -22,6 +23,7 @@ export default function InviteUserModal({ groupId, isOpen, onClose }: InviteUser
     const [isSearching, setIsSearching] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const { addToast } = useToast()
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
@@ -55,8 +57,9 @@ export default function InviteUserModal({ groupId, isOpen, onClose }: InviteUser
         const result = await addMembers({ groupId, userIds: selectedUsers.map(u => u.id) })
 
         if (result?.serverError) {
-            setError(result.serverError)
+            addToast('error', result.serverError)
         } else {
+            addToast('success', `${selectedUsers.length} member${selectedUsers.length !== 1 ? 's' : ''} added`)
             onClose()
             setQuery('')
             setSelectedUsers([])

@@ -1,17 +1,18 @@
 'use client'
 
 import { createItem } from '@/app/items/actions'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useToast } from '@/components/toast-provider'
 
 export default function AddItemForm() {
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+    const { addToast } = useToast()
+    const formRef = useRef<HTMLFormElement>(null)
 
     const handleSubmit = async (formData: FormData) => {
         setIsSubmitting(true)
-        setMessage(null)
 
         try {
             const name = formData.get('name') as string
@@ -23,32 +24,20 @@ export default function AddItemForm() {
             setIsSubmitting(false)
 
             if (result?.serverError) {
-                setMessage({ type: 'error', text: result.serverError })
+                addToast('error', result.serverError)
             } else {
-                setMessage({ type: 'success', text: 'Item added successfully!' })
-                const form = document.querySelector('form') as HTMLFormElement
-                form.reset()
-                // Clear success message after 3 seconds
-                setTimeout(() => setMessage(null), 3000)
+                addToast('success', 'Item added successfully')
+                formRef.current?.reset()
             }
         } catch (error) {
             setIsSubmitting(false)
-            setMessage({ type: 'error', text: 'An unexpected error occurred' })
+            addToast('error', 'An unexpected error occurred')
         }
     }
 
     return (
-        <form action={handleSubmit} className="bg-[var(--bg-surface)] p-4 rounded-lg border border-[var(--border)] transition-all">
+        <form ref={formRef} action={handleSubmit} className="bg-[var(--bg-surface)] p-4 rounded-lg border border-[var(--border)] transition-all">
             <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Add New Item</h2>
-
-            {message && (
-                <div className={`p-3 rounded-md text-sm mb-4 ${message.type === 'success'
-                        ? 'bg-success-100 text-success-800 border border-success-200 dark:bg-success-900 dark:text-success-200 dark:border-success-800'
-                        : 'bg-error-100 text-error-800 border border-error-200 dark:bg-error-900 dark:text-error-200 dark:border-error-800'
-                    }`}>
-                    {message.text}
-                </div>
-            )}
 
             <div className="space-y-4">
                 <Input

@@ -9,6 +9,7 @@ import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/moda
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useToast } from '@/components/toast-provider'
 
 interface ItemDetailModalProps {
   isOpen: boolean
@@ -24,6 +25,7 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
   const [isDeleting, setIsDeleting] = useState(false)
   const [isReturning, setIsReturning] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const { addToast } = useToast()
 
   // Fetch item details on open
   useEffect(() => {
@@ -61,17 +63,17 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
     if (!confirm('Are you sure you want to delete this item?')) return
 
     setIsDeleting(true)
-    setError(null)
 
     try {
       const result = await deleteItem({ itemId })
       if (result?.serverError) {
-        setError(result.serverError)
+        addToast('error', result.serverError)
       } else {
+        addToast('success', 'Item deleted')
         onClose()
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete item')
+      addToast('error', err instanceof Error ? err.message : 'Failed to delete item')
     } finally {
       setIsDeleting(false)
     }
@@ -81,13 +83,17 @@ export default function ItemDetailModal({ isOpen, onClose, itemId }: ItemDetailM
     if (!data?.activeBorrow) return
 
     setIsReturning(true)
-    setError(null)
 
     try {
-      await returnItem({ recordId: data.activeBorrow.id, itemId, groupId: data.item.group_id || '' })
-      onClose()
+      const result = await returnItem({ recordId: data.activeBorrow.id, itemId, groupId: data.item.group_id || '' })
+      if (result?.serverError) {
+        addToast('error', result.serverError)
+      } else {
+        addToast('success', 'Item marked as returned')
+        onClose()
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to return item')
+      addToast('error', err instanceof Error ? err.message : 'Failed to return item')
     } finally {
       setIsReturning(false)
     }
@@ -340,6 +346,7 @@ function ItemEditSubModal({ item, onClose, onSuccess }: { item: any; onClose: ()
   const [price, setPrice] = useState(item.price_usd?.toString() || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { addToast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -357,12 +364,13 @@ function ItemEditSubModal({ item, onClose, onSuccess }: { item: any; onClose: ()
       })
 
       if (result?.serverError) {
-        setError(result.serverError)
+        addToast('error', result.serverError)
       } else {
+        addToast('success', 'Item updated')
         onSuccess()
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update item')
+      addToast('error', err instanceof Error ? err.message : 'Failed to update item')
     } finally {
       setIsSubmitting(false)
     }

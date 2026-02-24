@@ -5,6 +5,7 @@ import Link from 'next/link'
 import ItemSelectorModal from '@/components/item-selector-modal'
 import { addItemsToGroup } from '@/app/groups/actions'
 import { Button, buttonVariants } from '@/components/ui'
+import { useToast } from '@/components/toast-provider'
 
 interface Item {
     id: string
@@ -21,6 +22,7 @@ interface GroupItemsManagerProps {
 
 export default function GroupItemsManager({ groupId, userItems }: GroupItemsManagerProps) {
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const { addToast } = useToast()
 
     // Filter items that are not already in this group
     const availableItems = userItems.filter(item => item.group_id !== groupId)
@@ -28,7 +30,9 @@ export default function GroupItemsManager({ groupId, userItems }: GroupItemsMana
     const handleAddItems = async (selectedItemIds: string[]) => {
         const result = await addItemsToGroup({ groupId, itemIds: selectedItemIds })
         if (result?.serverError) {
-            alert(result.serverError)
+            addToast('error', result.serverError)
+        } else {
+            addToast('success', 'Items added to group')
         }
     }
 

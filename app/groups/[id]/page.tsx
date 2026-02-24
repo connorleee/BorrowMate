@@ -5,6 +5,7 @@ import ShareGroupLink from './share-group-link'
 import GroupItemsManager from './group-items-manager'
 import InviteUserButton from '@/components/invite-user-button'
 import { ItemCard } from '@/components/Card'
+import { EmptyState } from '@/components/empty-state'
 
 export default async function GroupDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -73,9 +74,11 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
             <div>
                 <h2 className="text-2xl font-bold mb-4">Inventory</h2>
                 {items.length === 0 ? (
-                    <div className="text-center py-12 bg-[var(--bg-surface)] rounded-lg border border-dashed border-[var(--border)]">
-                        <p className="text-[var(--text-secondary)]">No items in this group yet.</p>
-                    </div>
+                    <EmptyState
+                        message="No items in this group yet"
+                        ctaLabel="Add Items"
+                        ctaHref={`/groups/${id}`}
+                    />
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {items.map((item: any) => (

@@ -5,6 +5,7 @@ import { searchContacts, createContact } from '@/app/contacts/actions'
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/modal'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { useToast } from '@/components/toast-provider'
 
 interface Contact {
   id: string
@@ -34,6 +35,7 @@ export default function BatchLendModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [dueDate, setDueDate] = useState('')
+  const { addToast } = useToast()
 
   // Mode for quick contact creation
   const [quickAddMode, setQuickAddMode] = useState(false)
@@ -96,8 +98,9 @@ export default function BatchLendModal({
         phone: null,
       })
       if (result?.serverError) {
-        setError(result.serverError)
+        addToast('error', result.serverError)
       } else if (result?.data?.data) {
+        addToast('success', 'Contact added')
         setSelectedContactId(result.data.data.id)
         setQuickAddMode(false)
         setQuickAddName('')
@@ -105,7 +108,7 @@ export default function BatchLendModal({
         setSearchQuery('')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create contact')
+      addToast('error', err instanceof Error ? err.message : 'Failed to create contact')
     } finally {
       setIsCreatingQuick(false)
     }
@@ -121,7 +124,7 @@ export default function BatchLendModal({
       await onLend(selectedContactId, dueDate || undefined)
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to lend items')
+      addToast('error', err instanceof Error ? err.message : 'Failed to lend items')
     } finally {
       setIsSubmitting(false)
     }

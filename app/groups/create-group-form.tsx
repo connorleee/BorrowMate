@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import { createGroup } from './actions'
 import { Button, Input } from '@/components/ui'
+import { useToast } from '@/components/toast-provider'
 
 export default function CreateGroupForm() {
     const [isOpen, setIsOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const { addToast } = useToast()
 
     if (!isOpen) {
         return (
@@ -33,7 +35,9 @@ export default function CreateGroupForm() {
                     const description = formData.get('description') as string
                     const result = await createGroup({ name, description })
                     if (result?.serverError) {
-                        setError(result.serverError)
+                        addToast('error', result.serverError)
+                    } else {
+                        addToast('success', 'Group created')
                     }
                     setLoading(false)
                 }}

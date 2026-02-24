@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { searchContacts, deleteContact } from '@/app/contacts/actions'
 import { ContactCard } from '@/components/Card'
 import { Input, Button } from '@/components/ui'
+import { useToast } from '@/components/toast-provider'
+import { EmptyState } from '@/components/empty-state'
 
 interface Contact {
   id: string
@@ -23,6 +25,7 @@ export default function ContactListSection({ initialContacts }: ContactListSecti
   const [isSearching, setIsSearching] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmId, setConfirmId] = useState<string | null>(null)
+  const { addToast } = useToast()
 
   useEffect(() => {
     if (!query.trim()) {
@@ -52,11 +55,16 @@ export default function ContactListSection({ initialContacts }: ContactListSecti
   const handleDelete = async (id: string) => {
     setDeletingId(id)
     try {
-      await deleteContact({ contactId: id })
-      setContacts(contacts.filter(c => c.id !== id))
-      setConfirmId(null)
+      const result = await deleteContact({ contactId: id })
+      if (result?.serverError) {
+        addToast('error', result.serverError)
+      } else {
+        addToast('success', 'Contact deleted')
+        setContacts(contacts.filter(c => c.id !== id))
+        setConfirmId(null)
+      }
     } catch (err) {
-      // Error handled silently - UI state unchanged
+      addToast('error', 'Failed to delete contact')
     } finally {
       setDeletingId(null)
     }
@@ -83,11 +91,17 @@ export default function ContactListSection({ initialContacts }: ContactListSecti
       </div>
 
       {contacts.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-[var(--text-secondary)]">
-            {query ? 'No contacts match your search.' : 'No contacts yet.'}
-          </p>
-        </div>
+        query ? (
+          <div className="text-center py-8">
+            <p className="text-[var(--text-secondary)]">No contacts match your search.</p>
+          </div>
+        ) : (
+          <EmptyState
+            message="No contacts yet — add someone to start lending!"
+            ctaLabel="Add Contact"
+            ctaHref="/contacts"
+          />
+        )
       ) : (
         <div className="grid gap-3">
           {contacts.map((contact) => (

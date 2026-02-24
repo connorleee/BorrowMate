@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createContact } from '@/app/contacts/actions'
 import { Modal, ModalHeader, ModalBody, ModalFooter, Input, Button } from '@/components/ui'
+import { useToast } from '@/components/toast-provider'
 
 interface AddContactModalProps {
   isOpen: boolean
@@ -15,6 +16,7 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
   const [phone, setPhone] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const { addToast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,8 +30,9 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
         phone: phone || null,
       })
       if (result?.serverError) {
-        setError(result.serverError)
+        addToast('error', result.serverError)
       } else {
+        addToast('success', 'Contact added')
         // Reset form and close modal on success
         setName('')
         setEmail('')
@@ -37,7 +40,7 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
         onClose()
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      addToast('error', err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setIsLoading(false)
     }
@@ -51,12 +54,6 @@ export default function AddContactModal({ isOpen, onClose }: AddContactModalProp
         </ModalHeader>
 
         <ModalBody className="space-y-4">
-          {error && (
-            <div className="p-3 bg-error-100 dark:bg-error-900 border border-error-200 dark:border-error-700 rounded text-error-700 dark:text-error-200 text-sm">
-              {error}
-            </div>
-          )}
-
           <Input
             label="Name *"
             type="text"
