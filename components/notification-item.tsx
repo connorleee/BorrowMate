@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { markNotificationAsRead, dismissNotification } from '@/app/notifications/actions'
 import { acceptBorrowRequest, rejectBorrowRequest } from '@/app/borrow/actions'
+import { Button, Badge } from '@/components/ui'
 
 interface NotificationItemProps {
   notification: any
@@ -128,7 +129,7 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-blue-500"
+            className="text-info-500"
           >
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="16" x2="12" y2="12"></line>
@@ -147,7 +148,7 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-green-500"
+            className="text-success-500"
           >
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
             <polyline points="22 4 12 14.01 9 11.01"></polyline>
@@ -165,7 +166,7 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-red-500"
+            className="text-error-500"
           >
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="15" y1="9" x2="9" y2="15"></line>
@@ -184,7 +185,7 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-gray-500"
+            className="text-[var(--text-secondary)]"
           >
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="16" x2="12" y2="12"></line>
@@ -209,12 +210,12 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
   return (
     <div
       className={`w-full ${
-        notification.status === 'unread' ? 'bg-blue-50 dark:bg-blue-900/10' : ''
+        notification.status === 'unread' ? 'bg-info-50 dark:bg-info-900/10' : ''
       }`}
     >
       <button
         onClick={handleClick}
-        className="w-full p-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+        className="w-full p-4 text-left hover:bg-[var(--bg-surface)] transition-colors"
       >
         <div className="flex gap-3">
           {/* Icon */}
@@ -225,17 +226,17 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+              <p className="font-medium text-[var(--text-primary)] text-sm">
                 {notification.title}
               </p>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {notification.status === 'unread' && (
-                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  <span className="w-2 h-2 bg-info-500 rounded-full"></span>
                 )}
                 <button
                   onClick={handleDismiss}
                   disabled={isDismissing}
-                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                  className="p-1 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] rounded transition-colors"
                   title="Dismiss"
                 >
                   {isDismissing ? (
@@ -254,12 +255,12 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
             </div>
 
             {notification.message && !isExpanded && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+              <p className="text-sm text-[var(--text-secondary)] mt-1 line-clamp-2">
                 {notification.message}
               </p>
             )}
 
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+            <p className="text-xs text-[var(--text-tertiary)] mt-2">
               {getRelativeTime(notification.created_at)}
             </p>
 
@@ -274,27 +275,27 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
 
       {/* Expanded Request Details for Pending Borrow Requests */}
       {isExpanded && isPendingRequest && notification.related_request && (
-        <div className="px-4 pb-4 space-y-3 border-t border-gray-200 dark:border-gray-700 pt-3">
+        <div className="px-4 pb-4 space-y-3 border-t border-[var(--border)] pt-3">
           {/* Item Details */}
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-            <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+          <div className="bg-[var(--bg-surface)] rounded-lg p-3">
+            <h4 className="font-semibold text-[var(--text-primary)] text-sm">
               {notification.related_request.item?.name || notification.related_item?.name}
             </h4>
             {notification.related_request.item?.description && (
-              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-xs text-[var(--text-secondary)] mt-1">
                 {notification.related_request.item.description}
               </p>
             )}
             {notification.related_request.item?.category && (
-              <span className="inline-block mt-2 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">
+              <Badge variant="neutral" size="sm" className="mt-2">
                 {notification.related_request.item.category}
-              </span>
+              </Badge>
             )}
           </div>
 
           {/* Request Details */}
           {notification.related_request.requested_due_date && (
-            <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="14"
@@ -316,8 +317,8 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
           )}
 
           {notification.related_request.message && (
-            <div className="bg-gray-50 dark:bg-gray-900 rounded p-2">
-              <p className="text-xs text-gray-700 dark:text-gray-300">
+            <div className="bg-[var(--bg-surface)] rounded p-2">
+              <p className="text-xs text-[var(--text-primary)]">
                 &quot;{notification.related_request.message}&quot;
               </p>
             </div>
@@ -328,8 +329,8 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
             <div
               className={`p-2 rounded-lg text-xs ${
                 feedback.type === 'success'
-                  ? 'bg-green-50 border border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300'
-                  : 'bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300'
+                  ? 'bg-success-50 border border-success-200 text-success-800 dark:bg-success-900/20 dark:border-success-800 dark:text-success-300'
+                  : 'bg-error-50 border border-error-200 text-error-800 dark:bg-error-900/20 dark:border-error-800 dark:text-error-300'
               }`}
             >
               {feedback.text}
@@ -339,28 +340,23 @@ export default function NotificationItem({ notification, onRead, onDismiss, onCl
           {/* Action Buttons */}
           {!feedback && (
             <div className="flex gap-2">
-              <button
+              <Button
+                size="sm"
+                className="flex-1 bg-success-500 hover:bg-success-600 text-white"
                 onClick={handleAccept}
                 disabled={isAccepting || isRejecting}
-                className={`flex-1 px-3 py-2 rounded-lg font-medium text-white text-sm transition-colors ${
-                  isAccepting || isRejecting
-                    ? 'bg-green-300 cursor-not-allowed'
-                    : 'bg-green-500 hover:bg-green-600'
-                }`}
               >
                 {isAccepting ? 'Accepting...' : 'Accept'}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="flex-1"
                 onClick={handleReject}
                 disabled={isAccepting || isRejecting}
-                className={`flex-1 px-3 py-2 rounded-lg font-medium text-white text-sm transition-colors ${
-                  isAccepting || isRejecting
-                    ? 'bg-red-300 cursor-not-allowed'
-                    : 'bg-red-500 hover:bg-red-600'
-                }`}
               >
                 {isRejecting ? 'Declining...' : 'Decline'}
-              </button>
+              </Button>
             </div>
           )}
         </div>

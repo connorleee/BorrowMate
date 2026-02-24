@@ -26,14 +26,14 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
                         <div className="flex items-center gap-3 mb-2">
                             <h1 className="text-3xl font-bold">{group.name}</h1>
                             <span className={`text-xs px-2 py-1 rounded-full ${group.privacy === 'public'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200'
+                                : 'bg-[var(--bg-elevated)] text-[var(--text-secondary)]'
                                 }`}>
                                 {group.privacy}
                             </span>
                         </div>
-                        {group.description && <p className="text-gray-600 mt-2">{group.description}</p>}
-                        <div className="flex items-center gap-2 mt-3 text-sm text-gray-500">
+                        {group.description && <p className="text-[var(--text-secondary)] mt-2">{group.description}</p>}
+                        <div className="flex items-center gap-2 mt-3 text-sm text-[var(--text-secondary)]">
                             <span>Owner: <span className="font-medium">{group.owner?.name || 'Unknown'}</span></span>
                             <span>•</span>
                             <span>{group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}</span>
@@ -55,7 +55,7 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {group.memberships.map((membership: any) => (
-                            <div key={membership.id} className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700" style={{ backgroundColor: 'var(--bg-surface)' }}>
+                            <div key={membership.id} className="flex items-center gap-3 p-3 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)]">
                                 <div className="flex-1">
                                     <p className="font-medium">{membership.user?.name || 'Unknown'}</p>
                                 </div>
@@ -73,8 +73,8 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
             <div>
                 <h2 className="text-2xl font-bold mb-4">Inventory</h2>
                 {items.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                        <p className="text-gray-500">No items in this group yet.</p>
+                    <div className="text-center py-12 bg-[var(--bg-surface)] rounded-lg border border-dashed border-[var(--border)]">
+                        <p className="text-[var(--text-secondary)]">No items in this group yet.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

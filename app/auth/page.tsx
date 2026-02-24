@@ -47,7 +47,7 @@ export default function AuthPage() {
         <div className="flex flex-col items-center justify-center gap-6 py-12 w-full max-w-md mx-auto">
             <div className="text-center space-y-2">
                 <h1 className="text-3xl font-bold">{isLogin ? 'Welcome Back' : 'Create Account'}</h1>
-                <p className="text-gray-500">
+                <p className="text-[var(--text-secondary)]">
                     {isLogin ? 'Sign in to manage your shared items' : 'Join BorrowBase to track your stuff'}
                 </p>
             </div>
@@ -62,7 +62,7 @@ export default function AuthPage() {
                             type="text"
                             placeholder="Your Name"
                             required
-                            className="p-3 border rounded-lg bg-background"
+                            className="p-3 border border-[var(--border)] rounded-lg bg-[var(--bg-base)] text-[var(--text-primary)]"
                         />
                     </div>
                 )}
@@ -75,7 +75,7 @@ export default function AuthPage() {
                         type="email"
                         placeholder="you@example.com"
                         required
-                        className="p-3 border rounded-lg bg-background"
+                        className="p-3 border border-[var(--border)] rounded-lg bg-[var(--bg-base)] text-[var(--text-primary)]"
                     />
                 </div>
 
@@ -88,12 +88,12 @@ export default function AuthPage() {
                         placeholder="••••••••"
                         required
                         minLength={6}
-                        className="p-3 border rounded-lg bg-background"
+                        className="p-3 border border-[var(--border)] rounded-lg bg-[var(--bg-base)] text-[var(--text-primary)]"
                     />
                 </div>
 
                 {error && (
-                    <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg border border-red-200">
+                    <div className="p-3 text-sm text-error-500 bg-error-50 rounded-lg border border-error-200">
                         {error}
                     </div>
                 )}
@@ -101,7 +101,7 @@ export default function AuthPage() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="bg-foreground text-background p-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="bg-primary-500 text-white p-3 rounded-lg font-medium hover:bg-primary-600 transition-colors disabled:opacity-50"
                 >
                     {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
                 </button>
@@ -109,10 +109,10 @@ export default function AuthPage() {
 
             <div className="relative w-full">
                 <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t" style={{ borderColor: 'var(--border)' }} />
+                    <div className="w-full border-t border-[var(--border)]" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                    <span className="px-4" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)' }}>
+                    <span className="px-4 bg-[var(--bg-base)] text-[var(--text-secondary)]">
                         Or continue with
                     </span>
                 </div>
@@ -121,7 +121,7 @@ export default function AuthPage() {
             <button
                 type="button"
                 onClick={handleGoogleSignIn}
-                className="w-full p-3 border rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
+                className="w-full p-3 border border-[var(--border)] rounded-lg flex items-center justify-center gap-2 hover:bg-[var(--bg-surface)] transition-colors"
             >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path
@@ -144,14 +144,14 @@ export default function AuthPage() {
                 Google
             </button>
 
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-[var(--text-secondary)]">
                 {isLogin ? "Don't have an account? " : "Already have an account? "}
                 <button
                     onClick={() => {
                         setIsLogin(!isLogin)
                         setError(null)
                     }}
-                    className="text-foreground font-medium hover:underline"
+                    className="text-primary-600 font-medium hover:underline"
                 >
                     {isLogin ? 'Sign Up' : 'Sign In'}
                 </button>

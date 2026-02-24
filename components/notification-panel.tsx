@@ -121,12 +121,12 @@ export default function NotificationPanel({ onClose, onCountChange, bellButtonRe
   return createPortal(
     <div
       ref={panelRef}
-      className="fixed w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-[600px] flex flex-col"
+      className="fixed w-96 max-w-[calc(100vw-2rem)] bg-[var(--bg-base)] rounded-lg shadow-xl border border-[var(--border)] z-50 max-h-[600px] flex flex-col"
       style={{ top: `${position.top}px`, left: `${position.left}px` }}
     >
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+      <div className="p-4 border-b border-[var(--border)] flex justify-between items-center">
+        <h2 className="text-lg font-bold text-[var(--text-primary)]">
           Notifications
         </h2>
         <div className="flex items-center gap-3">
@@ -143,7 +143,7 @@ export default function NotificationPanel({ onClose, onCountChange, bellButtonRe
             <button
               onClick={handleClearAll}
               disabled={isClearingAll || isMarkingAllRead}
-              className="text-sm text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 font-medium disabled:opacity-50"
+              className="text-sm text-[var(--text-secondary)] hover:text-error-600 dark:hover:text-error-400 font-medium disabled:opacity-50"
             >
               {isClearingAll ? 'Clearing...' : 'Clear all'}
             </button>
@@ -154,11 +154,11 @@ export default function NotificationPanel({ onClose, onCountChange, bellButtonRe
       {/* Notifications List */}
       <div className="overflow-y-auto flex-1">
         {isLoading ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+          <div className="p-8 text-center text-[var(--text-secondary)]">
             Loading notifications...
           </div>
         ) : notifications.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+          <div className="p-8 text-center text-[var(--text-secondary)]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="48"
@@ -177,7 +177,7 @@ export default function NotificationPanel({ onClose, onCountChange, bellButtonRe
             <p>No notifications yet</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+          <div className="divide-y divide-[var(--border)]">
             {notifications.map((notification) => (
               <NotificationItem
                 key={notification.id}

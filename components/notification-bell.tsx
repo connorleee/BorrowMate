@@ -50,7 +50,7 @@ export default function NotificationBell() {
       <button
         ref={bellButtonRef}
         onClick={handleBellClick}
-        className="relative p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+        className="relative p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
         aria-label="Notifications"
       >
         {/* Bell Icon */}
@@ -71,7 +71,7 @@ export default function NotificationBell() {
 
         {/* Badge */}
         {!isLoading && unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-error-500 rounded-full">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}

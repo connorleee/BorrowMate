@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { searchUsers, addMembers } from '@/app/groups/actions'
+import { Modal, ModalHeader, ModalBody, ModalFooter, Input, Button } from '@/components/ui'
 
 interface User {
     id: string
@@ -64,43 +65,38 @@ export default function InviteUserModal({ groupId, isOpen, onClose }: InviteUser
         setIsSubmitting(false)
     }
 
-    if (!isOpen) return null
-
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg w-full max-w-md p-6 max-h-[90vh] flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Invite Users</h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-                        ✕
-                    </button>
-                </div>
+        <Modal isOpen={isOpen} onClose={onClose} size="sm">
+            <ModalHeader className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-[var(--text-primary)]">Invite Users</h2>
+                <button onClick={onClose} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                    ✕
+                </button>
+            </ModalHeader>
 
-                <div className="mb-4">
-                    <input
-                        type="text"
-                        placeholder="Search by name..."
-                        className="w-full p-2 border rounded-md"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                    />
-                </div>
+            <ModalBody className="space-y-4">
+                <Input
+                    type="text"
+                    placeholder="Search by name..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                />
 
                 {error && (
-                    <div className="bg-red-100 text-red-800 p-2 rounded-md mb-4 text-sm">
+                    <div className="bg-error-100 text-error-800 p-2 rounded-md text-sm">
                         {error}
                     </div>
                 )}
 
-                <div className="flex-1 overflow-y-auto min-h-[200px] mb-4 border rounded-md p-2">
+                <div className="overflow-y-auto min-h-[200px] border border-[var(--border)] rounded-md p-2">
                     {isSearching ? (
-                        <div className="text-center py-4 text-gray-500">Searching...</div>
+                        <div className="text-center py-4 text-[var(--text-secondary)]">Searching...</div>
                     ) : results.length > 0 ? (
                         <div className="space-y-2">
                             {results.map(user => (
                                 <div
                                     key={user.id}
-                                    className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-50 ${selectedUsers.some(u => u.id === user.id) ? 'bg-primary-50 border-primary-200 border' : ''
+                                    className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-[var(--bg-surface)] ${selectedUsers.some(u => u.id === user.id) ? 'bg-primary-50 border-primary-200 border' : ''
                                         }`}
                                     onClick={() => handleSelectUser(user)}
                                 >
@@ -111,40 +107,35 @@ export default function InviteUserModal({ groupId, isOpen, onClose }: InviteUser
                                         className="mr-3"
                                     />
                                     <div>
-                                        <div className="font-medium">{user.name}</div>
+                                        <div className="font-medium text-[var(--text-primary)]">{user.name}</div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : query.length >= 2 ? (
-                        <div className="text-center py-4 text-gray-500">No users found</div>
+                        <div className="text-center py-4 text-[var(--text-secondary)]">No users found</div>
                     ) : (
-                        <div className="text-center py-4 text-gray-400">Type to search users</div>
+                        <div className="text-center py-4 text-[var(--text-tertiary)]">Type to search users</div>
                     )}
                 </div>
+            </ModalBody>
 
-                <div className="flex justify-between items-center border-t pt-4">
-                    <div className="text-sm text-gray-500">
-                        {selectedUsers.length} selected
-                    </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleSubmit}
-                            disabled={selectedUsers.length === 0 || isSubmitting}
-                            className={`px-4 py-2 bg-primary-500 text-white rounded-md ${selectedUsers.length === 0 || isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary-600'
-                                }`}
-                        >
-                            {isSubmitting ? 'Adding...' : 'Add Members'}
-                        </button>
-                    </div>
+            <ModalFooter className="flex justify-between items-center">
+                <div className="text-sm text-[var(--text-secondary)]">
+                    {selectedUsers.length} selected
                 </div>
-            </div>
-        </div>
+                <div className="flex gap-2">
+                    <Button variant="ghost" onClick={onClose}>
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleSubmit}
+                        disabled={selectedUsers.length === 0 || isSubmitting}
+                    >
+                        {isSubmitting ? 'Adding...' : 'Add Members'}
+                    </Button>
+                </div>
+            </ModalFooter>
+        </Modal>
     )
 }

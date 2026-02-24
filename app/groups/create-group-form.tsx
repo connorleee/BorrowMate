@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createGroup } from './actions'
+import { Button, Input } from '@/components/ui'
 
 export default function CreateGroupForm() {
     const [isOpen, setIsOpen] = useState(false)
@@ -10,20 +11,17 @@ export default function CreateGroupForm() {
 
     if (!isOpen) {
         return (
-            <button
-                onClick={() => setIsOpen(true)}
-                className="bg-foreground text-background px-4 py-2 rounded-lg font-medium"
-            >
+            <Button onClick={() => setIsOpen(true)}>
                 Create New Group
-            </button>
+            </Button>
         )
     }
 
     return (
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 w-full max-w-md">
+        <div className="bg-[var(--bg-surface)] p-4 rounded-lg border border-[var(--border)] w-full max-w-md">
             <h3 className="font-bold mb-4">Create a New Group</h3>
             {error && (
-                <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
+                <div className="bg-error-50 text-error-600 p-3 rounded-lg mb-4 text-sm">
                     {error}
                 </div>
             )}
@@ -41,32 +39,31 @@ export default function CreateGroupForm() {
                 }}
                 className="flex flex-col gap-4"
             >
-                <input
+                <Input
                     name="name"
                     placeholder="Group Name (e.g. Apartment 4B)"
                     required
-                    className="p-2 border rounded"
+                    inputSize="lg"
                 />
                 <textarea
                     name="description"
                     placeholder="Description (optional)"
-                    className="p-2 border rounded"
+                    className="p-3 border border-[var(--border)] rounded-lg bg-[var(--bg-base)] text-[var(--text-primary)]"
                 />
                 <div className="flex gap-2 justify-end">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={() => setIsOpen(false)}
-                        className="px-4 py-2 text-gray-600"
                     >
                         Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         type="submit"
                         disabled={loading}
-                        className="bg-foreground text-background px-4 py-2 rounded font-medium disabled:opacity-50"
                     >
                         {loading ? 'Creating...' : 'Create Group'}
-                    </button>
+                    </Button>
                 </div>
             </form>
         </div>
