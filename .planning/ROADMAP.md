@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Input Validation** - Add Zod schemas and next-safe-action to all server action mutations
 - [x] **Phase 3: Design System Foundation** - Create primitive components (Button, Input, Card, Badge, Modal) with design tokens (completed 2026-02-23)
 - [x] **Phase 4: RLS Audit & Hardening** - Audit all RLS policies, tighten user data exposure, add security headers (completed 2026-02-23)
-- [ ] **Phase 5: UI Migration & Production Polish** - Migrate all components to primitives, fix dark mode, add toast/empty/loading states
+- [x] **Phase 5: UI Migration & Production Polish** - Migrate all components to primitives, fix dark mode, add toast/empty/loading states (completed 2026-02-24)
 
 ## Phase Details
 
@@ -89,13 +89,13 @@ Plans:
   3. Completing any mutation (create item, lend, return, delete) shows a toast notification confirming success or explaining the failure
   4. Every list view (items, contacts, groups, borrow records) displays a helpful empty state when no data exists
   5. Form submissions and page transitions show visible loading indicators
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 
 Plans:
-- [ ] 05-01-PLAN.md -- Build toast provider, empty state component, and skeleton loading screens
-- [ ] 05-02-PLAN.md -- Migrate navigation, Card.tsx domain components, dashboard, and item components
-- [ ] 05-03-PLAN.md -- Migrate contact, group, borrow, notification, and remaining page components
-- [ ] 05-04-PLAN.md -- Wire toast feedback, add empty states, remove legacy CSS, dark mode verification
+- [x] 05-01-PLAN.md -- Build toast provider, empty state component, and skeleton loading screens
+- [x] 05-02-PLAN.md -- Migrate navigation, Card.tsx domain components, dashboard, and item components
+- [x] 05-03-PLAN.md -- Migrate contact, group, borrow, notification, and remaining page components
+- [x] 05-04-PLAN.md -- Wire toast feedback, add empty states, remove legacy CSS, dark mode verification
 
 ## Progress
 
@@ -109,4 +109,4 @@ Note: Phases 2 and 3 touch independent files and could be interleaved if desired
 | 2. Input Validation | 1/3 | In Progress | - |
 | 3. Design System Foundation | 0/2 | Complete    | 2026-02-23 |
 | 4. RLS Audit & Hardening | 2/3 | Complete    | 2026-02-23 |
-| 5. UI Migration & Production Polish | 0/4 | Not started | - |
+| 5. UI Migration & Production Polish | 4/4 | Complete    | 2026-02-24 |
